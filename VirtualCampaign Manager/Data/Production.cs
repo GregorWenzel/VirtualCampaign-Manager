@@ -25,7 +25,7 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        //return net number of frames for indicative and abdicative
+
         public int IndicativeFrames
         {
             get
@@ -66,8 +66,11 @@ namespace VirtualCampaign_Manager.Data
         {
             get { return _email; }
             set { _email = value; }
-        }               
+        }
 
+        
+
+        public bool HasSpecialIntroMusic { get; set; }
         public int ClipFrames { get; set; }
         public int IndicativeFrames
         {
