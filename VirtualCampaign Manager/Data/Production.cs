@@ -24,20 +24,7 @@ namespace VirtualCampaign_Manager.Data
                 return Path.Combine(new string[] { Settings.LocalProductionPath, "productions", this.ID.ToString() });
             }
         }
-
-
-        public int IndicativeFrames
-        {
-            get
-            {
-                if (this.JobList[0].IsDicative)
-                    return this.JobList[0].FrameCount;
-                else
-                    return 0;
-            }
-        }
-
-
+        
         private bool IsActive = false;
 
         private bool CanUpdateRemoteData = false;
