@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,6 +23,14 @@ namespace VirtualCampaign_Manager
         public MainWindow()
         {
             InitializeComponent();
+            InitializeWindow();
+
+            Console.WriteLine(Settings.FtpProductPreviewDirectoryLogin.FullPath);
+        }
+
+        private void InitializeWindow()
+        {
+            this.Title = "Manager for '" + Settings.ServerUrl + ", Version " + Settings.Version;
         }
     }
 }

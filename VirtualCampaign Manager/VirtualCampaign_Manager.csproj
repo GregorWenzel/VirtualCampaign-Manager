@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -10,14 +10,15 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VirtualCampaign_Manager</RootNamespace>
     <AssemblyName>VirtualCampaign_Manager</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -25,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -34,8 +36,49 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ComponentPro.Common, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\ComponentPro.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ComponentPro.FileSystem, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\ComponentPro.FileSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="ComponentPro.Ftp, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\ComponentPro.Ftp.dll</HintPath>
+    </Reference>
+    <Reference Include="ComponentPro.Network, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\ComponentPro.Network.dll</HintPath>
+    </Reference>
+    <Reference Include="ComponentPro.Sftp, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\ComponentPro.Sftp.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Bson, Version=2.3.0.131, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.3.0.131, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.3.0.131, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Driver.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.GridFS, Version=2.3.0.131, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Driver.GridFS.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Legacy, Version=2.3.0.131, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libraries\MongoDB.Driver.Legacy.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -63,6 +106,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Data\AnimatedMotifData.cs" />
+    <Compile Include="Data\DownloadData.cs" />
+    <Compile Include="Data\Job.cs" />
+    <Compile Include="Data\LoginData.cs" />
+    <Compile Include="Data\Motif.cs" />
+    <Compile Include="Data\Production.cs" />
+    <Compile Include="Data\VCObject.cs" />
+    <Compile Include="Managers\DownloadManager.cs" />
+    <Compile Include="Repositories\JobRepository.cs" />
+    <Compile Include="Repositories\RemoteDataManager.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="Workers\DirectoryWorker.cs" />
+    <Compile Include="Workers\DownloadWorker.cs" />
+    <Compile Include="Workers\JobRenderProgressMonitor.cs" />
+    <Compile Include="Workers\JobWorker.cs" />
+    <Compile Include="Workers\ProductionWorker.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -93,11 +152,48 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Settings.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libraries\ComponentPro.Common.dll" />
+    <Resource Include="Libraries\ComponentPro.Common.xml" />
+    <Content Include="Libraries\ComponentPro.FileSystem.dll" />
+    <Resource Include="Libraries\ComponentPro.FileSystem.xml" />
+    <Content Include="Libraries\ComponentPro.Ftp.dll" />
+    <Resource Include="Libraries\ComponentPro.Ftp.xml" />
+    <Content Include="Libraries\ComponentPro.Network.dll" />
+    <Resource Include="Libraries\ComponentPro.Network.xml" />
+    <Content Include="Libraries\ComponentPro.Sftp.dll" />
+    <Resource Include="Libraries\ComponentPro.Sftp.xml" />
+    <Content Include="Libraries\MongoDB.Bson.dll" />
+    <Content Include="Libraries\MongoDB.Bson.pdb" />
+    <Resource Include="Libraries\MongoDB.Bson.xml" />
+    <Content Include="Libraries\MongoDB.Driver.Core.dll" />
+    <Content Include="Libraries\MongoDB.Driver.Core.pdb" />
+    <Resource Include="Libraries\MongoDB.Driver.Core.xml" />
+    <Content Include="Libraries\MongoDB.Driver.dll" />
+    <Content Include="Libraries\MongoDB.Driver.GridFS.dll" />
+    <Content Include="Libraries\MongoDB.Driver.GridFS.pdb" />
+    <Resource Include="Libraries\MongoDB.Driver.GridFS.xml" />
+    <Content Include="Libraries\MongoDB.Driver.Legacy.dll" />
+    <Content Include="Libraries\MongoDB.Driver.Legacy.pdb" />
+    <Resource Include="Libraries\MongoDB.Driver.Legacy.xml" />
+    <Content Include="Libraries\MongoDB.Driver.pdb" />
+    <Resource Include="Libraries\MongoDB.Driver.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HelperFunctions\HelperFunctions.csproj">
+      <Project>{a5839af3-b6bf-4a8a-afa1-aa22463ae5e2}</Project>
+      <Name>HelperFunctions</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
