@@ -108,19 +108,24 @@
     </ApplicationDefinition>
     <Compile Include="Data\AnimatedMotifData.cs" />
     <Compile Include="Data\DownloadData.cs" />
+    <Compile Include="Data\Film.cs" />
+    <Compile Include="Data\FilmOutputFormat.cs" />
     <Compile Include="Data\Job.cs" />
     <Compile Include="Data\LoginData.cs" />
     <Compile Include="Data\Motif.cs" />
     <Compile Include="Data\Production.cs" />
     <Compile Include="Data\VCObject.cs" />
     <Compile Include="GlobalValues.cs" />
+    <Compile Include="Helpers\HelperFunctions.cs" />
+    <Compile Include="Helpers\JobPathHelper.cs" />
+    <Compile Include="Helpers\ProductionPathHelper.cs" />
     <Compile Include="Managers\MotifDownloadManager.cs" />
     <Compile Include="Managers\EmailManager.cs" />
     <Compile Include="Repositories\JobRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Workers\DirectoryWorker.cs" />
-    <Compile Include="Workers\DownloadWorker.cs" />
+    <Compile Include="Loaders\MotifDownloader.cs" />
     <Compile Include="Workers\JobRenderProgressMonitor.cs" />
     <Compile Include="Workers\JobWorker.cs" />
     <Compile Include="Workers\ProductionWorker.cs" />

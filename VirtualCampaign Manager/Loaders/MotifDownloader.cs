@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using VirtualCampaign_Manager.Data;
 
-namespace VirtualCampaign_Manager.Workers
+namespace VirtualCampaign_Manager.Loaders
 {
     public class MoitfDownloader
     {

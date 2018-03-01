@@ -94,29 +94,42 @@ namespace VirtualCampaign_Manager.Data
             get { return _email; }
             set { _email = value; }
         }
-               
-        public int ClipFrames { get; set; }
-        
-        public int CorrectClipFrames
+
+        //get net number of frames for all clips other than indicatives or abdicatives
+        public int ClipsFrameCount
         {
             get
             {
                 int result = 0;
                 foreach (Job thisJob in this.JobList)
                 {
-                    //if (thisJob.IsDicative == false)
                     result += thisJob.FrameCount;
                 }
                 return result;
             }
         }
 
+        //get net number of frames for all clips
+        public int TotalFrameCount
+        {
+            get
+            {
+                int result = 0;
+                foreach (Job thisJob in this.JobList)
+                {
+                    result += thisJob.FrameCount;
+                }
+                return result;
+            }
+        }
+
+        //get number of frames for the abdicatives
         public int AbdicativeFrames
         {
             get
             {
-                if (this.JobList[this.JobList.Count - 1].IsDicative)
-                    return this.JobList[this.JobList.Count - 1].FrameCount;
+                if (JobList[JobList.Count - 1].IsDicative)
+                    return JobList[JobList.Count - 1].FrameCount;
                 else
                     return 0;
             }
@@ -197,25 +210,25 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        private Film _film;
+        private Film film;
         public Film Film
         {
             get
             {
-                return _film;
+                return film;
             }
             set
             {
-                _film = value;
+                film = value;
             }
         }
 
         public int FilmID
         {
-            get { return _film.ID; }
+            get { return film.ID; }
             set
             {
-                _film = new Film(value, FilmCodes);
+                film = new Film(value, FilmCodes);
             }
         }
 
@@ -313,7 +326,7 @@ namespace VirtualCampaign_Manager.Data
         {
             get
             {
-                return Convert.ToInt32(Math.Round(ClipFrames / 25f));
+                return Convert.ToInt32(Math.Round(ClipsFrameCount / 25f));
             }
         }
 
@@ -321,42 +334,20 @@ namespace VirtualCampaign_Manager.Data
         {
             get
             {
-                return Convert.ToInt32(Math.Round(CorrectClipFrames / 25f));
-                //return Convert.ToInt32(Math.Round(((IndicativeFrames+AbdicativeFrames+CorrectClipFrames) / 25f)));
+                return Convert.ToInt32(Math.Round(TotalFrameCount / 25f));
             }
         }
 
         private bool isPreview;
 
-        public bool IsPreview { get; set; }
+        public bool IsPreview { get; set; }        
 
-        public CodecInfo LargestCodec
-        {
-            get
-            {
-                CodecInfo result = CodecInfoList[0];
-
-                if (CodecInfoList.Count > 1)
-                {
-                    for (int i = 1; i < CodecInfoList.Count; i++)
-                    {
-                        if (CodecInfoList[i].Codec.Width * CodecInfoList[i].Codec.Height > result.Codec.Width * result.Codec.Height)
-                        {
-                            result = CodecInfoList[i];
-                        }
-                    }
-                }
-
-                return result;
-            }
-        }
-
-        public List<CodecInfo> CodecInfoList { get; set; }
-
+        //empty constructor
         public Production()
         {
         }
 
+        //constructor with data
         public Production(Dictionary<string, string> productionDict)
         {
             UpdateDate = new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
