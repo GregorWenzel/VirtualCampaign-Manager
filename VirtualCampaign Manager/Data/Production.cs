@@ -4,9 +4,37 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VirtualCampaign_Manager.Managers;
 
 namespace VirtualCampaign_Manager.Data
 {
+    public enum ProductionErrorStatus
+    {
+        PES_NONE = 0,
+        PES_JOIN_CLIPS = 1,
+        PES_ENCODE_PRODUCTION = 2,
+        PES_GET_AUDIO = 3,
+        PES_READ_AUDIOFILE = 4,
+        PES_CALCULATE_DURATION = 5,
+        PES_MUX_AUDIO = 6,
+        PES_UPLOAD = 7,
+        PES_INDICATIVE_MISSING = 8,
+        PES_ABDICATIVE_MISSING = 9
+    };
+
+    public enum ProductionStatus
+    {
+        PS_READY = 0,
+        PS_RENDER_JOBS = 1,
+        PS_MUX_AUDIO = 2,
+        PS_JOIN_CLIPS = 3,
+        PS_ENCODE_PRODUCTION = 4,
+        PS_ENCODE_FILMS = 5,
+        PS_UPLOAD_FILMS = 6,
+        PS_UPDATE_HISTORY = 7,
+        PS_DONE = 8
+    };
+
     public class Production : VCObject
     {
         //list of jobs associated to this production
@@ -24,7 +52,19 @@ namespace VirtualCampaign_Manager.Data
                 return Path.Combine(new string[] { Settings.LocalProductionPath, "productions", this.ID.ToString() });
             }
         }
-        
+
+        //returns the number of frames for the indicative
+        public int IndicativeFrames
+        {
+            get
+            {
+                if (this.JobList[0].IsDicative)
+                    return this.JobList[0].FrameCount;
+                else
+                    return 0;
+            }
+        }
+
         private bool IsActive = false;
 
         private bool CanUpdateRemoteData = false;
@@ -54,22 +94,9 @@ namespace VirtualCampaign_Manager.Data
             get { return _email; }
             set { _email = value; }
         }
-
-        
-
-        public bool HasSpecialIntroMusic { get; set; }
+               
         public int ClipFrames { get; set; }
-        public int IndicativeFrames
-        {
-            get
-            {
-                if (this.JobList[0].IsDicative)
-                    return this.JobList[0].FrameCount;
-                else
-                    return 0;
-            }
-        }
-
+        
         public int CorrectClipFrames
         {
             get
@@ -89,7 +116,7 @@ namespace VirtualCampaign_Manager.Data
             get
             {
                 if (this.JobList[this.JobList.Count - 1].IsDicative)
-                    return this.JobList[this.JobList.Count - 1].Frames;
+                    return this.JobList[this.JobList.Count - 1].FrameCount;
                 else
                     return 0;
             }
@@ -110,12 +137,12 @@ namespace VirtualCampaign_Manager.Data
                 if (_status != ProductionStatus.PS_RENDER_JOBS)
                 {
                     if (value == ProductionStatus.PS_RENDER_JOBS && _errorCode == ProductionErrorStatus.PES_NONE)
-                        GlobalValues.Instance.RenderQueueCount += 1;
+                        GlobalValues.RenderQueueCount += 1;
                 }
                 else
                 {
                     if (value != ProductionStatus.PS_RENDER_JOBS)
-                        GlobalValues.Instance.RenderQueueCount -= 1;
+                        GlobalValues.RenderQueueCount -= 1;
                 }
 
                 _status = value;
@@ -148,14 +175,14 @@ namespace VirtualCampaign_Manager.Data
                 {
                     //ERROR REMOVED
                     if (value == ProductionErrorStatus.PES_NONE && _status == ProductionStatus.PS_RENDER_JOBS)
-                        GlobalValues.Instance.RenderQueueCount += 1;
+                        GlobalValues.RenderQueueCount += 1;
                 }
                 //NO ERROR PRESENT
                 else
                 {
                     //ERROR OCCURED
                     if (value != ProductionErrorStatus.PES_NONE && _status == ProductionStatus.PS_RENDER_JOBS)
-                        GlobalValues.Instance.RenderQueueCount -= 1;
+                        GlobalValues.RenderQueueCount -= 1;
                 }
 
                 _errorCode = value;
@@ -166,7 +193,7 @@ namespace VirtualCampaign_Manager.Data
                     return;
 
                 UpdateRemoteValue(UpdateType.ErrorCode);
-                EmailManager.Instance.SendErrorMail(this);
+                EmailManager.SendErrorMail(this);
             }
         }
 

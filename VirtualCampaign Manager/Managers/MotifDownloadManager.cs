@@ -10,13 +10,13 @@ using VirtualCampaign_Manager.Data;
 
 namespace VirtualCampaign_Manager.Managers
 {
-    public class DownloadManager
+    public class MotifDownloadManager
     {
         private List<DownloadData> DownloadList;
         private Dictionary<string, Sftp> ftpClientDict;
         private int downloadCounter;
 
-        private DownloadManager()
+        private MotifDownloadManager()
         {
             ftpClientDict = new Dictionary<string, Sftp>();
             DownloadList = new List<DownloadData>();
@@ -130,10 +130,10 @@ namespace VirtualCampaign_Manager.Managers
         }
 
         //Singleton
-        private static volatile DownloadManager instance;
+        private static volatile MotifDownloadManager instance;
         private static object syncRoot = new Object();
 
-        public static DownloadManager Instance
+        public static MotifDownloadManager Instance
         {
             get
             {
@@ -142,7 +142,7 @@ namespace VirtualCampaign_Manager.Managers
                     lock (syncRoot)
                     {
                         if (instance == null)
-                            instance = new DownloadManager();
+                            instance = new MotifDownloadManager();
                     }
                 }
 

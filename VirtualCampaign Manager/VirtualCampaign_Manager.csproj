@@ -113,7 +113,9 @@
     <Compile Include="Data\Motif.cs" />
     <Compile Include="Data\Production.cs" />
     <Compile Include="Data\VCObject.cs" />
-    <Compile Include="Managers\DownloadManager.cs" />
+    <Compile Include="GlobalValues.cs" />
+    <Compile Include="Managers\MotifDownloadManager.cs" />
+    <Compile Include="Managers\EmailManager.cs" />
     <Compile Include="Repositories\JobRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />

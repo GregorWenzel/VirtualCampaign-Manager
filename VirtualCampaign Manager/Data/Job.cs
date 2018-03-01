@@ -64,17 +64,13 @@ namespace VirtualCampaign_Manager.Data
         public JobErrorStatus ErrorStatus { get; set; }
 
         //number of frames for this job's product
-        private int frames;
-        public int Frames
-        {
-            get { return frames; }
-            set
-            {
-                frames = value;
-                RaisePropertyChangedEvent("Frames");
-            }
-        }
+        private int frameCount;
 
+        public int FrameCount
+        {
+            get { return OutFrame - InFrame + 1; }
+        }
+        
         //usually 0, can be >0 for a subclip
         public int InFrame { get; set; }
 
