@@ -121,6 +121,9 @@
     <Compile Include="Helpers\ProductionPathHelper.cs" />
     <Compile Include="Managers\MotifDownloadManager.cs" />
     <Compile Include="Managers\EmailManager.cs" />
+    <Compile Include="Parsers\JobParser.cs" />
+    <Compile Include="Parsers\JsonDeserializer.cs" />
+    <Compile Include="Parsers\ProductionParser.cs" />
     <Compile Include="Repositories\JobRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />

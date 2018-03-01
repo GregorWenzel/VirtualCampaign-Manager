@@ -80,6 +80,9 @@ namespace VirtualCampaign_Manager.Data
         //is the product associated with this clip an indicative or abdicative?
         public bool IsDicative { get; set; }
 
+        //is the job in the list the first clip to be rendered (as opposed to an indicative?)
+        public bool IsFirstRealClip { get; set; }
+
         //is this job rendering a product clip preview (i.e. without any motifs)
         public bool IsPreview { get; set; }
 
@@ -127,8 +130,7 @@ namespace VirtualCampaign_Manager.Data
                 JobRepository.UpdateJob(this, UpdateType.OutputExtension);
             }
         }
-
-
+        
         //position index of this job in the clip sequence
         public int Position { get; set; }
 
@@ -163,6 +165,46 @@ namespace VirtualCampaign_Manager.Data
 
         //ID of production this job belongs  to
         public int ProductionID { get { return Production.ID; } }
+
+        private ProductionStatus _productionStatus;
+        public ProductionStatus ProductionStatus
+        {
+            get { return _productionStatus; }
+            set
+            {
+                if (_productionStatus == value) return;
+
+                _productionStatus = value;
+                RaisePropertyChangedEvent("ProductionStatusString");
+            }
+        }
+
+        private ProductionErrorStatus _productionErrorStatus;
+        public ProductionErrorStatus ProductionErrorStatus
+        {
+            get { return _productionErrorStatus; }
+            set
+            {
+                _productionErrorStatus = value;
+                RaisePropertyChangedEvent("ProductionStatusString");
+            }
+        }
+
+        public string ProductionStatusString
+        {
+            get
+            {
+                if (Position == 1)
+                {
+                    if (Production.ErrorStatus == ProductionErrorStatus.PES_NONE)
+                        return GlobalValues.ProductionStatusString[Production.Status];
+                    else
+                        return "ERROR: " + GlobalValues.ProductionErrorStatusString[Production.ErrorStatus];
+                }
+                else
+                    return "";
+            }
+        }
 
         //this job's render progress
         public float Progress { get; set; }
@@ -210,75 +252,11 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        //Initialize job with its' production and data from database
-        public Job(Production Production, Dictionary<string, string> JobDict)
+        public JobWorker Worker;
+
+        public Job()
         {
-             //make sure this job won't process changes while being updated
-            this.IsActive = false;
 
-            this.Production = Production;
-            this.ID = Convert.ToInt32(JobDict["ID"]);
-            this.ErrorStatus = (JobErrorStatus) Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["ErrorCode"]));
-            this.Position = Convert.ToInt32(JobDict["Position"]);
-            this.ProductID = Convert.ToInt32(JobDict["ProductID"]);
-            this.Frames = Convert.ToInt32(JobDict["ProductFrames"]);
-            this.PreviewFrame = Convert.ToInt32(JobDict["ProductFrames"]);
-            this.AccountID = Convert.ToInt32(JobDict["AccountID"]);
-            this.IsDicative = (Convert.ToInt32(JobDict["IsDicative"]) == 1);
-
-            MotifList = new List<Motif>();
-
-            //required fields that are not provided by the database for indicatives and abdicatives
-            if (this.IsDicative == false)
-            {
-                MasterProductID = Convert.ToInt32(JobDict["MasterProductID"]);
-                InFrame = Convert.ToInt32(JobDict["InFrame"]);
-                OutFrame = Convert.ToInt32(JobDict["OutFrame"]);
-                CanReformat = (Convert.ToInt32(JobDict["CanReformat"]) == 1);
-
-                //product preview clips do not receive motifs
-                if (this.IsPreview == false)
-                {
-                    MotifList.Add(new Motif(Convert.ToInt32(JobDict["ContentID"]), Convert.ToString(JobDict["ContentType"]), Convert.ToInt32(JobDict["ContentPosition"]), Convert.ToString(JobDict["ContentExtension"]), Convert.ToString(JobDict["ContentLoaderName"]), Convert.ToString(JobDict["ContentText"])));
-                }
-            }
-            else
-            {
-                MasterProductID = -1;
-                InFrame = 0;
-                OutFrame = 0;
-                Status = JobStatus.JS_DONE;
-                return;
-            }
-
-            try
-            //check if this job already has a render id.
-            {
-                RenderJobID = Convert.ToString(JobDict["RenderID"]);
-            }
-            catch
-            {
-                RenderJobID = "";
-            }
-
-            this.Status = AdjustJobStatus((JobStatus) Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["Status"])));
-
-            //initialize worker
-            this.worker = new JobWorker(this);
-
-            //reactivate processing loop
-            this.IsActive = true;
-        }
-
-        //Only accept new job status as such if it isn't currently being rendered and a render id has been saved before,
-        //otherwise: set job to JS_GET_JOB_ID in order to read job id from deadline
-        //and continue from there
-        private JobStatus AdjustJobStatus(JobStatus currentStatus)
-        {
-            if (currentStatus == JobStatus.JS_RENDER_JOB && RenderJobID.Length == 0)
-                return JobStatus.JS_GET_JOB_ID;
-            else
-                return currentStatus;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Parsers;
 
 namespace VirtualCampaign_Manager.Repositories
 {
@@ -19,6 +20,36 @@ namespace VirtualCampaign_Manager.Repositories
 
     public static class JobRepository
     {
+        public static List<Job> ReadJobs(Production Production)
+        {
+            List<Job> result = new List<Job>();
+
+            Dictionary<string, string> param = new Dictionary<string, string>
+            {   { "productionID", Production.ID.ToString() },
+                { "is_preview", Convert.ToInt32(Production.IsPreview).ToString() }
+            };
+
+            string productionListString = RemoteDataManager.ExecuteRequest("getJobsByProductionID", param);
+            List<Dictionary<string, string>> jobDict = JsonDeserializer.Deserialize(productionListString);
+            
+            if (jobDict.Count > 0)
+            {
+                result = JobParser.ParseList(Production, jobDict);
+            }
+                        
+            result = new List<Job>(result.OrderBy(item => item.Position));
+
+            //find first clip to be rendered
+            foreach (Job job in result)
+                if (!job.IsDicative)
+                {
+                    job.IsFirstRealClip = true;
+                    break;
+                }
+
+            return result;
+        }
+
         public static void UpdateJob(Job Job, UpdateType Type)
         {
             if (!Job.CanUpdateRemoteData)

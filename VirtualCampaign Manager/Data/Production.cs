@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Managers;
+using VirtualCampaign_Manager.Repositories;
+using VirtualCampaign_Manager.Workers;
 
 namespace VirtualCampaign_Manager.Data
 {
@@ -135,21 +137,21 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        private ProductionStatus _status;
+        private ProductionStatus status;
         public ProductionStatus Status
         {
-            get { return _status; }
+            get { return status; }
             set
             {
                 this.UpdateDate = DateTime.Now;
 
-                if ((int) (_status) == (int) (value)) return;
+                if ((int) (status) == (int) (value)) return;
 
-                Console.WriteLine("Old Status = " + _status + ", new status = " + value);
+                Console.WriteLine("Old Status = " + status + ", new status = " + value);
 
-                if (_status != ProductionStatus.PS_RENDER_JOBS)
+                if (status != ProductionStatus.PS_RENDER_JOBS)
                 {
-                    if (value == ProductionStatus.PS_RENDER_JOBS && _errorCode == ProductionErrorStatus.PES_NONE)
+                    if (value == ProductionStatus.PS_RENDER_JOBS && errorStatus == ProductionErrorStatus.PES_NONE)
                         GlobalValues.RenderQueueCount += 1;
                 }
                 else
@@ -158,49 +160,44 @@ namespace VirtualCampaign_Manager.Data
                         GlobalValues.RenderQueueCount -= 1;
                 }
 
-                _status = value;
-                if (JobList.Count > 0)
-                {
-                    JobList[0].ProductionStatus = _status;
-                }
+                status = value;
 
                 if (!CanUpdateRemoteData)
                     return;
 
                 UpdateRemoteValue(UpdateType.Status);
                 DoIterate();
-
             }
         }
 
-        private ProductionErrorStatus _errorCode;
-        public ProductionErrorStatus ErrorCode
+        private ProductionErrorStatus errorStatus;
+        public ProductionErrorStatus ErrorStatus
         {
-            get { return _errorCode; }
+            get { return errorStatus; }
             set
             {
                 this.UpdateDate = DateTime.Now;
 
-                if (_errorCode == value) return;
+                if (errorStatus == value) return;
 
                 //ERROR present
-                if (_errorCode != ProductionErrorStatus.PES_NONE)
+                if (errorStatus != ProductionErrorStatus.PES_NONE)
                 {
                     //ERROR REMOVED
-                    if (value == ProductionErrorStatus.PES_NONE && _status == ProductionStatus.PS_RENDER_JOBS)
+                    if (value == ProductionErrorStatus.PES_NONE && status == ProductionStatus.PS_RENDER_JOBS)
                         GlobalValues.RenderQueueCount += 1;
                 }
                 //NO ERROR PRESENT
                 else
                 {
                     //ERROR OCCURED
-                    if (value != ProductionErrorStatus.PES_NONE && _status == ProductionStatus.PS_RENDER_JOBS)
+                    if (value != ProductionErrorStatus.PES_NONE && status == ProductionStatus.PS_RENDER_JOBS)
                         GlobalValues.RenderQueueCount -= 1;
                 }
 
-                _errorCode = value;
+                errorStatus = value;
 
-                JobList[0].ProductionErrorStatus = _errorCode;
+                JobList[0].ProductionErrorStatus = errorStatus;
 
                 if (!CanUpdateRemoteData)
                     return;
@@ -226,10 +223,6 @@ namespace VirtualCampaign_Manager.Data
         public int FilmID
         {
             get { return film.ID; }
-            set
-            {
-                film = new Film(value, FilmCodes);
-            }
         }
 
         private int _account_id;
@@ -248,20 +241,20 @@ namespace VirtualCampaign_Manager.Data
             set { _audio_id = value; }
         }
 
-        private int _indicative;
+        private int indicativeID;
 
-        public int Indicative
+        public int IndicativeID
         {
-            get { return _indicative; }
-            set { _indicative = value; }
+            get { return indicativeID; }
+            set { indicativeID = value; }
         }
 
-        private int _abdicative;
+        private int abdicativeID;
 
-        public int Abdicative
+        public int AbdicativeID
         {
-            get { return _abdicative; }
-            set { _abdicative = value; }
+            get { return abdicativeID; }
+            set { abdicativeID = value; }
         }
 
         private string _filmCodes;
@@ -340,88 +333,20 @@ namespace VirtualCampaign_Manager.Data
 
         private bool isPreview;
 
-        public bool IsPreview { get; set; }        
+        public bool IsPreview { get; set; }
+
+        private ProductionWorker worker;
 
         //empty constructor
         public Production()
         {
-        }
-
-        //constructor with data
-        public Production(Dictionary<string, string> productionDict)
-        {
-            UpdateDate = new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
-
-            UInt64 updateInt = 0;
-
-            try
-            {
-                if (productionDict["UpdateTime"] != "")
-                    updateInt = Convert.ToUInt64(Math.Abs(Math.Max(UInt64.MaxValue - 1, Math.Min(0, Convert.ToDouble(productionDict["UpdateTime"])))));
-                else
-                    updateInt = Convert.ToUInt64(Math.Abs(Math.Max(UInt64.MaxValue - 1, Math.Min(0, Convert.ToDouble(productionDict["CreationTime"])))));
-            }
-            catch
-            {
-
-            }
-
-            creationTime = Convert.ToString(productionDict["CreationTime"]);
-
-            CodecInfoList = new List<CodecInfo>();
-
-            string[] formatBuffer = productionDict["Formats"].Split(new char[] { ',' });
-
-            foreach (string format in formatBuffer)
-            {
-                int formatId = Convert.ToInt32(format);
-                CodecInfo codecInfo = new CodecInfo();
-                codecInfo.Codec = SettingManager.Instance.CodecDict[formatId];
-                CodecInfoList.Add(codecInfo);
-            }
-
-            UpdateDate = UpdateDate.AddSeconds(updateInt + 1);
-            HasSpecialIntroMusic = Convert.ToString(productionDict["SpecialIntroMusic"]) == "1";
-            ClipFrames = Convert.ToInt32(productionDict["ClipFrameCount"]);
-            //IndicativeFrames = Convert.ToInt32(_ProductionRow["IndicativeFrameCount"]);
-            //AbdicativeFrames = Convert.ToInt32(_ProductionRow["AbdicativeFrameCount"]);
-            IsPreview = Convert.ToInt32(productionDict["IsPreview"]) == 1;
-            ID = Convert.ToInt32(productionDict["ID"]);
-            Priority = Convert.ToInt32(productionDict["Priority"]);
-            Email = Convert.ToString(productionDict["Email"]);
-            JobList = ReadJobs();
-            FindFirstRealClip();
-            DatabaseManager.Instance.CanUpdate = false;
-            _status = (ProductionStatus) Enum.ToObject(typeof(ProductionStatus), Convert.ToInt32(productionDict["Status"]));
-            _errorCode = (ProductionErrorStatus) Enum.ToObject(typeof(ProductionErrorStatus), Convert.ToInt32(productionDict["ErrorCode"]));
-            //_filmCodes = Convert.ToString(productionDict["FilmCodes"]);
-            FilmID = Convert.ToInt32(productionDict["FilmID"]);
-            _film.CodecSizes = this.CodecInfoList;
-            _film.UrlHash = Convert.ToString(productionDict["FilmUrlHash"]);
-            _account_id = Convert.ToInt32(productionDict["AccountID"]);
-            _indicative = Convert.ToInt32(productionDict["IndicativeID"]);
-            _abdicative = Convert.ToInt32(productionDict["AbdicativeID"]);
-            _audio_id = Convert.ToInt32(productionDict["AudioID"]);
-            _username = Convert.ToString(productionDict["UserName"]);
-            _name = Convert.ToString(productionDict["Name"]);
-            CanUpdateRemoteData = true;
-            CheckStatus();
+            Film = new Film();
         }
 
         public void SetPriority()
         {
             if (Priority < 0)
-                Priority = GlobalValues.Instance.GetNextRenderQueueSlot();
-        }
-
-        private void FindFirstRealClip()
-        {
-            foreach (Job job in JobList)
-                if (!job.IsDicative)
-                {
-                    job.IsFirstRealClip = true;
-                    return;
-                }
+                Priority = GlobalValues.GetNextRenderQueueSlot();
         }
 
         public void CheckStatus()
@@ -437,6 +362,16 @@ namespace VirtualCampaign_Manager.Data
                 Status = ProductionStatus.PS_MUX_AUDIO;
         }
 
+        public void SetStatus(ProductionStatus Satus)
+        {
+            status = Status;
+        }
+
+        public void SetErrorStatus(ProductionErrorStatus ErrorStatus)
+        {
+            errorStatus = ErrorStatus;
+        }
+
         public void Update(Production newProduction)
         {
             CanUpdateRemoteData = false;
@@ -446,7 +381,7 @@ namespace VirtualCampaign_Manager.Data
                 JobList[i].Update(newProduction.JobList[i]);
 
             Status = newProduction.Status;
-            ErrorCode = newProduction.ErrorCode;
+            ErrorStatus = newProduction.ErrorStatus;
             if (newProduction.Priority >= 0)
                 Priority = newProduction.Priority;
             /*
@@ -500,13 +435,13 @@ namespace VirtualCampaign_Manager.Data
 
         private void DoIterate()
         {
-            if (ErrorCode == ProductionErrorStatus.PES_UPLOAD)
+            if (ErrorStatus == ProductionErrorStatus.PES_UPLOAD)
             {
-                ErrorCode = ProductionErrorStatus.PES_NONE;
+                ErrorStatus = ProductionErrorStatus.PES_NONE;
                 Status = ProductionStatus.PS_UPLOAD_FILMS;
             }
 
-            if (!IsActive || Status == ProductionStatus.PS_DONE || ErrorCode != ProductionErrorStatus.PES_NONE)
+            if (!IsActive || Status == ProductionStatus.PS_DONE || ErrorStatus != ProductionErrorStatus.PES_NONE)
                 return;
 
             switch (Status)
@@ -542,94 +477,6 @@ namespace VirtualCampaign_Manager.Data
                     UpdateHistoryTable();
                     break;
             }
-        }
-
-        private ObservableCollection<Job> ReadJobs()
-        {
-            ObservableCollection<Job> result = new ObservableCollection<Job>();
-
-            Dictionary<string, string> param = new Dictionary<string, string>
-            {   { "productionID", this.ID.ToString() },
-                { "is_preview", Convert.ToInt32(this.IsPreview).ToString() }
-            };
-
-            string productionListString = JSONRemoteManager.Instance.ExecuteRequest("getJobsByProductionID", param);
-            List<Dictionary<string, string>> jobDict = JSONDeserializer.Deserialize(productionListString);
-
-            //XmlDocument productionList = RemoteManager.Instance.ExecuteRequest("getJobsByProductionID", param);
-            //DataSet data = new DataSet();
-
-            /*
-            using (XmlReader reader = new XmlNodeReader(productionList))
-            {
-                data.ReadXml(reader);
-                reader.Close();
-            }
-            */
-
-            if (jobDict.Count > 0)
-            {
-                result = ParseJobDictList(jobDict);
-            }
-
-            /*
-            if (data.Tables.Count > 0)
-            {
-                result = ParseJobs(data.Tables[0].Rows);
-            }
-            */
-            result = new ObservableCollection<Job>(result.OrderBy(item => item.Position));
-            return result;
-        }
-
-        private ObservableCollection<Job> ParseJobs(DataRowCollection JobRows)
-        {
-            ObservableCollection<Job> result = new ObservableCollection<Job>();
-
-            foreach (DataRow JobRow in JobRows)
-            {
-                Job newJob = new Job(this, JobRow);
-
-                Job oldJob = HasSameID(result, newJob.ID);
-
-                if (oldJob != null)
-                {
-                    oldJob.MotifList.Add(newJob.MotifList[0]);
-                }
-                else
-                    result.Add(newJob);
-            }
-            return result;
-        }
-
-        private ObservableCollection<Job> ParseJobDictList(List<Dictionary<string, string>> jobDictList)
-        {
-            ObservableCollection<Job> result = new ObservableCollection<Job>();
-
-            foreach (Dictionary<string, string> jobDict in jobDictList)
-            {
-                Job newJob = new Job(this, jobDict);
-
-                Job oldJob = HasSameID(result, newJob.ID);
-
-                if (oldJob != null)
-                {
-                    oldJob.MotifList.Add(newJob.MotifList[0]);
-                }
-                else
-                    result.Add(newJob);
-            }
-            return result;
-        }
-
-
-        private Job HasSameID(ObservableCollection<Job> list, int id)
-        {
-            foreach (Job listObject in list)
-                if (listObject.ID == id)
-                    return listObject;
-
-            return null;
         }
 
         private void ExecuteJobs()
@@ -695,7 +542,7 @@ namespace VirtualCampaign_Manager.Data
             else
             {
                 if (uploadCounter >= 3)
-                    ErrorCode = ProductionErrorStatus.PES_UPLOAD;
+                    ErrorStatus = ProductionErrorStatus.PES_UPLOAD;
                 else
                     UploadFilms();
             }
@@ -725,7 +572,7 @@ namespace VirtualCampaign_Manager.Data
             }
 
             uploadCounter = 0;
-            this.ErrorCode = ProductionErrorStatus.PES_NONE;
+            this.ErrorStatus = ProductionErrorStatus.PES_NONE;
             this.Status = ProductionStatus.PS_READY;
 
             this.Execute();
@@ -811,7 +658,7 @@ namespace VirtualCampaign_Manager.Data
                     JSONRemoteManager.Instance.UpdateProduction(param);
                     break;
                 case UpdateType.ErrorCode:
-                    param["error_code"] = ((int) ErrorCode).ToString();
+                    param["error_code"] = ((int) ErrorStatus).ToString();
                     JSONRemoteManager.Instance.UpdateProduction(param);
                     break;
                 case UpdateType.Film:

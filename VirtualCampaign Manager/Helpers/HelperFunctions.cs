@@ -15,15 +15,19 @@ namespace VirtualCampaign_Manager.Helpers
             UInt64 updateInt = 0;
 
             if (StringToParse != null || StringToParse != "")
-            { 
-            try
             {
-                updateInt = Convert.ToUInt64(Math.Abs(Math.Max(UInt64.MaxValue - 1, Math.Min(0, Convert.ToDouble(productionDict["CreationTime"])))));
-            }
-            catch
-            {
+                try
+                {
+                    updateInt = Convert.ToUInt64(Math.Abs(Math.Max(UInt64.MaxValue - 1, Math.Min(0, Convert.ToDouble(StringToParse)))));
+                }
+                catch
+                {
 
+                }
             }
+
+            result = result.AddSeconds(updateInt + 1);
+            return result;
         }
     }
 }

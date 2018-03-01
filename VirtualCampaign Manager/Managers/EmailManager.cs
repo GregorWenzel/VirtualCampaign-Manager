@@ -199,7 +199,7 @@ namespace VirtualCampaign_Manager.Managers
             DateTime dt = DateTime.Now;
             string result = "Production ID: " + production.ID + "\r\n";
             result += "Production Name: " + production.Name + "\r\n";
-            result += "Error Code: " + production.ErrorCode + "\r\n";
+            result += "Error Code: " + production.ErrorStatus + "\r\n";
             result += "User ID: " + production.AccountID + "\r\n";
             result += "User Name: " + production.Username + "\r\n";
             result += "Error Date: " + dt.ToLongDateString() + "\r\n";

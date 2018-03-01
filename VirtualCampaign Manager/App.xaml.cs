@@ -14,7 +14,8 @@ namespace VirtualCampaign_Manager
     {
         public App()
         {
-           this.InitializeComponent();
+            this.InitializeComponent();
+            GlobalValues.ReadOutputFormats();
         }
     }
 }
