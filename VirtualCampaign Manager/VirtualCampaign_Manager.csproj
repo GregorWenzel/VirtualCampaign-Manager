@@ -119,6 +119,8 @@
     <Compile Include="Helpers\HelperFunctions.cs" />
     <Compile Include="Helpers\JobPathHelper.cs" />
     <Compile Include="Helpers\ProductionPathHelper.cs" />
+    <Compile Include="Loaders\TransferManager.cs" />
+    <Compile Include="Loaders\TransferPacket.cs" />
     <Compile Include="Managers\MotifDownloadManager.cs" />
     <Compile Include="Managers\EmailManager.cs" />
     <Compile Include="Parsers\JobParser.cs" />
@@ -128,10 +130,10 @@
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Workers\DirectoryWorker.cs" />
-    <Compile Include="Loaders\MotifDownloader.cs" />
     <Compile Include="Workers\JobRenderProgressMonitor.cs" />
     <Compile Include="Workers\JobWorker.cs" />
     <Compile Include="Workers\ProductionWorker.cs" />
+    <Compile Include="Workers\WorkerBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -5,64 +5,50 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Loaders;
 
 namespace VirtualCampaign_Manager.Workers
 {
     public class JobWorker
     {
         //Event called after job worker has finished all job-related tasks
-        public event EventHandler FinishedEvent;
+        public EventHandler<EventArgs> SuccessEvent;
+
+        //Event called after job worker has finished all job-related tasks
+        public EventHandler<EventArgs> FailureEvent;
+
+        public int MotifTransferCounter;
 
         //current job
         private Job job;
 
         private JobRenderProgressMonitor renderProgressMonitor;
 
-        //timer for processing loop
-        private Timer timer;
-
         public JobWorker(Job Job)
         {
             this.job = Job;
-
-            this.timer = new Timer(Settings.WorkerProcessInterval);
-            this.timer.Elapsed += Iterate;
             this.renderProgressMonitor = new JobRenderProgressMonitor(this.job);
         }
 
-        private void Iterate(object sender, ElapsedEventArgs e)
+        public void Iterate()
         {
             if (job.IsActive == false || job.Status == JobStatus.JS_DONE || job.ErrorStatus != JobErrorStatus.JES_NONE)
                 return;
 
-            bool success;
+            bool success = false;
 
             switch (job.Status)
             {
                 case JobStatus.JS_IDLE:
                     job.Status = JobStatus.JS_CREATE_DIRECTORIES;
-                    break;
+                    goto case JobStatus.JS_CREATE_DIRECTORIES;                     
                 case JobStatus.JS_CREATE_DIRECTORIES:
-                    success = DirectoryWorker.CreateJobDirectories(job);
-                    if (success == true)
-                    {
-                        job.Status = JobStatus.JS_PREPARE_RESOURCES;
-                    }
-                    else
-                    {
-                        job.ErrorStatus = JobErrorStatus.JES_CREATE_DIRECTORIES;
-                    }
+                    DirectoryWorker.SuccessEvent += OnCreateDirectorySuccess;
+                    DirectoryWorker.FailureEvent += OnCreateDirectoryFailure;
+                    DirectoryWorker.CreateJobDirectories(job);
                     break;
                 case JobStatus.JS_PREPARE_RESOURCES:
-                    success = DownloadWorker.DownloadResources(job);
-                    if (success == true)
-                    {
-                        job.Status = JobStatus.JS_CREATE_RENDERFILES;
-                    }
-                    else
-                    {
-                        job.ErrorStatus = JobErrorStatus.JES_DOWNLOAD_MOTIFS;
-                    }
+                    DownloadMotifs();
                     break;
                 case JobStatus.JS_CREATE_RENDERFILES:
                     PrepareRenderfiles();
@@ -110,20 +96,69 @@ namespace VirtualCampaign_Manager.Workers
                     break;
             }
         }
-
-        public void Continue()
+     
+        private void DownloadMotifs()
         {
-            timer.Start();
+            MotifTransferCounter = 0;
+
+            foreach (Motif motif in job.MotifList)
+            {
+                TransferPacket motifTransferPacket = new TransferPacket(job, motif);
+                motifTransferPacket.FailureEvent += OnMotifTransferFailure;
+                motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
+                TransferManager.AddTransferPacket(motifTransferPacket);
+            }
+        }
+        
+        private void OnCreateDirectorySuccess(object obj, EventArgs ea)
+        {
+            DirectoryWorker.SuccessEvent -= OnCreateDirectorySuccess;
+            DirectoryWorker.FailureEvent -= OnCreateDirectoryFailure;
+            job.Status = JobStatus.JS_PREPARE_RESOURCES;
+            Iterate();
         }
 
-        public void Pause()
+        private void OnCreateDirectoryFailure(object obj, EventArgs ea)
         {
-            timer.Stop();
+            DirectoryWorker.SuccessEvent -= OnCreateDirectorySuccess;
+            DirectoryWorker.FailureEvent -= OnCreateDirectoryFailure;
+            job.ErrorStatus = JobErrorStatus.JES_CREATE_DIRECTORIES;
+            FailureEvent?.Invoke(this, ea);
         }
 
-        protected virtual void OnFinishedEvent(EventArgs ea)
+        private void OnMotifTransferSuccess(object obj, EventArgs ea)
         {
-            FinishedEvent?.Invoke(this, ea);
+            TransferPacket motifTransferPacket = obj as TransferPacket;
+            motifTransferPacket.FailureEvent -= OnMotifTransferFailure;
+            motifTransferPacket.SuccessEvent -= OnMotifTransferSuccess;
+
+            MotifTransferCounter += 1;
+            if (MotifTransferCounter == job.MotifList.Count)
+            {
+                job.Status = JobStatus.JS_CREATE_RENDERFILES;
+                Iterate();
+            }
         }
+
+        private void OnMotifTransferFailure(object obj, EventArgs ea)
+        {
+            TransferPacket motifTransferPacket = obj as TransferPacket;
+            motifTransferPacket.FailureEvent -= OnMotifTransferFailure;
+            motifTransferPacket.SuccessEvent -= OnMotifTransferSuccess;
+
+            job.ErrorStatus = JobErrorStatus.JES_DOWNLOAD_MOTIFS;
+            FireFailureEvent();
+        }
+
+        private void FireSuccessEvent()
+        {
+            SuccessEvent?.Invoke(null, new EventArgs());
+        }
+
+        private void FireFailureEvent()
+        {
+            FailureEvent?.Invoke(null, new EventArgs());
+        }
+
     }
 }

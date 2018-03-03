@@ -110,9 +110,7 @@ namespace VirtualCampaign_Manager.Workers
                     continue;
                 }
                 thisJob.IsActive = true;
-                Thread jobThread = new Thread(new ThreadStart(thisJob.Execute));
-                Console.WriteLine("NEW THREAD FOR JOB ID " + thisJob.ID + ": " + jobThread.ManagedThreadId);
-                jobThread.Start();
+                thisJob.StartWorker();
             }
         }
     }

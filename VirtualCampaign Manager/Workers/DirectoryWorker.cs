@@ -10,37 +10,61 @@ namespace VirtualCampaign_Manager.Workers
 {
     public static class DirectoryWorker
     {
-        public static bool CreateJobDirectories(Job Job)
+        //Event called after job worker has finished all job-related tasks
+        public static EventHandler<EventArgs> SuccessEvent;
+
+        //Event called after job worker has finished all job-related tasks
+        public static EventHandler<EventArgs> FailureEvent;
+
+        public static void CreateJobDirectories(Job Job)
         {
             try
             {
                 Directory.CreateDirectory(Job.JobDirectory);
                 Directory.CreateDirectory(Path.Combine(Job.JobDirectory, "output"));
-                return true;
+                FireSuccessEvent();
             }
             catch
             {
-                return false;
+                FireFailureEvent();
             }
         }
 
-        public static bool CreateProductionDirectories(Production Production)
+        public static void CreateProductionDirectories(Production Production)
         {
             try
             { 
                 Directory.CreateDirectory(Production.ProductionDirectory);
                 Directory.CreateDirectory(Path.Combine(Production.ProductionDirectory, "motifs"));
-                return true;
+                FireSuccessEvent();
             }
             catch
             {
-                return false;
+                FireFailureEvent();
             }
         }
 
         public static void DeleteProductionDirectories(Production Production)
         {
             Directory.Delete(Production.ProductionDirectory);
+        }
+
+        private static void FireSuccessEvent()
+        {
+            EventHandler<EventArgs> successEvent = SuccessEvent;
+            if (successEvent != null)
+            {
+                successEvent(null, new EventArgs());
+            }
+        }
+
+        private static void FireFailureEvent()
+        {
+            EventHandler<EventArgs> failureEvent = FailureEvent;
+            if (failureEvent != null)
+            {
+                failureEvent(null, new EventArgs());
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Workers;
@@ -252,7 +253,19 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        public JobWorker Worker;
+        private Thread workerThread;
+
+        public void InitializeWorker()
+        {
+            worker = new JobWorker(this);
+        }
+
+        public void StartWorker()
+        {
+            workerThread = new Thread(new ThreadStart(worker.Iterate));
+            Console.WriteLine("NEW THREAD FOR JOB ID " + this.ID + ": " + workerThread.ManagedThreadId);
+            workerThread.Start();
+        }
 
         public Job()
         {
