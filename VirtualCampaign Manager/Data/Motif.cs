@@ -14,6 +14,7 @@ namespace VirtualCampaign_Manager.Data
         public string LoaderName { get; set; }
         public string Text { get; set; }
         public int Frames { get; set; }
+        public bool IsAvailable { get; set; } = false;
 
         public Motif(int ID, string Type, int Position, string Extension, string LoaderName, string Text)
         {

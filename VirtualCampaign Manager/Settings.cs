@@ -13,12 +13,12 @@ namespace VirtualCampaign_Manager
         //manual definitions
         //Version
         public static string Version = "4.0b";
-        //time interval for process timers (milliseconds)
-        public static int WorkerProcessInterval = 1000;
-        //time interval for downloaders
-        public static int DownloadInterval = 1000;
+        //interval for polling new productions in milliseconds
+        public static int MainUpdateInterval = 2000;
         //max number of parallel downloads
         public static int MaxDownloadCount = 3;
+        //max number of failed transfers before giving up
+        public static int MaxTransferErrorCount = 3;
 
         //Paths to local file system     
         //Path to product clips

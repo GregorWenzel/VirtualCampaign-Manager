@@ -306,15 +306,6 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-
-        public string SourceProductionDirectory
-        {
-            get
-            {
-                return SettingManager.Instance.TempSourceProductionDirectory(this.ID);
-            }
-        }
-
         public int ClipDurationInSeconds
         {
             get
@@ -372,43 +363,14 @@ namespace VirtualCampaign_Manager.Data
             errorStatus = ErrorStatus;
         }
 
-        public void Update(Production newProduction)
-        {
-            CanUpdateRemoteData = false;
-            UpdateDate = newProduction.UpdateDate;
-
-            for (int i = 0; i < newProduction.JobList.Count; i++)
-                JobList[i].Update(newProduction.JobList[i]);
-
-            Status = newProduction.Status;
-            ErrorStatus = newProduction.ErrorStatus;
-            if (newProduction.Priority >= 0)
-                Priority = newProduction.Priority;
-            /*
-            _filmCodes = newProduction.FilmCodes;
-            FilmID = newProduction.FilmID;
-            _account_id = newProduction.AccountID;
-            _indicative = newProduction.Indicative;
-            _abdicative = newProduction.Abdicative;
-            _audio_id = newProduction.AudioID;
-            _username = newProduction.Username;
-            _name = newProduction.Name;
-            */
-            CanUpdateRemoteData = true;
-            CheckStatus();
-        }
-
-        public void Execute()
-        {
-            IsActive = true;
-            Iterate();
-        }
-
         public void Activate()
         {
             IsActive = true;
             foreach (Job job in JobList)
+            {
                 job.IsActive = true;
+                job.StartWorker();
+            }
         }
 
         public void Suspend()
@@ -534,7 +496,7 @@ namespace VirtualCampaign_Manager.Data
                 UpdateRemoteValue(UpdateType.Film);
 
                 if (this.Email.Length > 0)
-                    EmailManager.Instance.SendMail(this);
+                    EmailManager.SendMail(this);
 
                 CleanUp();
                 Status = ProductionStatus.PS_UPDATE_HISTORY;
@@ -618,7 +580,7 @@ namespace VirtualCampaign_Manager.Data
             param["AccountID"] = Convert.ToString(this.AccountID);
             param["FilmName"] = this.Name;
 
-            JSONRemoteManager.Instance.UpdateHistory(param);
+            RemoteDataManager.UpdateHistory(param);
             this.Status = ProductionStatus.PS_DONE;
 
             RemoveMyself();
@@ -631,46 +593,8 @@ namespace VirtualCampaign_Manager.Data
 
         public void Delete()
         {
-            Dictionary<string, string> param = new Dictionary<string, string>
-            {   { "productionID", this.ID.ToString() }
-            };
-
-            JSONRemoteManager.Instance.DeleteProduction(param);
+             ProductionRepository.DeleteProduction(this);
             this.OnFinishedEvent(new EventArgs());
-        }
-
-        private void UpdateRemoteValue(UpdateType Type)
-        {
-            if (!CanUpdateRemoteData) return;
-
-            DateTime temp = new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
-            TimeSpan span = (this.UpdateDate.ToLocalTime() - temp);
-
-            Dictionary<string, string> param = new Dictionary<string, string>
-            {   { "productionID", this.ID.ToString() },
-                { "updateTime", Convert.ToInt64(span.TotalSeconds).ToString() }
-            };
-
-            switch (Type)
-            {
-                case UpdateType.Status:
-                    param["status"] = ((int) Status).ToString();
-                    JSONRemoteManager.Instance.UpdateProduction(param);
-                    break;
-                case UpdateType.ErrorCode:
-                    param["error_code"] = ((int) ErrorStatus).ToString();
-                    JSONRemoteManager.Instance.UpdateProduction(param);
-                    break;
-                case UpdateType.Film:
-                    param["duration"] = (IndicativeFrames + AbdicativeFrames + ClipFrames).ToString();
-                    param["size"] = sizeString;
-                    JSONRemoteManager.Instance.UpdateFilm(param);
-                    break;
-                case UpdateType.Priority:
-                    param["priority"] = Priority.ToString();
-                    JSONRemoteManager.Instance.UpdateProduction(param);
-                    break;
-            }
         }
     }
 }

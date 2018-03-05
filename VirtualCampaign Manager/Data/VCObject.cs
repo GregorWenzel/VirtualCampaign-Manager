@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace VirtualCampaign_Manager.Data
 {
-
     public class VCObject
     {
         private int id;

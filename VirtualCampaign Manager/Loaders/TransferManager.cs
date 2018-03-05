@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Workers;
 
 namespace VirtualCampaign_Manager.Loaders
@@ -63,12 +64,20 @@ namespace VirtualCampaign_Manager.Loaders
                 if (e.Error == null)
                 {
                     thisPacket.IsSuccessful = true;
+                    if (thisPacket.Parent is Motif)
+                    {
+                        (thisPacket.Parent as Motif).IsAvailable = true;
+                    }
                     thisPacket.FireSuccessEvent();
                 }
                 else
                 {
-                    thisPacket.IsSuccessful = false;
-                    thisPacket.FireFailureEvent();
+                    thisPacket.TransferErrorCounter += 1;
+                    if (thisPacket.TransferErrorCounter > Settings.MaxTransferErrorCount)
+                    {
+                        thisPacket.IsSuccessful = false;
+                        thisPacket.FireFailureEvent();
+                    }
                 }
             }
             Continue();

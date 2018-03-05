@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +13,18 @@ namespace VirtualCampaign_Manager
 {
     public static class GlobalValues
     {
+        private static ObservableCollection<Production> productionList;
+
+        public static ObservableCollection<Production> ProductionList
+        {
+            get { return productionList; }
+            set {
+                if (value == productionList) return;
+
+                productionList = value;
+            }
+        }
+
         public static Dictionary<ProductionStatus, string> ProductionStatusString = new Dictionary<ProductionStatus, string>()
         {
             {ProductionStatus.PS_ENCODE_FILMS, "Encoding Films"},
@@ -99,5 +113,7 @@ namespace VirtualCampaign_Manager
 
             return RenderQueueCount;
         }
+
+
     }
 }

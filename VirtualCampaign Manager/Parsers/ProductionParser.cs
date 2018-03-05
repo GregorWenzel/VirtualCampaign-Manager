@@ -10,6 +10,22 @@ namespace VirtualCampaign_Manager.Parsers
 {
     public static class ProductionParser
     {
+        public static List<Production> ParseList(List<Dictionary<string, string>> productionDict)
+        {
+            List<Production> result = new List<Production>();
+
+            foreach (Dictionary<string,string> production in productionDict)
+            {
+                Production newProduction = Parse(production);
+                if (result.Any(item => item.ID == newProduction.ID) == false)
+                {
+                    result.Add(newProduction);
+                }
+            }
+
+            return result;
+        }
+
         public static Production Parse(Dictionary<string, string> productionDict)
         {
             Production result = new Production();
@@ -48,7 +64,7 @@ namespace VirtualCampaign_Manager.Parsers
             result.SetErrorStatus((ProductionErrorStatus)Enum.ToObject(typeof(ProductionErrorStatus), Convert.ToInt32(productionDict["ErrorCode"])));
             result.JobList = JobRepository.ReadJobs(result);
 
-            CheckStatus();
+            return result;
         }
     }
 }

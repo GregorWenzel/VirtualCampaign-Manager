@@ -121,12 +121,17 @@
     <Compile Include="Helpers\ProductionPathHelper.cs" />
     <Compile Include="Loaders\TransferManager.cs" />
     <Compile Include="Loaders\TransferPacket.cs" />
-    <Compile Include="Managers\MotifDownloadManager.cs" />
+    <Compile Include="MainHub\MainHubViewModel.cs" />
+    <Compile Include="MainHub\MainHubView.xaml.cs">
+      <DependentUpon>MainHubView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Managers\EmailManager.cs" />
     <Compile Include="Parsers\JobParser.cs" />
     <Compile Include="Parsers\JsonDeserializer.cs" />
     <Compile Include="Parsers\ProductionParser.cs" />
+    <Compile Include="Repositories\FilmRepository.cs" />
     <Compile Include="Repositories\JobRepository.cs" />
+    <Compile Include="Repositories\ProductionRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Workers\DirectoryWorker.cs" />
@@ -134,6 +139,10 @@
     <Compile Include="Workers\JobWorker.cs" />
     <Compile Include="Workers\ProductionWorker.cs" />
     <Compile Include="Workers\WorkerBase.cs" />
+    <Page Include="MainHub\MainHubView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

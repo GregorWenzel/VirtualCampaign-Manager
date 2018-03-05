@@ -30,6 +30,7 @@ namespace VirtualCampaign_Manager.Loaders
         public bool IsSuccessful { get; set; } = false;
         public bool HasError { get; set; } = false;
         public Exception TransferExcetpion { get; set; }
+        public int TransferErrorCounter { get; set; } = 0;
 
         //transfers a motif from remote user account to local filesystem
         public TransferPacket(Job Job, Motif Motif)
@@ -52,7 +53,7 @@ namespace VirtualCampaign_Manager.Loaders
         }
 
         //transfers a film from local file system to remote user account
-        public TransferPacket(Film Film, FilmOutputFormat OutputFormat)
+        public TransferPacket(Film Film, int AccountID, FilmOutputFormat OutputFormat)
         {
             Parent = Film;
             SourcePath = "";

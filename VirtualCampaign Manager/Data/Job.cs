@@ -50,6 +50,8 @@ namespace VirtualCampaign_Manager.Data
 
     public class Job : VCObject
     {
+        private static readonly Object obj = new Object();
+
         //PUBLIC fields
         //ID of the account that issued this job
         public int AccountID { get; set; }
@@ -99,18 +101,7 @@ namespace VirtualCampaign_Manager.Data
         {
             get
             {
-                return motifsAvailableCount;
-            }
-            set
-            {
-                if (value == motifsAvailableCount) return;
-
-                motifsAvailableCount = value;
-                if (motifsAvailableCount >= MotifList.Count)
-                {
-                    this.Status = JobStatus.JS_CREATE_RENDERFILES;
-                    this.worker.Continue();
-                }
+                return MotifList.Count(item => item.IsAvailable == true);
             }
         }
 
@@ -229,7 +220,10 @@ namespace VirtualCampaign_Manager.Data
                 if (value == status) return;
 
                 status = value;
-                JobRepository.UpdateJob(this, UpdateType.Status);
+                if (IsActive == true)
+                {
+                    JobRepository.UpdateJob(this, UpdateType.Status);
+                }
             }
         }
 
@@ -262,9 +256,15 @@ namespace VirtualCampaign_Manager.Data
 
         public void StartWorker()
         {
-            workerThread = new Thread(new ThreadStart(worker.Iterate));
-            Console.WriteLine("NEW THREAD FOR JOB ID " + this.ID + ": " + workerThread.ManagedThreadId);
-            workerThread.Start();
+            if (workerThread == null)
+            {
+                workerThread = new Thread(new ThreadStart(worker.Iterate));
+                Console.WriteLine("NEW THREAD FOR JOB ID " + this.ID + ": " + workerThread.ManagedThreadId);
+                workerThread.Start();
+            }
+            else
+            {
+            }
         }
 
         public Job()
