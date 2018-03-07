@@ -15,6 +15,11 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(ProductionPathHelper.GetLocalProductionDirectory(Job.Production), Job.ID.ToString());
         }
 
+        public static string GetJobClipPath(Job Job)
+        {
+            return Path.Combine(GetLocalJobDirectory(Job), "clip_" + Job.Position + ".mp4");
+        }
+
         public static string GetLocalJobMotifPath(Job Job, Motif Motif)
         {
             return Path.Combine(new string[]

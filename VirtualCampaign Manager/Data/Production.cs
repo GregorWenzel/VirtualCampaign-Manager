@@ -111,6 +111,15 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
+        //true if there is an outputformat with id=20, indicating a KRPANO production
+        public bool ContainsPano
+        {
+            get
+            {
+                return (Film.FilmOutputFormatList.Any(item => item.ID == 20));
+            }
+        }
+
         //get net number of frames for all clips
         public int TotalFrameCount
         {

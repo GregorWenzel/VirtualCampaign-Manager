@@ -29,5 +29,10 @@ namespace VirtualCampaign_Manager.Data
             ID = id;
             FilmOutputFormatList = new List<FilmOutputFormat>();
         }
+
+        public void Upload()
+        {
+
+        }
     }
 }

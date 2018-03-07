@@ -62,6 +62,16 @@ namespace VirtualCampaign_Manager.Loaders
             LoginData = Settings.FtpUserDirectoryLogin;
         }
 
+        //transfers a user's custom audio file to local file system
+        public TransferPacket(AudioData AudioData)
+        {
+            Parent = AudioData;
+            SourcePath = AudioData.Filename;
+            TargetPath = AudioData.AudioPath;
+            Type = TransferType.RemoteDownload;
+            LoginData = Settings.FtpAudioDirectoryLogin;
+        }
+
         public void FireSuccessEvent()
         {
             SuccessEvent?.Invoke(this, new EventArgs());

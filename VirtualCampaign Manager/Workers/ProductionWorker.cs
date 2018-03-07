@@ -5,18 +5,21 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Encoding;
+using VirtualCampaign_Manager.Loaders;
 
 namespace VirtualCampaign_Manager.Workers
 {
     public class ProductionWorker
     {
-        private static object syncRoot = new Object();
+        //Event called after job worker has finished all job-related tasks
+        public EventHandler<EventArgs> SuccessEvent;
+
+        //Event called after job worker has finished all job-related tasks
+        public EventHandler<EventArgs> FailureEvent;
 
         public bool IsActive { get; set; }
         public bool IsFinished { get; set; }
-
-        //Event called after production worker has finished all production tasks
-        public event EventHandler FinishedEvent;
 
         //current production
         private Production production;
@@ -28,46 +31,89 @@ namespace VirtualCampaign_Manager.Workers
             IsFinished = false;
         }
 
-        protected virtual void OnFinishedEvent(EventArgs ea)
-        {
-            FinishedEvent?.Invoke(this, ea);
-        }
-
         public void Work()
         {
-            lock (syncRoot)
-            {
-                if (CheckStatusOk() == false) return;
+            if (CheckStatusOk() == false) return;
 
-                switch (production.Status)
-                {
-                    case ProductionStatus.PS_READY:
-                        production.Status = ProductionStatus.PS_RENDER_JOBS;
-                        break;
-                    case ProductionStatus.PS_RENDER_JOBS:
-                        ExecuteJobs();
-                        break;
-                    case ProductionStatus.PS_MUX_AUDIO:
-                        //Zip format?
-                        if (this.CodecInfoList[0].Codec.ID == 12)
-                            UploadFilms();
-                        else
-                            EncodeAudio();
-                        break;
-                    case ProductionStatus.PS_JOIN_CLIPS:
-                        JoinClips();
-                        break;
-                    case ProductionStatus.PS_ENCODE_FILMS:
-                        EncodeFilms();
-                        break;
-                    case ProductionStatus.PS_UPLOAD_FILMS:
-                        UploadFilms();
-                        break;
-                    case ProductionStatus.PS_UPDATE_HISTORY:
-                        UpdateHistoryTable();
-                        break;
-                }
+            switch (production.Status)
+            {
+                case ProductionStatus.PS_READY:
+                    production.Status = ProductionStatus.PS_RENDER_JOBS;
+                    break;
+                case ProductionStatus.PS_RENDER_JOBS:
+                    ExecuteJobs();
+                    break;
+                case ProductionStatus.PS_MUX_AUDIO:
+                    //Zip format?
+                    if (production.Film.FilmOutputFormatList[0].ID == 12)
+                        production.Film.Upload();
+                    else
+                        EncodeAudio();
+                    break;
+                case ProductionStatus.PS_JOIN_CLIPS:
+                    JoinClips();
+                    break;
+                case ProductionStatus.PS_ENCODE_FILMS:
+                    EncodeFilms();
+                    break;
+                case ProductionStatus.PS_UPLOAD_FILMS:
+                    UploadFilms();
+                    break;
+                case ProductionStatus.PS_UPDATE_HISTORY:
+                    UpdateHistoryTable();
+                    break;
             }
+        }
+
+        private void EncodeAudio()
+        {
+            AudioEncoder audioEncoder = new AudioEncoder(production);
+            audioEncoder.SuccessEvent += OnAudioEncoderSuccess;
+        }
+
+        private void OnAudioEncoderSuccess(object sender, EventArgs ea)
+        {
+            (sender as AudioEncoder).SuccessEvent -= OnAudioEncoderSuccess;
+            (sender as AudioEncoder).FailureEvent -= OnAudioEncoderFailure;
+            production.Status = ProductionStatus.PS_JOIN_CLIPS;
+            Work();
+        }
+
+        private void OnAudioEncoderFailure(object sender, ResultEventArgs ea)
+        {
+            (sender as AudioEncoder).SuccessEvent -= OnAudioEncoderSuccess;
+            (sender as AudioEncoder).FailureEvent -= OnAudioEncoderFailure;
+            production.ErrorStatus = (ProductionErrorStatus)ea.Result;
+            FireFailureEvent();
+        }
+
+        private void JoinClips()
+        {
+            ClipJoiner clipJoiner = new ClipJoiner(production);
+            clipJoiner.SuccessEvent += OnClipJoinerSuccess;
+            clipJoiner.FailureEvent += OnClipJoinerFailure;
+            clipJoiner.Join();
+        }
+
+        private void OnClipJoinerSuccess(object sender, EventArgs ea)
+        {
+            (sender as AudioEncoder).SuccessEvent -= OnClipJoinerSuccess;
+            (sender as AudioEncoder).FailureEvent -= OnClipJoinerFailure;
+            production.Status = ProductionStatus.PS_ENCODE_FILMS;
+            Work();
+        }
+
+        private void OnClipJoinerFailure(object sender, ResultEventArgs ea)
+        {
+            (sender as AudioEncoder).SuccessEvent -= OnClipJoinerSuccess;
+            (sender as AudioEncoder).FailureEvent -= OnClipJoinerFailure;
+            production.ErrorStatus = (ProductionErrorStatus)ea.Result;
+            FireFailureEvent();
+        }
+
+        private void EncodeFilms()
+        {
+
         }
 
         private bool CheckStatusOk()
@@ -112,6 +158,16 @@ namespace VirtualCampaign_Manager.Workers
                 thisJob.IsActive = true;
                 thisJob.StartWorker();
             }
+        }
+
+        private void FireSuccessEvent()
+        {
+            SuccessEvent?.Invoke(null, new EventArgs());
+        }
+
+        private void FireFailureEvent()
+        {
+            FailureEvent?.Invoke(null, new EventArgs());
         }
     }
 }

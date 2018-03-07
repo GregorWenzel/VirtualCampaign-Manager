@@ -14,7 +14,7 @@ namespace VirtualCampaign_Manager.Workers
         public static EventHandler<EventArgs> SuccessEvent;
 
         //Event called after job worker has finished all job-related tasks
-        public static EventHandler<EventArgs> FailureEvent;
+        public static EventHandler<ResultEventArgs> FailureEvent;
 
         public static void CreateJobDirectories(Job Job)
         {
@@ -60,7 +60,7 @@ namespace VirtualCampaign_Manager.Workers
 
         private static void FireFailureEvent()
         {
-            EventHandler<EventArgs> failureEvent = FailureEvent;
+            EventHandler<ResultEventArgs> failureEvent = FailureEvent;
             if (failureEvent != null)
             {
                 failureEvent(null, new EventArgs());

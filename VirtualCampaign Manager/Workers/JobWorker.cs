@@ -9,14 +9,8 @@ using VirtualCampaign_Manager.Loaders;
 
 namespace VirtualCampaign_Manager.Workers
 {
-    public class JobWorker
+    public class JobWorker : EventFireBase
     {
-        //Event called after job worker has finished all job-related tasks
-        public EventHandler<EventArgs> SuccessEvent;
-
-        //Event called after job worker has finished all job-related tasks
-        public EventHandler<EventArgs> FailureEvent;
-
         public int MotifTransferCounter;
 
         //current job
@@ -118,7 +112,7 @@ namespace VirtualCampaign_Manager.Workers
             Iterate();
         }
 
-        private void OnCreateDirectoryFailure(object obj, EventArgs ea)
+        private void OnCreateDirectoryFailure(object obj, ResultEventArgs ea)
         {
             DirectoryWorker.SuccessEvent -= OnCreateDirectorySuccess;
             DirectoryWorker.FailureEvent -= OnCreateDirectoryFailure;
@@ -149,16 +143,5 @@ namespace VirtualCampaign_Manager.Workers
             job.ErrorStatus = JobErrorStatus.JES_DOWNLOAD_MOTIFS;
             FireFailureEvent();
         }
-
-        private void FireSuccessEvent()
-        {
-            SuccessEvent?.Invoke(null, new EventArgs());
-        }
-
-        private void FireFailureEvent()
-        {
-            FailureEvent?.Invoke(null, new EventArgs());
-        }
-
     }
 }

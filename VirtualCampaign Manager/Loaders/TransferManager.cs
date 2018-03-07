@@ -9,16 +9,6 @@ using VirtualCampaign_Manager.Workers;
 
 namespace VirtualCampaign_Manager.Loaders
 {
-    public class ResultEventArgs: EventArgs
-    {
-        public Object Result { get; set; }
-
-        public ResultEventArgs(Object Result)
-        {
-            this.Result = Result;
-        }
-    }
-
     public static class TransferManager
     {
         public static EventHandler<ResultEventArgs> SuccessEvent;
