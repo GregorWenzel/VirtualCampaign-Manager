@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 
-namespace VirtualCampaign_Manager.Loaders
+namespace VirtualCampaign_Manager.Transfers
 {
     public enum TransferType
     {
@@ -15,22 +16,119 @@ namespace VirtualCampaign_Manager.Loaders
         LocalCopy
     }
 
-    public class TransferPacket
+    public class TransferPacket : INotifyPropertyChanged
     {
         public EventHandler<EventArgs> SuccessEvent;
         public EventHandler<EventArgs> FailureEvent;
 
         public Object Task { get; set; } //unique sftp transfer task id
         public Object Parent { get; set; }
-        public string SourcePath { get; set; }
+
+        private string sourcePath;
+
+        public string SourcePath
+        {
+            get { return sourcePath; }
+            set {
+                if (value == sourcePath) return;
+                sourcePath = value;
+                RaisePropertyChangedEvent("SourcePath");
+                RaisePropertyChangedEvent("Filename");
+            }
+        }
+
         public string TargetPath { get; set; }
         public TransferType Type { get; set; }
         public LoginData LoginData { get; set; }
-        public bool IsInTransit { get; set; } = false;
-        public bool IsSuccessful { get; set; } = false;
-        public bool HasError { get; set; } = false;
         public Exception TransferExcetpion { get; set; }
         public int TransferErrorCounter { get; set; } = 0;
+        public string Filename
+        {
+            get
+            {
+                return Path.GetFileName(TargetPath);
+            }
+        }
+
+        private int progress;
+
+        public int Progress
+        {
+            get { return progress; }
+            set {
+                if (value == progress) return;
+                progress = value;
+                RaisePropertyChangedEvent("Progress");
+            }
+        }
+
+        private string status;
+
+        public string Status
+        {
+            get
+            {
+                if (HasError)
+                {
+                    return "Error";
+                }
+                else if (IsInTransit)
+                {
+                    return "Transfer";
+                }
+                else if (IsSuccessful)
+                {
+                    return "Done";
+                }
+                else
+                {
+                    return "Idle";
+                }
+            }            
+        }
+
+        private bool hasError;
+
+        public bool HasError
+        {
+            get { return hasError; }
+            set {
+                if (value == HasError) return;
+
+                hasError = value;
+                RaisePropertyChangedEvent("Status");
+            }
+        }
+
+        private bool isSuccessful;
+
+        public bool IsSuccessful
+        {
+            get { return isSuccessful; }
+            set
+            {
+                if (value == isSuccessful) return;
+
+                isSuccessful = value;
+                RaisePropertyChangedEvent("Status");
+            }
+        }
+
+        private bool isInTransit;
+
+        public bool IsInTransit
+        {
+            get { return isInTransit; }
+            set
+            {
+                if (value == isInTransit) return;
+
+                isInTransit = value;
+                RaisePropertyChangedEvent("Status");
+            }
+        }
+
+
 
         //transfers a motif from remote user account to local filesystem
         public TransferPacket(Job Job, Motif Motif)
@@ -80,6 +178,16 @@ namespace VirtualCampaign_Manager.Loaders
         public void FireFailureEvent()
         {
             FailureEvent?.Invoke(this, new EventArgs());
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void RaisePropertyChangedEvent(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
+                PropertyChanged(this, e);
+            }
         }
     }
 }

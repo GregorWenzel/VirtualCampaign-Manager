@@ -119,17 +119,23 @@
     <Compile Include="Encoding\AudioEncoder.cs" />
     <Compile Include="Encoding\ClipJoiner.cs" />
     <Compile Include="Encoding\FilmEncoder.cs" />
+    <Compile Include="Encoding\PreviewFilmEncoder.cs" />
     <Compile Include="EventFireBase.cs" />
     <Compile Include="GlobalValues.cs" />
+    <Compile Include="Helpers\FilmPathHelper.cs" />
     <Compile Include="Helpers\HelperFunctions.cs" />
+    <Compile Include="Helpers\IOHelper.cs" />
     <Compile Include="Helpers\JobPathHelper.cs" />
     <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Helpers\ProductionPathHelper.cs" />
     <Compile Include="Helpers\VCProcess.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Loaders\TransferManager.cs" />
-    <Compile Include="Loaders\TransferPacket.cs" />
+    <Compile Include="Transfers\TransferManager.cs" />
+    <Compile Include="Transfers\TransferManagerView.xaml.cs">
+      <DependentUpon>TransferManagerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Transfers\TransferPacket.cs" />
     <Compile Include="MainHub\MainHubViewModel.cs" />
     <Compile Include="MainHub\MainHubView.xaml.cs">
       <DependentUpon>MainHubView.xaml</DependentUpon>
@@ -165,6 +171,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Transfers\TransferManagerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

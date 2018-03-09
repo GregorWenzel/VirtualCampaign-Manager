@@ -22,26 +22,10 @@ namespace VirtualCampaign_Manager.Encoding
         public void Encode()
         {
             CreateDirectories();
+           
+            if (EncodeFilms() == false) return;
 
-            string parameters = GetParameterString();
-            
-            EncodeFilm()          
-
-            SendEncodeFilm(parameters, false);
-
-
-            success = success & EncodeMp4Previews();
-
-            if (!success)
-            {
-                production.ErrorCode = ProductionErrorStatus.PES_ENCODEproduction;
-                return;
-            }
-
-            //success = success & EncodePreview();
-
-            if (success)
-                production.Status = ProductionStatus.PS_UPLOAD_FILMS;
+            EncodeMp4Previews();
         }
 
         private void CreateDirectories()
@@ -52,6 +36,67 @@ namespace VirtualCampaign_Manager.Encoding
             {
                 Directory.CreateDirectory(directoryName);
             }
+        }
+
+        private bool EncodeFilms()
+        {
+            bool result = true;
+
+            string parameters = GetParameterString();
+
+            VCProcess process = new VCProcess(production);
+            process.StartInfo.FileName = Settings.LocalFfmpegExePath;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardError = false;
+            process.StartInfo.RedirectStandardOutput = false;
+            process.Execute();
+            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            process.WaitForExit();
+
+            //check if all films have been created
+            foreach (FilmOutputFormat format in production.Film.FilmOutputFormatList)
+            {
+                if (format.ID != 20)
+                {
+                    string filepath = FilmPathHelper.GetFilmHashPath(production, format);
+                    if (!File.Exists(filepath))
+                    {
+                        FireFailureEvent(ProductionErrorStatus.PES_ENCODE_PRODUCTION);
+                        result = false;
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private bool EncodeMp4Previews()
+        {
+            bool result = false;
+
+            PreviewFilmEncoder previewEncoder = new PreviewFilmEncoder(production);
+            previewEncoder.FailureEvent += OnPreviewEncoderFailure;
+            previewEncoder.SuccessEvent += OnPreviewEncoderSuccess;
+            previewEncoder.Encode();
+
+            return result;
+        }
+
+        private void OnPreviewEncoderFailure(object sender, ResultEventArgs rea)
+        {
+            (sender as PreviewFilmEncoder).FailureEvent -= OnPreviewEncoderFailure;
+            (sender as PreviewFilmEncoder).SuccessEvent -= OnPreviewEncoderSuccess;
+
+            FireFailureEvent(rea);
+        }
+
+        private void OnPreviewEncoderSuccess(object sender, EventArgs rea)
+        {
+            (sender as PreviewFilmEncoder).FailureEvent -= OnPreviewEncoderFailure;
+            (sender as PreviewFilmEncoder).SuccessEvent -= OnPreviewEncoderSuccess;
+            FireSuccessEvent();
         }
 
         private string GetParameterString()
@@ -73,12 +118,17 @@ namespace VirtualCampaign_Manager.Encoding
 
             foreach (FilmOutputFormat FilmOutputFormat in production.Film.FilmOutputFormatList)
             {
-                parameters += EncodingParameterParser.Parse(production, FilmOutputFormat);
+                if (FilmOutputFormat.ID != 20)
+                {
+                    FilmOutputFormat.FullFilePath = FilmPathHelper.GetFilmHashPath(production, FilmOutputFormat);
+                    parameters += FilmOutputFormat.FfmpegParams + " " + FilmOutputFormat.FullFilePath + " ";
+                }
             }
 
             return parameters;
         }
 
+        //Adds a half-sized output format to the list of required output formats to 360° films
         private List<FilmOutputFormat> AddPanoToCodecList(List<FilmOutputFormat> FilmOutputFormatList)
         {
             List<FilmOutputFormat> buffer = new List<FilmOutputFormat>();
@@ -95,18 +145,6 @@ namespace VirtualCampaign_Manager.Encoding
                     newFilmOutputFormat.Extension = FilmOutputFormat.Extension;
                     newFilmOutputFormat.Height = (int)Math.Round(FilmOutputFormat.Height / 2d);
                     newFilmOutputFormat.Width = (int)Math.Round(FilmOutputFormat.Width / 2d);
-                    newFilmOutputFormat.FfmpegParams = FilmOutputFormat.FfmpegParams.Replace(FilmOutputFormat.Height + "x" + FilmOutputFormat.Width, newFilmOutputFormat.Size);
-                    buffer.Add(newFilmOutputFormat);
-
-                    newFilmOutputFormat = new FilmOutputFormat();
-                    newFilmOutputFormat.Filename = FilmOutputFormat.Filename;
-                    newFilmOutputFormat.FullFilePath = FilmOutputFormat.FullFilePath;
-                    newFilmOutputFormat.IsPanoChild = true;
-                    newFilmOutputFormat.Name = FilmOutputFormat.Name + "_quarter";
-                    newFilmOutputFormat.ID = FilmOutputFormat.ID;
-                    newFilmOutputFormat.Extension = FilmOutputFormat.Extension;
-                    newFilmOutputFormat.Height = (int)Math.Round(FilmOutputFormat.Height / 4d);
-                    newFilmOutputFormat.Width = (int)Math.Round(FilmOutputFormat.Width / 4d);
                     newFilmOutputFormat.FfmpegParams = FilmOutputFormat.FfmpegParams.Replace(FilmOutputFormat.Height + "x" + FilmOutputFormat.Width, newFilmOutputFormat.Size);
                     buffer.Add(newFilmOutputFormat);
                 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Workers;
 
-namespace VirtualCampaign_Manager.Loaders
+namespace VirtualCampaign_Manager.Transfers
 {
     public static class TransferManager
     {

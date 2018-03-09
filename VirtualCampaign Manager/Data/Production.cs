@@ -21,7 +21,8 @@ namespace VirtualCampaign_Manager.Data
         PES_MUX_AUDIO = 6,
         PES_UPLOAD = 7,
         PES_INDICATIVE_MISSING = 8,
-        PES_ABDICATIVE_MISSING = 9
+        PES_ABDICATIVE_MISSING = 9,
+        PES_CREATE_MP4PREVIEWS = 10
     };
 
     public enum ProductionStatus

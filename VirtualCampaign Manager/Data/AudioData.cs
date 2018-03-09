@@ -60,5 +60,3 @@ namespace VirtualCampaign_Manager.Data
         }        
     }
 }
-
-}

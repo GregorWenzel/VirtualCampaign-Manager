@@ -35,12 +35,6 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(Settings.LocalAudioPath, AudioData.Filename);
         }
 
-        public static string GetPartialFilmFilename(Production Production)
-        {
-            string targetFilename = "film_" + Production.FilmID;
-            return Path.Combine(GetLocalProductionHashDirectory(Production), targetFilename);
-        }
-
         public static string GetTrimmedMusicPath(Production Production)
         {
             return Path.Combine(GetLocalProductionDirectory(Production), "trimmed_music.wav");
@@ -56,16 +50,44 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalProductionDirectory(Production), "final_music.wav");
         }
 
+        public static string GetProductPath(int ProductID)
+        {
+            string formattedIndex = String.Format("{0:D4}", ProductID);
+            return Path.Combine(Settings.LocalProductPath, formattedIndex);
+        }
+
         public static string GetProductMp4PathByOutputFormat(int ProductID, int OutputFormatID)
         {
             string formattedIndex = String.Format("{0:D4}", ProductID);
-            return Path.Combine(new string[] { Settings.LocalProductPath, formattedIndex, formattedIndex + "_" + OutputFormatID + ".mp4" });
+            return Path.Combine(GetProductPath(ProductID) , formattedIndex + "_" + OutputFormatID + ".mp4" );
         }
 
         public static string GetProductMp4Path(int ProductID)
         {
             string formattedIndex = String.Format("{0:D4}", ProductID);
-            return Path.Combine(new string[] { Settings.LocalProductPath, formattedIndex, formattedIndex + ".mp4" });
+            return Path.Combine(GetProductPath(ProductID), formattedIndex + ".mp4");
+        }
+
+        public static string GetLocalProductPreviewProductionDirectory(int ProductID)
+        {
+            string formattedIndex = String.Format("{0:D4}", ProductID);
+            return Path.Combine(Settings.LocalProductionPath, formattedIndex);
+        }
+
+        public static string GetLocalProductionPreviewPath(Production production, string suffix)
+        {
+            return Path.Combine(GetLocalProductionPreviewDirectory(production), "film_"+production.FilmID + string.Format("_{0}.mp4", suffix));
+        }
+
+        public static string GetLocalProductPreviewProductionPath(int ProductID, string suffix)
+        {
+            string formattedIndex = String.Format("{0:D4}", ProductID);
+            return Path.Combine(GetLocalProductPreviewProductionDirectory(ProductID), formattedIndex + string.Format("_{0}.mp4", suffix));
+        }
+
+        public static string GetLocalProductionPreviewDirectory(Production production)
+        {
+            return Path.Combine(GetLocalProductionDirectory(production), production.FilmID.ToString());
         }
 
         public static string GetSpecialProductAudioPath(int ProductID)

@@ -65,7 +65,8 @@ namespace VirtualCampaign_Manager
             {ProductionErrorStatus.PES_READ_AUDIOFILE, "Copy Audio Resource"},
             {ProductionErrorStatus.PES_UPLOAD, "Upload Films"},
             {ProductionErrorStatus.PES_INDICATIVE_MISSING, "Missing indicative file"},
-            {ProductionErrorStatus.PES_ABDICATIVE_MISSING, "Missing abdicative file"}
+            {ProductionErrorStatus.PES_ABDICATIVE_MISSING, "Missing abdicative file"},
+            {ProductionErrorStatus.PES_CREATE_MP4PREVIEWS, "Create MP4 previews" }
         };
 
         public static Dictionary<JobErrorStatus, string> JobErrorStatusString = new Dictionary<JobErrorStatus, string>()

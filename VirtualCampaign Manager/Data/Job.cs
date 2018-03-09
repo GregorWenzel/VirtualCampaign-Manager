@@ -151,7 +151,16 @@ namespace VirtualCampaign_Manager.Data
                 productID = value;
             }
         }
-               
+             
+        //ID of the product id irrespective of subclip status
+        public int OriginalProductID
+        {
+            get
+            {
+                return productID;
+            }
+        }
+
         //production this job belongs to
         public Production Production { get; set; }
 

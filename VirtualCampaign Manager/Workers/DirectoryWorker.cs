@@ -63,7 +63,7 @@ namespace VirtualCampaign_Manager.Workers
             EventHandler<ResultEventArgs> failureEvent = FailureEvent;
             if (failureEvent != null)
             {
-                failureEvent(null, new EventArgs());
+                failureEvent(null, new ResultEventArgs(null));
             }
         }
     }

@@ -113,7 +113,26 @@ namespace VirtualCampaign_Manager.Workers
 
         private void EncodeFilms()
         {
+            FilmEncoder filmEncoder = new FilmEncoder(production);
+            filmEncoder.FailureEvent += OnFilmEncoderFailure;
+            filmEncoder.SuccessEvent += OnFilmEncoderSuccess;
+            filmEncoder.Encode();
+        }
 
+        private void OnFilmEncoderFailure(object sender, ResultEventArgs ea)
+        {
+            (sender as FilmEncoder).SuccessEvent -= OnFilmEncoderSuccess;
+            (sender as FilmEncoder).FailureEvent -= OnFilmEncoderFailure;
+            production.ErrorStatus = (ProductionErrorStatus)ea.Result;
+            FireFailureEvent();
+        }
+
+        private void OnFilmEncoderSuccess(object sender, EventArgs ea)
+        {
+            (sender as FilmEncoder).SuccessEvent -= OnFilmEncoderSuccess;
+            (sender as FilmEncoder).FailureEvent -= OnFilmEncoderFailure;
+            production.Status = ProductionStatus.PS_UPLOAD_FILMS;
+            Work();
         }
 
         private bool CheckStatusOk()
