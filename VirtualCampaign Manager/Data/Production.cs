@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Managers;
 using VirtualCampaign_Manager.Repositories;
@@ -72,7 +73,7 @@ namespace VirtualCampaign_Manager.Data
 
         private bool CanUpdateRemoteData = false;
         public string creationTime = "";
-        private int uploadCounter = 0;
+        public int UploadCounter = 0;
 
         public string timestamp = "";
 
@@ -304,14 +305,6 @@ namespace VirtualCampaign_Manager.Data
                 if (value == _priority) return;
 
                 _priority = value;
-
-                if (JobList != null)
-                {
-                    foreach (Job job in JobList)
-                        JobList[0].ShowPriority(value);
-                }
-
-                //UpdateRemoteValue(UpdateType.Priority);
             }
         }
 
@@ -372,151 +365,14 @@ namespace VirtualCampaign_Manager.Data
             errorStatus = ErrorStatus;
         }
 
-        public void Activate()
+        private Thread workerThread;
+
+        public void StartWorker()
         {
             IsActive = true;
-            foreach (Job job in JobList)
-            {
-                job.IsActive = true;
-                job.StartWorker();
-            }
-        }
-
-        public void Suspend()
-        {
-            IsActive = false;
-            foreach (Job job in JobList)
-                job.IsActive = false;
-        }
-
-        private void Iterate()
-        {
-            if (iterateThread == null)
-            {
-                iterateThread = new Thread(new ThreadStart(DoIterate));
-                Console.WriteLine("NEW THREAD FOR PRODUCTION +" + this.ID + ": " + iterateThread.ManagedThreadId);
-            }
-
-            try
-            {
-                iterateThread.Start();
-            }
-            catch { }
-        }
-
-        private void DoIterate()
-        {
-            if (ErrorStatus == ProductionErrorStatus.PES_UPLOAD)
-            {
-                ErrorStatus = ProductionErrorStatus.PES_NONE;
-                Status = ProductionStatus.PS_UPLOAD_FILMS;
-            }
-
-            if (!IsActive || Status == ProductionStatus.PS_DONE || ErrorStatus != ProductionErrorStatus.PES_NONE)
-                return;
-
-            switch (Status)
-            {
-                case ProductionStatus.PS_READY:
-                    Status = ProductionStatus.PS_RENDER_JOBS;
-                    break;
-                case ProductionStatus.PS_RENDER_JOBS:
-                    ExecuteJobs();
-                    break;
-                case ProductionStatus.PS_MUX_AUDIO:
-                    if (this.JobList.Count == 0)
-                    {
-                        break;
-                    }
-
-                    //Zip format?
-                    if (this.CodecInfoList[0].Codec.ID == 12)
-                        UploadFilms();
-                    else
-                        EncodeAudio();
-                    break;
-                case ProductionStatus.PS_JOIN_CLIPS:
-                    JoinClips();
-                    break;
-                case ProductionStatus.PS_ENCODE_FILMS:
-                    EncodeFilms();
-                    break;
-                case ProductionStatus.PS_UPLOAD_FILMS:
-                    UploadFilms();
-                    break;
-                case ProductionStatus.PS_UPDATE_HISTORY:
-                    UpdateHistoryTable();
-                    break;
-            }
-        }
-
-        private void ExecuteJobs()
-        {
-            CheckStatus();
-
-            if (Status != ProductionStatus.PS_JOIN_CLIPS)
-            {
-                foreach (Job thisJob in JobList)
-                {
-                    if (thisJob.Status == JobStatus.JS_DONE)
-                    {
-                        continue;
-                    }
-                    thisJob.IsActive = true;
-                    Thread jobThread = new Thread(new ThreadStart(thisJob.Execute));
-                    Console.WriteLine("NEW THREAD FOR JOB ID " + thisJob.ID + ": " + jobThread.ManagedThreadId);
-                    jobThread.Start();
-                }
-            }
-        }
-
-        private void JoinClips()
-        {
-            EncodingManager encodingManager = new EncodingManager();
-            encodingManager.JoinClips(this);
-        }
-
-        private void EncodeAudio()
-        {
-            EncodingManager encodingManager = new EncodingManager();
-            encodingManager.EncodeAudio(this);
-        }
-
-
-        private void EncodeIntermediateAudioMPEG()
-        {
-            EncodingManager encodingManager = new EncodingManager();
-            encodingManager.EncodeIntermediateAudioMPEG(this);
-        }
-
-        private void EncodeFilms()
-        {
-            EncodingManager encodingManager = new EncodingManager();
-            encodingManager.EncodeFilms(this);
-        }
-
-        private void UploadFilms()
-        {
-            uploadCounter += 1;
-            sizeString = Film.UploadFiles(this);
-
-            if (sizeString != null)
-            {
-                UpdateRemoteValue(UpdateType.Film);
-
-                if (this.Email.Length > 0)
-                    EmailManager.SendMail(this);
-
-                CleanUp();
-                Status = ProductionStatus.PS_UPDATE_HISTORY;
-            }
-            else
-            {
-                if (uploadCounter >= 3)
-                    ErrorStatus = ProductionErrorStatus.PES_UPLOAD;
-                else
-                    UploadFilms();
-            }
+            worker = new ProductionWorker(this);
+            workerThread = new Thread(worker.Work);
+            workerThread.Start();
         }
 
         private void CleanUp()

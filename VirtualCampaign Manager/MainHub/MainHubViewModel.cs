@@ -47,6 +47,7 @@ namespace VirtualCampaign_Manager.MainHub
                     {
                         jobList.Add(newJob);
                     }
+                    newProduction.InitializeWorker();
                 }
             }
         }

@@ -6,14 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Helpers;
 
 namespace VirtualCampaign_Manager.Transfers
 {
     public enum TransferType
     {
-        RemoteDownload,
-        RemoteUpload,
-        LocalCopy
+        DownloadMotif,
+        UploadFilmPreviewDirectory,
+        UploadFilmDirectory,
+        UploadMotifPreview,
+        UploadProductDirectory,
+        UploadProductPreviewDirectory
     }
 
     public class TransferPacket : INotifyPropertyChanged
@@ -151,13 +155,30 @@ namespace VirtualCampaign_Manager.Transfers
         }
 
         //transfers a film from local file system to remote user account
-        public TransferPacket(Film Film, int AccountID, FilmOutputFormat OutputFormat)
+        public TransferPacket(Production production, TransferType type)
         {
-            Parent = Film;
-            SourcePath = "";
-            //TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + AccountID + "/motifs/" + Motif.DownloadName;
-            Type = TransferType.RemoteUpload;
-            LoginData = Settings.FtpUserDirectoryLogin;
+            Parent = production;
+
+            switch (type)
+            {
+                case TransferType.UploadFilmDirectory:
+                    SourcePath = ProductionPathHelper.GetLocalProductionHashDirectory(production);
+                    TargetPath = Settings.FtpHashDirectoryLogin.SubdirectoryPath;
+                    LoginData = Settings.FtpHashDirectoryLogin;
+                    break;
+                case TransferType.UploadFilmPreviewDirectory:
+                    SourcePath = ProductionPathHelper.GetLocalProductionPreviewDirectory(production);
+                    TargetPath = ExternalPathHelper.GetProductionPreviewDirectory(production);
+                    LoginData = Settings.FtpUserDirectoryLogin;
+                    break;
+                case TransferType.UploadProductPreviewDirectory:
+                    SourcePath = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production.JobList[0].OriginalProductID);
+                    TargetPath = Settings.FtpProductPreviewDirectoryLogin.SubdirectoryPath;
+                    LoginData = Settings.FtpProductPreviewDirectoryLogin;
+                    break;
+            }
+
+            Type = type;            
         }
 
         //transfers a user's custom audio file to local file system

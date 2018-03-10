@@ -258,25 +258,13 @@ namespace VirtualCampaign_Manager.Data
 
         private Thread workerThread;
 
-        public void CheckWorker()
-        {
-            if (worker == null)
-            {
-                worker = new JobWorker(this);
-            }
-        }
-
         public void StartWorker()
         {
-            if (workerThread == null)
-            {
-                workerThread = new Thread(new ThreadStart(worker.Iterate));
-                Console.WriteLine("NEW THREAD FOR JOB ID " + this.ID + ": " + workerThread.ManagedThreadId);
-                workerThread.Start();
-            }
-            else
-            {
-            }
+            IsActive = true;
+            worker = new JobWorker(this);
+            workerThread = new Thread(new ThreadStart(worker.Work));
+            Console.WriteLine("NEW THREAD FOR JOB ID " + this.ID + ": " + workerThread.ManagedThreadId);
+            workerThread.Start();
         }
 
         public Job()

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Encoding;
+using VirtualCampaign_Manager.Transfers;
 
 namespace VirtualCampaign_Manager.Workers
 {
@@ -38,14 +39,18 @@ namespace VirtualCampaign_Manager.Workers
             {
                 case ProductionStatus.PS_READY:
                     production.Status = ProductionStatus.PS_RENDER_JOBS;
+                    Work();
                     break;
                 case ProductionStatus.PS_RENDER_JOBS:
-                    ExecuteJobs();
+                    StartJobs();
                     break;
                 case ProductionStatus.PS_MUX_AUDIO:
                     //Zip format?
-                    if (production.Film.FilmOutputFormatList[0].ID == 12)
-                        production.Film.Upload();
+                    if (production.Film.FilmOutputFormatList.Any(item => item.ID == 12))
+                    {
+                        production.Status = ProductionStatus.PS_UPLOAD_FILMS;
+                        Work();
+                    }
                     else
                         EncodeAudio();
                     break;
@@ -56,10 +61,10 @@ namespace VirtualCampaign_Manager.Workers
                     EncodeFilms();
                     break;
                 case ProductionStatus.PS_UPLOAD_FILMS:
-                    //UploadFilms();
+                    UploadFilms();
                     break;
                 case ProductionStatus.PS_UPDATE_HISTORY:
-                   // UpdateHistoryTable();
+                    UpdateHistoryTable();
                     break;
             }
         }
@@ -134,6 +139,35 @@ namespace VirtualCampaign_Manager.Workers
             Work();
         }
 
+        private void UploadFilms()
+        {
+            FilmUploader filmUploader = new FilmUploader(production);
+            filmUploader.FailureEvent += OnFilmUploaderFailure;
+            filmUploader.SuccessEvent += OnFilmUploaderSuccess;
+            filmUploader.Upload();
+        }
+
+        private void OnFilmUploaderFailure(object sender, ResultEventArgs ea)
+        {
+            (sender as FilmEncoder).SuccessEvent -= OnFilmUploaderSuccess;
+            (sender as FilmEncoder).FailureEvent -= OnFilmUploaderFailure;
+            production.ErrorStatus = (ProductionErrorStatus)ea.Result;
+            FireFailureEvent();
+        }
+
+        private void OnFilmUploaderSuccess(object sender, EventArgs ea)
+        {
+            (sender as FilmEncoder).SuccessEvent -= OnFilmUploaderSuccess;
+            (sender as FilmEncoder).FailureEvent -= OnFilmUploaderFailure;
+            production.Status = ProductionStatus.PS_UPLOAD_FILMS;
+            Work();
+        }
+
+        private void UpdateHistoryTable()
+        {
+
+        }
+ 
         private bool CheckStatusOk()
         {
             if (production.JobList == null || production.JobList.Count == 0)
@@ -161,17 +195,15 @@ namespace VirtualCampaign_Manager.Workers
             return true;
         }
 
-        private void ExecuteJobs()
+        private void StartJobs()
         {
             foreach (Job thisJob in production.JobList)
-            {
-                thisJob.CheckWorker();
-                
+            {                               
                 if (thisJob.Status == JobStatus.JS_DONE)
                 {
                     continue;
                 }
-                thisJob.IsActive = true;
+
                 thisJob.StartWorker();
             }
         }

@@ -24,7 +24,7 @@ namespace VirtualCampaign_Manager.Workers
             this.renderProgressMonitor = new JobRenderProgressMonitor(this.job);
         }
 
-        public void Iterate()
+        public void Work()
         {
             if (job.IsActive == false || job.Status == JobStatus.JS_DONE || job.ErrorStatus != JobErrorStatus.JES_NONE)
                 return;
@@ -111,7 +111,7 @@ namespace VirtualCampaign_Manager.Workers
             DirectoryWorker.SuccessEvent -= OnCreateDirectorySuccess;
             DirectoryWorker.FailureEvent -= OnCreateDirectoryFailure;
             job.Status = JobStatus.JS_PREPARE_RESOURCES;
-            Iterate();
+            Work();
         }
 
         private void OnCreateDirectoryFailure(object obj, ResultEventArgs ea)
@@ -132,7 +132,7 @@ namespace VirtualCampaign_Manager.Workers
             if (MotifTransferCounter == job.MotifList.Count)
             {
                 job.Status = JobStatus.JS_CREATE_RENDERFILES;
-                Iterate();
+                Work();
             }
         }
 

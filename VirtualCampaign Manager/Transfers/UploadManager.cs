@@ -11,7 +11,7 @@ using VirtualCampaign_Manager.Workers;
 
 namespace VirtualCampaign_Manager.Transfers
 {
-    public sealed class DownloadManager : INotifyPropertyChanged
+    public sealed class UploadManager : INotifyPropertyChanged
     {
         public EventHandler<ResultEventArgs> SuccessEvent;
         public EventHandler<ResultEventArgs> FailureEvent;
@@ -112,8 +112,19 @@ namespace VirtualCampaign_Manager.Transfers
                     Sftp ftpClient = GetClientForTransfer(kvp.Key, thisPacket);
                     if (ftpClient.IsAuthenticated == true)
                     {
-                        thisPacket.Task = ftpClient.DownloadFileAsync(thisPacket.SourcePath, thisPacket.TargetPath);
-                        FtpTransfersDict[kvp.Key] += 1;
+                        if (thisPacket.Type == TransferType.UploadFilmDirectory ||
+                            thisPacket.Type == TransferType.UploadFilmPreviewDirectory ||
+                            thisPacket.Type == TransferType.UploadProductDirectory ||
+                            thisPacket.Type == TransferType.UploadProductPreviewDirectory)
+                        {
+                            thisPacket.Task = ftpClient.UploadDirectoryAsync(thisPacket.SourcePath, thisPacket.TargetPath, true);
+                            FtpTransfersDict[kvp.Key] += 1;
+                        }
+                        else
+                        {
+                            thisPacket.Task = ftpClient.UploadFileAsync(thisPacket.SourcePath, thisPacket.TargetPath);
+                            FtpTransfersDict[kvp.Key] += 1;
+                        }
                     }
                 }
             }
@@ -160,12 +171,12 @@ namespace VirtualCampaign_Manager.Transfers
                 failureEvent(null, new ResultEventArgs(packet));
             }
         }
-        private static volatile DownloadManager instance;
+        private static volatile UploadManager instance;
         private static object syncRoot = new object();
 
-        private DownloadManager() { }
+        private UploadManager() { }
 
-        public static DownloadManager Instance
+        public static UploadManager Instance
         {
             get
             {
@@ -175,7 +186,7 @@ namespace VirtualCampaign_Manager.Transfers
                     {
                         if (instance == null)
                         {
-                            instance = new DownloadManager();
+                            instance = new UploadManager();
                         }
                     }
                 }

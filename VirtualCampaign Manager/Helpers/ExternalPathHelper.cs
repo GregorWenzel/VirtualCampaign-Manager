@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VirtualCampaign_Manager.Data;
 
 namespace VirtualCampaign_Manager.Helpers
 {
@@ -21,6 +22,11 @@ namespace VirtualCampaign_Manager.Helpers
         public static string GetMotifFtpUrl()
         {
             return Uri.Combine(GetAccountFtpUrl(), Settings.ExternalMotifPath);
+        }
+
+        public static string GetProductionPreviewDirectory(Production production)
+        {
+            return Uri.Combine(GetAccountFtpUrl(), production.AccountID.ToString(), "productions");
         }
     }
 }
