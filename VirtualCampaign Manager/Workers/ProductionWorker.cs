@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Encoding;
-using VirtualCampaign_Manager.Loaders;
 
 namespace VirtualCampaign_Manager.Workers
 {
@@ -57,10 +56,10 @@ namespace VirtualCampaign_Manager.Workers
                     EncodeFilms();
                     break;
                 case ProductionStatus.PS_UPLOAD_FILMS:
-                    UploadFilms();
+                    //UploadFilms();
                     break;
                 case ProductionStatus.PS_UPDATE_HISTORY:
-                    UpdateHistoryTable();
+                   // UpdateHistoryTable();
                     break;
             }
         }
@@ -166,10 +165,8 @@ namespace VirtualCampaign_Manager.Workers
         {
             foreach (Job thisJob in production.JobList)
             {
-                if (thisJob.Worker == null)
-                {
-                    thisJob.InitializeWorker();
-                }
+                thisJob.CheckWorker();
+                
                 if (thisJob.Status == JobStatus.JS_DONE)
                 {
                     continue;

@@ -102,17 +102,17 @@ namespace VirtualCampaign_Manager.Managers
         private static string GenerateFilmLinks(Production production)
         {
             string result = "";
-            String[] buffer = new String[production.Film.CodecSizes.Count];
+            String[] buffer = new String[production.Film.FilmOutputFormatList.Count];
 
-            for (int i = 0; i < production.Film.CodecSizes.Count; i++)
+            for (int i = 0; i < production.Film.FilmOutputFormatList.Count; i++)
             {
-                CodecInfo codecSize = production.Film.CodecSizes[i];
-                string fileName = "film_" + production.Film.ID + "_" + codecSize.Codec.ID + codecSize.Codec.Extension;
+                FilmOutputFormat outputFormat = production.Film.FilmOutputFormatList[i];
+                string fileName = "film_" + production.Film.ID + "_" + outputFormat.ID + outputFormat.Extension;
                 string targetDirectory = Path.Combine(new string[] { production.AccountID.ToString(), "productions", production.Film.ID.ToString() });
                 string targetFile = Path.Combine(targetDirectory, fileName);
                 string targetFileName = Path.Combine(production.Film.ID.ToString(), fileName);
-                fileName = production.Name + "_" + codecSize.Size + "." + codecSize.Codec.Extension;
-                result += "<p><a href='" + Path.Combine(new string[] { Settings.ServerPath, Settings.AccountDirectory, targetFile }) + "'>" + fileName + "</a></p>";
+                fileName = production.Name + "_" + outputFormat.Size + "." + outputFormat.Extension;
+                result += "<p><a href='" + Path.Combine(new string[] { Settings.ExternalUserPath, Settings.AccountDirectory, targetFile }) + "'>" + fileName + "</a></p>";
             }
             return result;
         }

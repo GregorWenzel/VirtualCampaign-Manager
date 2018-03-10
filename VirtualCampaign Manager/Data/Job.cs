@@ -258,9 +258,12 @@ namespace VirtualCampaign_Manager.Data
 
         private Thread workerThread;
 
-        public void InitializeWorker()
+        public void CheckWorker()
         {
-            worker = new JobWorker(this);
+            if (worker == null)
+            {
+                worker = new JobWorker(this);
+            }
         }
 
         public void StartWorker()

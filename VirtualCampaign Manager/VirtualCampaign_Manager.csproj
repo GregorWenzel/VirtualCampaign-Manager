@@ -122,19 +122,22 @@
     <Compile Include="Encoding\PreviewFilmEncoder.cs" />
     <Compile Include="EventFireBase.cs" />
     <Compile Include="GlobalValues.cs" />
+    <Compile Include="Helpers\ExternalPathHelper.cs" />
     <Compile Include="Helpers\FilmPathHelper.cs" />
     <Compile Include="Helpers\HelperFunctions.cs" />
     <Compile Include="Helpers\IOHelper.cs" />
     <Compile Include="Helpers\JobPathHelper.cs" />
     <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Helpers\ProductionPathHelper.cs" />
+    <Compile Include="Helpers\Uri.cs" />
     <Compile Include="Helpers\VCProcess.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Transfers\TransferManager.cs" />
+    <Compile Include="Transfers\DownloadManager.cs" />
     <Compile Include="Transfers\TransferManagerView.xaml.cs">
       <DependentUpon>TransferManagerView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Transfers\TransferManagerViewModel.cs" />
     <Compile Include="Transfers\TransferPacket.cs" />
     <Compile Include="MainHub\MainHubViewModel.cs" />
     <Compile Include="MainHub\MainHubView.xaml.cs">

@@ -175,8 +175,7 @@ namespace VirtualCampaign_Manager.Data
                 if (!CanUpdateRemoteData)
                     return;
 
-                UpdateRemoteValue(UpdateType.Status);
-                DoIterate();
+                ProductionRepository.UpdateRemoteValue(this, UpdateType.Status);
             }
         }
 
@@ -212,7 +211,7 @@ namespace VirtualCampaign_Manager.Data
                 if (!CanUpdateRemoteData)
                     return;
 
-                UpdateRemoteValue(UpdateType.ErrorCode);
+                ProductionRepository.UpdateRemoteValue(this, UpdateType.ErrorCode);
                 EmailManager.SendErrorMail(this);
             }
         }

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Helpers;
-using VirtualCampaign_Manager.Loaders;
+using VirtualCampaign_Manager.Transfers;
 
 namespace VirtualCampaign_Manager.Encoding
 {
@@ -51,7 +51,7 @@ namespace VirtualCampaign_Manager.Encoding
             audioTransferPacket.FailureEvent += OnAudioTransferFailure;
             audioTransferPacket.SuccessEvent += OnAudioTransferSuccess;
 
-            TransferManager.AddTransferPacket(audioTransferPacket);
+            DownloadManager.Instance.AddTransferPacket(audioTransferPacket);
         }
 
         private void OnAudioTransferFailure(Object obj, EventArgs ea)

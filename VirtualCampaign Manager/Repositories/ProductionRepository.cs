@@ -20,18 +20,8 @@ namespace VirtualCampaign_Manager.Repositories
 
             if (productionDict.Count > 0)
             {
-                result = ProductionParser.ParseList(Production, ProductionDict);
+                result = ProductionParser.ParseList(productionDict);
             }
-
-            result = new List<Production>(result.OrderBy(item => item.Position));
-
-            //find first clip to be rendered
-            foreach (Production Production in result)
-                if (!Production.IsDicative)
-                {
-                    Production.IsFirstRealClip = true;
-                    break;
-                }
 
             return result;
         }

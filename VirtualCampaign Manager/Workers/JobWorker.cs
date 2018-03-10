@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using VirtualCampaign_Manager.Data;
-using VirtualCampaign_Manager.Loaders;
+using VirtualCampaign_Manager.Transfers;
 
 namespace VirtualCampaign_Manager.Workers
 {
@@ -45,19 +45,20 @@ namespace VirtualCampaign_Manager.Workers
                     DownloadMotifs();
                     break;
                 case JobStatus.JS_CREATE_RENDERFILES:
-                    PrepareRenderfiles();
+                    //PrepareRenderfiles();
                     break;
                 case JobStatus.JS_SEND_RENDER_JOB:
-                    RenderJob();
+                    //RenderJob();
                     break;
                 case JobStatus.JS_GET_JOB_ID:
-                    Status = JobStatus.JS_RENDER_JOB;
+                    job.Status = JobStatus.JS_RENDER_JOB;
                     break;
                 case JobStatus.JS_RENDER_JOB:
-                    CheckRenderStatus();
+                    //CheckRenderStatus();
                     break;
                 case JobStatus.JS_SEND_ENCODE_JOB:
                     //Alle außer ZIP normal encoden
+                    /*
                     if (_Production.CodecInfoList[0].Codec.ID != 12)
                     {
                         EncodeJob();
@@ -83,10 +84,11 @@ namespace VirtualCampaign_Manager.Workers
                         System.IO.Compression.ZipFile.CreateFromDirectory(sourceDirectory, targetFile);
                         this.Status = JobStatus.JS_ENCODINGDONE;
                     }
+                    */
                     break;
                 case JobStatus.JS_ENCODINGDONE:
-                    reset = false;
-                    CleanUp();
+                    //reset = false;
+                    //CleanUp();
                     break;
             }
         }
@@ -100,7 +102,7 @@ namespace VirtualCampaign_Manager.Workers
                 TransferPacket motifTransferPacket = new TransferPacket(job, motif);
                 motifTransferPacket.FailureEvent += OnMotifTransferFailure;
                 motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
-                TransferManager.AddTransferPacket(motifTransferPacket);
+                DownloadManager.Instance.AddTransferPacket(motifTransferPacket);
             }
         }
         

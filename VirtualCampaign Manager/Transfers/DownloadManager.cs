@@ -1,6 +1,8 @@
 ﻿using ComponentPro.Net;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,17 +11,31 @@ using VirtualCampaign_Manager.Workers;
 
 namespace VirtualCampaign_Manager.Transfers
 {
-    public static class TransferManager
+    public sealed class DownloadManager : INotifyPropertyChanged
     {
-        public static EventHandler<ResultEventArgs> SuccessEvent;
-        public static EventHandler<ResultEventArgs> FailureEvent;
+        public EventHandler<ResultEventArgs> SuccessEvent;
+        public EventHandler<ResultEventArgs> FailureEvent;
 
-        private static Dictionary<string, Sftp> FtpClientsDict = new Dictionary<string, Sftp>();
-        private static Dictionary<string, int> FtpTransfersDict = new Dictionary<string, int>();
+        private Dictionary<string, Sftp> FtpClientsDict = new Dictionary<string, Sftp>();
+        private Dictionary<string, int> FtpTransfersDict = new Dictionary<string, int>();
 
-        private static List<TransferPacket> TransferPacketList = new List<TransferPacket>();
+        private ObservableCollection<TransferPacket> transferPacketList = new ObservableCollection<TransferPacket>();
+        public ObservableCollection<TransferPacket> TransferPacketList
+        {
+            get
+            {
+                return transferPacketList;
+            }
+            set
+            {
+                if (value == transferPacketList) return;
 
-        public static void AddTransferPacket(TransferPacket Packet)
+                transferPacketList = value;
+                RaisePropertyChangedEvent("TransferPacketList");
+            }
+        }
+
+        public void AddTransferPacket(TransferPacket Packet)
         {
             if (TransferPacketList.Any(item => item.SourcePath == Packet.SourcePath && item.TargetPath == Packet.TargetPath) == false)
             {
@@ -29,7 +45,7 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        private static void CheckClient(TransferPacket packet)
+        private void CheckClient(TransferPacket packet)
         {
             if (FtpClientsDict.ContainsKey(packet.LoginData.Url+packet.LoginData.Username) == false)
             {
@@ -43,7 +59,7 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        private static void FtpClient_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
+        private void FtpClient_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
         {
             Sftp ftpClient = sender as Sftp;
             Object task = e.UserState;
@@ -73,7 +89,7 @@ namespace VirtualCampaign_Manager.Transfers
             Continue();
         }
 
-        private static void Continue()
+        private void Continue()
         {
             if (TransferPacketList.Count == 0) return;
 
@@ -111,7 +127,7 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        private static Sftp GetClientForTransfer(string clientKey, TransferPacket packet)
+        private Sftp GetClientForTransfer(string clientKey, TransferPacket packet)
         {
             Sftp ftpClient = FtpClientsDict[clientKey];
 
@@ -135,7 +151,7 @@ namespace VirtualCampaign_Manager.Transfers
             return ftpClient;
         }
 
-        private static void FireSuccessEvent(TransferPacket packet)
+        private void FireSuccessEvent(TransferPacket packet)
         {
             EventHandler<ResultEventArgs> successEvent = SuccessEvent;
             if (successEvent != null)
@@ -144,12 +160,45 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        private static void FireFailureEvent(TransferPacket packet)
+        private void FireFailureEvent(TransferPacket packet)
         {
             EventHandler<ResultEventArgs> failureEvent = FailureEvent;
             if (failureEvent != null)
             {
                 failureEvent(null, new ResultEventArgs(packet));
+            }
+        }
+        private static volatile DownloadManager instance;
+        private static object syncRoot = new object();
+
+        private DownloadManager() { }
+
+        public static DownloadManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    lock (syncRoot)
+                    {
+                        if (instance == null)
+                        {
+                            instance = new DownloadManager();
+                        }
+                    }
+                }
+
+                return instance;
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void RaisePropertyChangedEvent(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
+                PropertyChanged(null, e);
             }
         }
     }

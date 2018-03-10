@@ -155,7 +155,7 @@ namespace VirtualCampaign_Manager.Transfers
         {
             Parent = Film;
             SourcePath = "";
-            TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + AccountID + "/motifs/" + Motif.DownloadName;
+            //TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + AccountID + "/motifs/" + Motif.DownloadName;
             Type = TransferType.RemoteUpload;
             LoginData = Settings.FtpUserDirectoryLogin;
         }
