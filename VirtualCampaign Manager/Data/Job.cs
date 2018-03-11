@@ -29,6 +29,7 @@ namespace VirtualCampaign_Manager.Data
         JES_DEADLINE_REGISTER_ENCODINGJOB = 13,
         JES_ENCODE_IMAGES = 14,
         JES_PREVIEWFRAME_MISSING = 15,
+        JES_COMP_MISSING = 16
     };
 
     public enum JobStatus
@@ -254,6 +255,15 @@ namespace VirtualCampaign_Manager.Data
             {
                 return Production.ProductionDirectory;
             }
+        }
+
+        public void Reset()
+        {
+            IsActive = false;
+            workerThread.Abort();
+            Status = JobStatus.JS_IDLE;
+
+            //TODO: Kill Render Task
         }
 
         private Thread workerThread;

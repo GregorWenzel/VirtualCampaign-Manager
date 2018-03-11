@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Rendering;
 using VirtualCampaign_Manager.Transfers;
 
 namespace VirtualCampaign_Manager.Workers
@@ -29,8 +30,6 @@ namespace VirtualCampaign_Manager.Workers
             if (job.IsActive == false || job.Status == JobStatus.JS_DONE || job.ErrorStatus != JobErrorStatus.JES_NONE)
                 return;
 
-            bool success = false;
-
             switch (job.Status)
             {
                 case JobStatus.JS_IDLE:
@@ -45,7 +44,7 @@ namespace VirtualCampaign_Manager.Workers
                     DownloadMotifs();
                     break;
                 case JobStatus.JS_CREATE_RENDERFILES:
-                    //PrepareRenderfiles();
+                    PrepareRenderFiles();
                     break;
                 case JobStatus.JS_SEND_RENDER_JOB:
                     //RenderJob();
@@ -112,6 +111,12 @@ namespace VirtualCampaign_Manager.Workers
             DirectoryWorker.FailureEvent -= OnCreateDirectoryFailure;
             job.Status = JobStatus.JS_PREPARE_RESOURCES;
             Work();
+        }
+
+        private void PrepareRenderFiles()
+        {
+            RenderFilePreparer renderFilePreparer = new RenderFilePreparer(job);
+            renderFilePreparer.FailureEvent += On
         }
 
         private void OnCreateDirectoryFailure(object obj, ResultEventArgs ea)

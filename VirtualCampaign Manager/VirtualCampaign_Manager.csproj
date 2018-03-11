@@ -133,6 +133,8 @@
     <Compile Include="Helpers\VCProcess.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Rendering\CompositionModifier.cs" />
+    <Compile Include="Rendering\RenderFilePreparer.cs" />
     <Compile Include="Transfers\UploadManager.cs" />
     <Compile Include="Transfers\DownloadManager.cs" />
     <Compile Include="Transfers\FilmUploader.cs" />

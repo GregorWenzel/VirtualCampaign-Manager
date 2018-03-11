@@ -16,5 +16,13 @@ namespace VirtualCampaign_Manager.Helpers
                 Directory.CreateDirectory(Path);
             }
         }
+
+        public static void DeleteDirectory(string Path)
+        {
+            if (Directory.Exists(Path))
+            {
+                Directory.Delete(Path, true);
+            }
+        }
     }
 }

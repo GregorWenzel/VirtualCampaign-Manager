@@ -86,6 +86,7 @@ namespace VirtualCampaign_Manager
             {JobErrorStatus.JES_ENCODE_IMAGES, "Encode MPEG"},
             {JobErrorStatus.JES_OUTPUTFILE_COUNT_MISMATCH, "Output count mismatch"},
             {JobErrorStatus.JES_PREVIEWFRAME_MISSING, "Preview frame missing" },
+            {JobErrorStatus.JES_COMP_MISSING, "Comp file missing" }
         };
 
         public static Dictionary<int, FilmOutputFormat> CodecDict = new Dictionary<int, FilmOutputFormat>();

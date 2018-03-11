@@ -34,5 +34,22 @@ namespace VirtualCampaign_Manager.Helpers
         {
             return Path.Combine(GetLocalJobDirectory(Job), "output");
         }
+
+        public static string GetProductCompositionPath(Job job)
+        {
+            string formattedIndex = String.Format("{0:D4}", job.ProductID);
+            return Path.Combine(new string[] { ProductionPathHelper.GetProductPath(job.ProductID), formattedIndex, formattedIndex + ".comp" }); 
+        }
+
+        public static string GetProductCompositionDirectory(Job job)
+        {
+            string formattedIndex = String.Format("{0:D4}", job.ProductID);
+            return Path.Combine(ProductionPathHelper.GetProductPath(job.ProductID), formattedIndex);
+        }
+
+        public static string GetLocalJobRenderOutputDirectoryForZip(Job job)
+        {
+            return Path.Combine(GetLocalJobRenderOutputDirectory(job), "F" + job.OutputExtension);
+        }
     }
 }

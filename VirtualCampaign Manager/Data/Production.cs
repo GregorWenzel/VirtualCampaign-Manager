@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using VirtualCampaign_Manager.Helpers;
 using VirtualCampaign_Manager.Managers;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Workers;
@@ -41,6 +42,9 @@ namespace VirtualCampaign_Manager.Data
 
     public class Production : VCObject
     {
+        public EventHandler<EventArgs> SuccessEvent;
+        public EventHandler<ResultEventArgs> FailureEvent;
+
         //list of jobs associated to this production
         public List<Job> JobList;
 
@@ -374,92 +378,42 @@ namespace VirtualCampaign_Manager.Data
             workerThread = new Thread(worker.Work);
             workerThread.Start();
         }
-
-        private void CleanUp()
-        {
-            string path = SourceProductionDirectory;
-            if (System.IO.Directory.Exists(path))
-            {
-                try
-                {
-                    System.IO.Directory.Delete(path, true);
-                }
-                catch
-                {
-                }
-            }
-        }
-
+        
         public void Reset()
         {
-            CleanUp();
             foreach (Job thisJob in JobList)
             {
-                thisJob.Delete();
+                thisJob.Reset();
             }
 
-            uploadCounter = 0;
-            this.ErrorStatus = ProductionErrorStatus.PES_NONE;
-            this.Status = ProductionStatus.PS_READY;
-
-            this.Execute();
+            IOHelper.DeleteDirectory(ProductionPathHelper.GetLocalProductionDirectory(this));
+            
+            ErrorStatus = ProductionErrorStatus.PES_NONE;
+            Status = ProductionStatus.PS_READY;
         }
 
         private void UpdateHistoryTable()
         {
-            DateTime temp = new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
-            TimeSpan span = (this.UpdateDate.ToLocalTime() - temp);
-
-            Dictionary<string, string> param = new Dictionary<string, string>
-            {   { "productionID", this.ID.ToString() },
-                   { "updateTime", Convert.ToInt64(span.TotalSeconds).ToString() },
-            };
-
-            int[] jobIdList = new int[JobList.Count];
-            string[] totalMotifIDList = new string[JobList.Count];
-            int[] isDicativeList = new int[JobList.Count];
-
-            for (int i = 0; i < JobList.Count; i++)
-            {
-                jobIdList[i] = JobList[i].ProductID;
-
-                if (JobList[i].IsDicative)
-                    isDicativeList[i] = 1;
-                else
-                    isDicativeList[i] = 0;
-
-                int[] motifIDList = new int[JobList[i].MotifList.Count];
-
-                for (int j = 0; j < JobList[i].MotifList.Count; j++)
-                {
-                    motifIDList[j] = JobList[i].MotifList[j].ID;
-                }
-
-                totalMotifIDList[i] = String.Join(".", motifIDList);
-            }
-
-            param["DicativeList"] = String.Join(",", isDicativeList);
-            param["JobIDList"] = String.Join(",", jobIdList);
-            param["MotifIDList"] = String.Join(",", totalMotifIDList);
-            param["FilmID"] = Convert.ToString(this.Film.ID);
-            param["AccountID"] = Convert.ToString(this.AccountID);
-            param["FilmName"] = this.Name;
-
-            RemoteDataManager.UpdateHistory(param);
-            this.Status = ProductionStatus.PS_DONE;
-
-            RemoveMyself();
-        }
-
-        private void RemoveMyself()
-        {
-            this.OnFinishedEvent(new EventArgs());
+            FilmRepository.UpdateHistoryTable(this);
+            Status = ProductionStatus.PS_DONE;
+            FireSuccessEvent();
         }
 
         public void Delete()
         {
-             ProductionRepository.DeleteProduction(this);
-            this.OnFinishedEvent(new EventArgs());
+            ProductionRepository.DeleteProduction(this);
+            FireSuccessEvent();
         }
+
+        protected void FireSuccessEvent()
+        {
+            SuccessEvent?.Invoke(null, new EventArgs());
+        }
+
+        protected void FireFailureEvent(object ResultObject = null)
+        {
+            FailureEvent?.Invoke(null, new ResultEventArgs(ResultObject));
+        }
+
     }
 }
