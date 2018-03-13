@@ -49,7 +49,7 @@ namespace VirtualCampaign_Manager.Data
         JS_HAS_ERRORS
     };
 
-    public class Job : VCObject
+    public class Job : VCObject, INotifyPropertyChanged
     {
         private static readonly Object obj = new Object();
 

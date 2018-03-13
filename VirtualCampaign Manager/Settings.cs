@@ -15,6 +15,8 @@ namespace VirtualCampaign_Manager
         public static string Version = "4.0b";
         //interval for polling new productions in milliseconds
         public static int MainUpdateInterval = 2000;
+        //interval for polling new animated motifs to generate preview frame for
+        public static int MotifUpdateInterval = 10000;
         //max number of parallel downloads
         public static int MaxDownloadCount = 3;
         //max number of failed transfers before giving up

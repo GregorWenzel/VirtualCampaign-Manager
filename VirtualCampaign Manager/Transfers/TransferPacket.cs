@@ -12,6 +12,7 @@ namespace VirtualCampaign_Manager.Transfers
 {
     public enum TransferType
     {
+        DownloadAnimatedMotif,
         DownloadAudio,
         DownloadMotif,
         UploadFilmPreviewDirectory,
@@ -150,6 +151,16 @@ namespace VirtualCampaign_Manager.Transfers
             SourcePath = "";
             TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + AccountID + "/motifs/" + Motif.DownloadName;
             Type = TransferType.UploadMotifPreview;
+            LoginData = Settings.FtpUserDirectoryLogin;
+        }
+
+        //transfers an animated motif from remote to local file system
+        public TransferPacket(AnimatedMotif motif)
+        {
+            Parent = motif;
+            SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + motif.AccountID + "/motifs/" + motif.ID + motif.Extension;
+            TargetPath = Path.Combine(Settings.LocalProductionPath, motif.ID);
+            Type = TransferType.DownloadAnimatedMotif;
             LoginData = Settings.FtpUserDirectoryLogin;
         }
 

@@ -13,7 +13,8 @@ namespace VirtualCampaign_Manager.MainHub
 {
     public class MainHubViewModel : INotifyPropertyChanged
     {
-        private Timer timer;
+        private Timer productionsTimer;
+        private Timer animatedMotifsTimer;
 
         private ObservableCollection<Job> jobList;
 
@@ -23,15 +24,42 @@ namespace VirtualCampaign_Manager.MainHub
             set { jobList = value; }
         }
 
+        private ObservableCollection<AnimatedMotif> animatedMotifList;
+
+        public ObservableCollection<AnimatedMotif> AnimatedMotifList
+        {
+            get { return animatedMotifList; }
+            set { animatedMotifList = value; }
+        }
+
+
         private List<Production> productionList;
 
         public MainHubViewModel()
         {
             productionList = new List<Production>();
 
-            timer = new Timer();
-            timer.Interval = Settings.MainUpdateInterval;
-            timer.Elapsed += Timer_Elapsed;
+            productionsTimer = new Timer();
+            productionsTimer.Interval = Settings.MainUpdateInterval;
+            productionsTimer.Elapsed += Timer_Elapsed;
+
+            animatedMotifsTimer = new Timer();
+            animatedMotifsTimer.Interval = Settings.MotifUpdateInterval;
+            animatedMotifsTimer.Elapsed += AnimatedMotifsTimer_Elapsed;
+        }
+
+        private void AnimatedMotifsTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            List<AnimatedMotif> animatedMotifListBuffer = ProductionRepository.ReadAnimatedMotifs();
+
+            foreach (AnimatedMotif newAnimatedMotif in animatedMotifListBuffer)
+            {
+                if (animatedMotifList.Any(item => item.ID == newAnimatedMotif.ID) == false)
+                {
+                    animatedMotifList.Add(newAnimatedMotif);
+                    newAnimatedMotif.StartWorker();
+                }
+            }
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)

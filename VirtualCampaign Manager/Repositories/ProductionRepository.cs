@@ -10,6 +10,22 @@ namespace VirtualCampaign_Manager.Repositories
 {
     public static class ProductionRepository
     {
+        public static List<AnimatedMotif> ReadAnimatedMotifs()
+        {
+            List<AnimatedMotif> result = new List<AnimatedMotif>();
+
+            string animatedMotifListString = RemoteDataManager.ExecuteRequest("getOpenMotifList");
+
+            List<Dictionary<string, string>> motifDict = JsonDeserializer.Deserialize(animatedMotifListString);
+
+            if (motifDict.Count > 0)
+            {
+                result = MotifParser.ParseAnimatedMotifList(motifDict);
+            }
+
+            return result;
+        }
+
         public static List<Production> ReadProductions()
         {
             List<Production> result = new List<Production>();

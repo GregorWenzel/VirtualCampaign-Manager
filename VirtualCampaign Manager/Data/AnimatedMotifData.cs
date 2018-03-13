@@ -8,7 +8,7 @@ using VirtualCampaign_Manager.Data;
 
 namespace VirtualCampaign_Manager.Model
 {
-    public class AnimMotifData : VCObject
+    public class AnimatedMotif : VCObject
     {
         public int AccountID;
         public string Extension;

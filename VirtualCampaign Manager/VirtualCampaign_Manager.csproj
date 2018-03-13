@@ -107,6 +107,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Data\AnimatedMotif.cs" />
     <Compile Include="Data\AnimatedMotifData.cs" />
     <Compile Include="Data\AudioData.cs" />
     <Compile Include="Data\DownloadData.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="Data\Production.cs" />
     <Compile Include="Data\RenderChunkStatus.cs" />
     <Compile Include="Data\VCObject.cs" />
+    <Compile Include="Encoding\AnimatedMotifDecoder.cs" />
     <Compile Include="Encoding\AudioEncoder.cs" />
     <Compile Include="Encoding\ClipJoiner.cs" />
     <Compile Include="Encoding\FilmEncoder.cs" />
@@ -136,6 +138,7 @@
     <Compile Include="Helpers\VCProcess.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Parsers\MotifParser.cs" />
     <Compile Include="Parsers\RenderIDParser.cs" />
     <Compile Include="Rendering\CompositionModifier.cs" />
     <Compile Include="Rendering\DeadlineFileWriter.cs" />
@@ -164,6 +167,7 @@
     <Compile Include="Repositories\ProductionRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Workers\AnimatedMotifWorker.cs" />
     <Compile Include="Workers\DirectoryWorker.cs" />
     <Compile Include="Workers\JobRenderProgressMonitor.cs" />
     <Compile Include="Workers\JobWorker.cs" />
