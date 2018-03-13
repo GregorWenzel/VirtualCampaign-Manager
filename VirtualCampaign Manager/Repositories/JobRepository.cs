@@ -20,13 +20,13 @@ namespace VirtualCampaign_Manager.Repositories
 
     public static class JobRepository
     {
-        public static List<Job> ReadJobs(Production Production)
+        public static List<Job> ReadJobs(Production production)
         {
             List<Job> result = new List<Job>();
 
             Dictionary<string, string> param = new Dictionary<string, string>
-            {   { "productionID", Production.ID.ToString() },
-                { "is_preview", Convert.ToInt32(Production.IsPreview).ToString() }
+            {   { "productionID", production.ID.ToString() },
+                { "is_preview", Convert.ToInt32(production.IsPreview).ToString() }
             };
 
             string productionListString = RemoteDataManager.ExecuteRequest("getJobsByProductionID", param);
@@ -34,18 +34,21 @@ namespace VirtualCampaign_Manager.Repositories
             
             if (jobDict.Count > 0)
             {
-                result = JobParser.ParseList(Production, jobDict);
+                result = JobParser.ParseList(production, jobDict);
             }
                         
             result = new List<Job>(result.OrderBy(item => item.Position));
 
             //find first clip to be rendered
             foreach (Job job in result)
+            {
+                job.Production = production;
                 if (!job.IsDicative)
                 {
                     job.IsFirstRealClip = true;
                     break;
                 }
+            }
 
             return result;
         }

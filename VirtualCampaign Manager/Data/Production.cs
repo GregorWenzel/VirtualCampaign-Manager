@@ -375,8 +375,17 @@ namespace VirtualCampaign_Manager.Data
         {
             IsActive = true;
             worker = new ProductionWorker(this);
+            worker.SuccessEvent += OnProductionSuccess;
             workerThread = new Thread(worker.Work);
             workerThread.Start();
+        }
+
+        private void OnProductionSuccess(object sender, EventArgs ea)
+        {
+            worker.SuccessEvent -= OnProductionSuccess;
+            workerThread.Abort();
+            workerThread = null;
+            FireSuccessEvent();
         }
         
         public void Reset()
@@ -390,19 +399,6 @@ namespace VirtualCampaign_Manager.Data
             
             ErrorStatus = ProductionErrorStatus.PES_NONE;
             Status = ProductionStatus.PS_READY;
-        }
-
-        private void UpdateHistoryTable()
-        {
-            FilmRepository.UpdateHistoryTable(this);
-            Status = ProductionStatus.PS_DONE;
-            FireSuccessEvent();
-        }
-
-        public void Delete()
-        {
-            ProductionRepository.DeleteProduction(this);
-            FireSuccessEvent();
         }
 
         protected void FireSuccessEvent()

@@ -42,12 +42,31 @@ namespace VirtualCampaign_Manager.MainHub
             {
                 if (productionList.Any(item => item.ID == newProduction.ID) == false)
                 {
+                    newProduction.SuccessEvent += OnProductionSuccess;
                     productionList.Add(newProduction);
                     foreach (Job newJob in newProduction.JobList)
                     {
                         jobList.Add(newJob);
                     }
-                    newProduction.InitializeWorker();
+                    newProduction.StartWorker();
+                }
+            }
+        }
+
+        private void OnProductionSuccess(object sender, EventArgs ea)
+        {
+            Production production = sender as Production;
+            production.SuccessEvent -= OnProductionSuccess;
+            if (productionList.Any(item => item.ID == production.ID))
+            {
+                productionList.Remove(production);
+
+                foreach (Job job in production.JobList)
+                {
+                    if (jobList.Any(item => item.ID == job.ID))
+                    {
+                        jobList.Remove(job);
+                    }
                 }
             }
         }

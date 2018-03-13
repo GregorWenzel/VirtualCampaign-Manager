@@ -225,7 +225,7 @@ namespace VirtualCampaign_Manager.Managers
             DateTime dt = DateTime.Now;
             string result = "Job ID: " + job.ID;
             result += "Product ID: " + job.ProductID;
-            result += "Error Code: " + job.ErrorCode + "\r\n";
+            result += "Error Code: " + job.ErrorStatus + "\r\n";
             result += "Production ID: " + production.ID + "\r\n";
             result += "Production Name: " + production.Name + "\r\n";
             result += "User ID: " + production.AccountID + "\r\n";

@@ -184,7 +184,7 @@ namespace VirtualCampaign_Manager.Rendering
                         else
                             success = success && SetNumericValueInTool(motif.LoaderName, "StartFrame", "1");
 
-                        string motifPath = Path.Combine(new string[] { job.SourceJobDirectory, motif.DownloadName, job._Production.EncodingProductionDirectory, "motifs", motif.Id, "motif_F0001.tga" });
+                        string motifPath = ProductionPathHelper.GetProductionAnimatedMotifPath(job.Production, motif);
 
                         success = success && SetValueInTool(motif.LoaderName, "Filename", motifPath)
                             && SetValueInTool(motif.LoaderName, "FormatID", "TargaFormat")
@@ -246,7 +246,7 @@ namespace VirtualCampaign_Manager.Rendering
                 {
                     start = i;
                     end = GetEndLine(start);
-                    if (SetFootageValue(start, end, "Filename", Path.Combine(SettingManager.Instance.ProductDirectory, job.FormattedProductID))) ;
+                    if (SetFootageValue(start, end, "Filename", ProductionPathHelper.GetProductPath(job.ProductID)));
                     result++;
                 }
 
@@ -272,13 +272,6 @@ namespace VirtualCampaign_Manager.Rendering
         {
             string result = CompLines[index];
 
-            /*
-            int start = result.IndexOf("\"");
-            int end = result.IndexOf(job.FormattedProductID+@"\\footage");
-
-            result = result.Remove(start + 1, end - start - 1).Replace(@"\\", @"\");
-            result = result.Insert(start+1, value + @"\");
-            */
             result = result.Replace(@"\\", @"\");
 
             result = result.Replace("comp:", value);
@@ -320,7 +313,7 @@ namespace VirtualCampaign_Manager.Rendering
 
         private void WriteComposition()
         {
-            string path = Path.Combine(job.EncodingJobDirectory, job.ID + ".comp");
+            string path = JobPathHelper.GetJobCompPath(job);
             File.WriteAllLines(path, CompLines);
         }
 
@@ -330,7 +323,7 @@ namespace VirtualCampaign_Manager.Rendering
             int end = -1;
             ToolName += " = ";
 
-            logger.WriteLine("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
+            //logger.WriteLine("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
 
             for (int i = 0; i < CompLines.Length; i++)
                 if (CompLines[i].Contains(ToolName))
@@ -382,7 +375,7 @@ namespace VirtualCampaign_Manager.Rendering
             int end = -1;
             ToolName += " = ";
 
-            logger.WriteLine("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
+            //logger.WriteLine("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
 
             for (int i = 0; i < CompLines.Length; i++)
                 if (CompLines[i].Contains(ToolName))

@@ -25,6 +25,11 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetProductionMotifDirectory(production), motif.DownloadName);
         }
 
+        public static string GetProductionAnimatedMotifPath(Production production, Motif motif)
+        {
+            return Path.Combine(new string[] { GetProductionMotifDirectory(production), motif.Id, "motif_F0001.tga" });
+        }
+
         public static string GetFullMp4Path(Production production)
         {
             return Path.Combine(GetLocalProductionDirectory(production), "full.mp4");

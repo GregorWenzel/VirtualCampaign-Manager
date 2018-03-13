@@ -12,6 +12,7 @@ namespace VirtualCampaign_Manager.Transfers
 {
     public enum TransferType
     {
+        DownloadAudio,
         DownloadMotif,
         UploadFilmPreviewDirectory,
         UploadFilmDirectory,
@@ -131,16 +132,14 @@ namespace VirtualCampaign_Manager.Transfers
                 RaisePropertyChangedEvent("Status");
             }
         }
-
-
-
+        
         //transfers a motif from remote user account to local filesystem
         public TransferPacket(Job Job, Motif Motif)
         {
             Parent = Job;
             SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + Job.AccountID + "/motifs/" + Motif.DownloadName;
             TargetPath = Path.Combine(Job.Production.ProductionDirectory, "motifs", Motif.DownloadName);
-            Type = TransferType.RemoteDownload;
+            Type = TransferType.DownloadMotif;
             LoginData = Settings.FtpUserDirectoryLogin;
         }
 
@@ -150,7 +149,7 @@ namespace VirtualCampaign_Manager.Transfers
             Parent = AccountID;
             SourcePath = "";
             TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + AccountID + "/motifs/" + Motif.DownloadName;
-            Type = TransferType.RemoteUpload;
+            Type = TransferType.UploadMotifPreview;
             LoginData = Settings.FtpUserDirectoryLogin;
         }
 
@@ -187,7 +186,7 @@ namespace VirtualCampaign_Manager.Transfers
             Parent = AudioData;
             SourcePath = AudioData.Filename;
             TargetPath = AudioData.AudioPath;
-            Type = TransferType.RemoteDownload;
+            Type = TransferType.DownloadAudio;
             LoginData = Settings.FtpAudioDirectoryLogin;
         }
 

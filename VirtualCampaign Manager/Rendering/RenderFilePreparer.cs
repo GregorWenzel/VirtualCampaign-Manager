@@ -26,19 +26,20 @@ namespace VirtualCampaign_Manager.Rendering
 
         private bool PrepareComposition()
         {
-            bool result;
+            CompositionModifier compModifier = new CompositionModifier(job);
+            compModifier.Modify();
+            job.ErrorStatus = compModifier.ErrorStatus;
 
-
-
-            return result;
+            return job.ErrorStatus == JobErrorStatus.JES_NONE;
         }
 
         private bool PrepareDeadlineFiles()
         {
-            bool result;
-
-
-
+            bool result = DeadlineFileWriter.WriteJobFile(job);
+            if (result == false)
+            {
+                job.ErrorStatus = JobErrorStatus.JES_DEADLINE_CREATE_FILES;
+            }
             return result;
         }
     }

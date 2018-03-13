@@ -47,13 +47,13 @@ namespace VirtualCampaign_Manager.Workers
                     PrepareRenderFiles();
                     break;
                 case JobStatus.JS_SEND_RENDER_JOB:
-                    //RenderJob();
+                    RenderJob();
                     break;
                 case JobStatus.JS_GET_JOB_ID:
                     job.Status = JobStatus.JS_RENDER_JOB;
                     break;
                 case JobStatus.JS_RENDER_JOB:
-                    //CheckRenderStatus();
+                    MonitorRenderStatus();
                     break;
                 case JobStatus.JS_SEND_ENCODE_JOB:
                     //Alle außer ZIP normal encoden
@@ -116,7 +116,29 @@ namespace VirtualCampaign_Manager.Workers
         private void PrepareRenderFiles()
         {
             RenderFilePreparer renderFilePreparer = new RenderFilePreparer(job);
-            renderFilePreparer.FailureEvent += On
+            if (renderFilePreparer.Prepare() == true)
+            {
+                job.Status = JobStatus.JS_SEND_RENDER_JOB;
+                Work();
+            }
+        }
+
+        private void RenderJob()
+        {
+            if (DeadlineRenderer.Render(job) == true)
+            {
+                job.Status = JobStatus.JS_RENDER_JOB;
+                Work();
+            }
+            else
+            {
+                job.ErrorStatus = JobErrorStatus.JES_DEADLINE_REGISTER_RENDERJOB;
+            }
+        }
+
+        private void MonitorRenderStatus()
+        {
+
         }
 
         private void OnCreateDirectoryFailure(object obj, ResultEventArgs ea)

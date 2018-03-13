@@ -27,7 +27,6 @@ namespace VirtualCampaign_Manager.Data
             this.Frames = 0;
         }
 
-        /*
         public bool IsMovie
         {
             get
@@ -35,7 +34,6 @@ namespace VirtualCampaign_Manager.Data
                 return (Extension == ".avi" || Extension == ".mov" || Extension == ".wmv" || Extension == ".mpg" || Extension == ".mpeg" || Extension == ".mp4");
             }
         }
-        */
 
         public string Id
         {

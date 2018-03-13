@@ -35,35 +35,33 @@ namespace VirtualCampaign_Manager.Repositories
             RemoteDataManager.DeleteProduction(param);
         }
 
-        public static void UpdateRemoteValue(Production Prodcution, UpdateType Type)
+        public static void UpdateRemoteValue(Production production, UpdateType type)
         {
-            if (!CanUpdateRemoteData) return;
-
             DateTime temp = new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
-            TimeSpan span = (Prodcution.UpdateDate.ToLocalTime() - temp);
+            TimeSpan span = (production.UpdateDate.ToLocalTime() - temp);
 
             Dictionary<string, string> param = new Dictionary<string, string>
-            {   { "productionID", Prodcution.ID.ToString() },
+            {   { "productionID", production.ID.ToString() },
                 { "updateTime", Convert.ToInt64(span.TotalSeconds).ToString() }
             };
 
-            switch (Type)
+            switch (type)
             {
                 case UpdateType.Status:
-                    param["status"] = ((int)Prodcution.Status).ToString();
+                    param["status"] = ((int)production.Status).ToString();
                     RemoteDataManager.UpdateProduction(param);
                     break;
                 case UpdateType.ErrorCode:
-                    param["error_code"] = ((int)Prodcution.ErrorStatus).ToString();
+                    param["error_code"] = ((int)production.ErrorStatus).ToString();
                     RemoteDataManager.UpdateProduction(param);
                     break;
                 case UpdateType.Film:
-                    param["duration"] = (IndicativeFrames + AbdicativeFrames + ClipFrames).ToString();
+                    param["duration"] = production.TotalFrameCount.ToString();
                     param["size"] = sizeString;
-                    JSONRemoteManager.Instance.UpdateFilm(param);
+                    RemoteDataManager.UpdateFilm(param);
                     break;
                 case UpdateType.Priority:
-                    param["priority"] = Prodcution.Priority.ToString();
+                    param["priority"] = production.Priority.ToString();
                     RemoteDataManager.UpdateProduction(param);
                     break;
             }

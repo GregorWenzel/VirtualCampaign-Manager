@@ -214,6 +214,9 @@ namespace VirtualCampaign_Manager.Data
         //ID of render job provided by deadline
         public string RenderJobID { get; set; }
 
+        public List<RenderChunkStatus> RenderChunkStatusList { get; set; }
+        public List<RenderChunkStatus> FinishedChunkList { get; set; }
+
         //process queue worker for rendering, encoding, etc.
         private JobWorker worker;
 

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Encoding;
+using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Transfers;
 
 namespace VirtualCampaign_Manager.Workers
@@ -165,9 +166,17 @@ namespace VirtualCampaign_Manager.Workers
 
         private void UpdateHistoryTable()
         {
-
+            FilmRepository.UpdateHistoryTable(production);
+            production.Status = ProductionStatus.PS_DONE;
+            Delete();
         }
- 
+
+        public void Delete()
+        {
+            ProductionRepository.DeleteProduction(production);
+            FireSuccessEvent();
+        }
+
         private bool CheckStatusOk()
         {
             if (production.JobList == null || production.JobList.Count == 0)
@@ -210,12 +219,12 @@ namespace VirtualCampaign_Manager.Workers
 
         private void FireSuccessEvent()
         {
-            SuccessEvent?.Invoke(null, new EventArgs());
+            SuccessEvent?.Invoke(this, new EventArgs());
         }
 
         private void FireFailureEvent()
         {
-            FailureEvent?.Invoke(null, new EventArgs());
+            FailureEvent?.Invoke(this, new EventArgs());
         }
     }
 }

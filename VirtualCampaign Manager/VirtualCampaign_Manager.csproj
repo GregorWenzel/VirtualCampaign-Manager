@@ -115,11 +115,13 @@
     <Compile Include="Data\LoginData.cs" />
     <Compile Include="Data\Motif.cs" />
     <Compile Include="Data\Production.cs" />
+    <Compile Include="Data\RenderChunkStatus.cs" />
     <Compile Include="Data\VCObject.cs" />
     <Compile Include="Encoding\AudioEncoder.cs" />
     <Compile Include="Encoding\ClipJoiner.cs" />
     <Compile Include="Encoding\FilmEncoder.cs" />
     <Compile Include="Encoding\PreviewFilmEncoder.cs" />
+    <Compile Include="Encoding\RenderChunkEncoder.cs" />
     <Compile Include="EventFireBase.cs" />
     <Compile Include="GlobalValues.cs" />
     <Compile Include="Helpers\ExternalPathHelper.cs" />
@@ -133,8 +135,12 @@
     <Compile Include="Helpers\VCProcess.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Parsers\RenderIDParser.cs" />
     <Compile Include="Rendering\CompositionModifier.cs" />
+    <Compile Include="Rendering\DeadlineFileWriter.cs" />
+    <Compile Include="Rendering\DeadlineRenderer.cs" />
     <Compile Include="Rendering\RenderFilePreparer.cs" />
+    <Compile Include="Rendering\RenderMonitor.cs" />
     <Compile Include="Transfers\UploadManager.cs" />
     <Compile Include="Transfers\DownloadManager.cs" />
     <Compile Include="Transfers\FilmUploader.cs" />
@@ -148,7 +154,6 @@
       <DependentUpon>MainHubView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Managers\EmailManager.cs" />
-    <Compile Include="Parsers\EncodingParameterParser.cs" />
     <Compile Include="Parsers\JobParser.cs" />
     <Compile Include="Parsers\JsonDeserializer.cs" />
     <Compile Include="Parsers\ProductionParser.cs" />
