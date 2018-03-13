@@ -4,23 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Helpers;
 
 namespace VirtualCampaign_Manager.Repositories
 {
     public static class FilmRepository
     {
-        public static void UpdateFilmDuration(Production Production)
+        public static void UpdateFilmDuration(Production production)
         {
             DateTime temp = new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
-            TimeSpan span = (Production.UpdateDate.ToLocalTime() - temp);
+            TimeSpan span = (production.UpdateDate.ToLocalTime() - temp);
 
             Dictionary<string, string> param = new Dictionary<string, string>
-            {   { "productionID", Production.ID.ToString() },
+            {   { "productionID", production.ID.ToString() },
                 { "updateTime", Convert.ToInt64(span.TotalSeconds).ToString() }
             };
 
-            param["duration"] =  Production.TotalFrameCount.ToString();
-            param["size"] = sizeString;
+            param["duration"] =  production.TotalFrameCount.ToString();
+            param["size"] = IOHelper.GetFilmFileSizeString(production);
             RemoteDataManager.UpdateFilm(param);
         }
 

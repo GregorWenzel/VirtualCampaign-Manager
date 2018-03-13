@@ -55,11 +55,6 @@ namespace VirtualCampaign_Manager.Repositories
                     param["error_code"] = ((int)production.ErrorStatus).ToString();
                     RemoteDataManager.UpdateProduction(param);
                     break;
-                case UpdateType.Film:
-                    param["duration"] = production.TotalFrameCount.ToString();
-                    param["size"] = sizeString;
-                    RemoteDataManager.UpdateFilm(param);
-                    break;
                 case UpdateType.Priority:
                     param["priority"] = production.Priority.ToString();
                     RemoteDataManager.UpdateProduction(param);

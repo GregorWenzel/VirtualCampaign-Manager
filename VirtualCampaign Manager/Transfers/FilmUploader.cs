@@ -9,7 +9,8 @@ namespace VirtualCampaign_Manager.Transfers
 {
     public class FilmUploader : EventFireBase
     {
-        Production production;
+        private Production production;
+        public string FilmSizeString;
 
         public FilmUploader(Production production)
         {

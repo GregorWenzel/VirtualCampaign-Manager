@@ -246,8 +246,10 @@ namespace VirtualCampaign_Manager.Rendering
                 {
                     start = i;
                     end = GetEndLine(start);
-                    if (SetFootageValue(start, end, "Filename", ProductionPathHelper.GetProductPath(job.ProductID)));
-                    result++;
+                    if (SetFootageValue(start, end, "Filename", ProductionPathHelper.GetProductPath(job.ProductID)))
+                    {
+                        result++;
+                    }
                 }
 
             return result;

@@ -81,7 +81,7 @@ namespace VirtualCampaign_Manager.Repositories
             string result = "";
             string postData = GetPostData(postDict);
             string url = ServiceCallString(serivceName);
-            byte[] byteArray = Encoding.ASCII.GetBytes(postData);
+            byte[] byteArray = System.Text.Encoding.ASCII.GetBytes(postData);
 
             HttpWebRequest request = (HttpWebRequest) WebRequest.Create(url);
             request.Method = "POST";

@@ -7,6 +7,7 @@ using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Helpers;
 
 namespace VirtualCampaign_Manager.Managers
 {
@@ -112,7 +113,7 @@ namespace VirtualCampaign_Manager.Managers
                 string targetFile = Path.Combine(targetDirectory, fileName);
                 string targetFileName = Path.Combine(production.Film.ID.ToString(), fileName);
                 fileName = production.Name + "_" + outputFormat.Size + "." + outputFormat.Extension;
-                result += "<p><a href='" + Path.Combine(new string[] { Settings.ExternalUserPath, Settings.AccountDirectory, targetFile }) + "'>" + fileName + "</a></p>";
+                result += "<p><a href='" + UriCombine.Uri.Combine(ExternalPathHelper.GetAccountFtpUrl(), targetFile ) + "'>" + fileName + "</a></p>";
             }
             return result;
         }
