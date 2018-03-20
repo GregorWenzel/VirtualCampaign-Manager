@@ -43,11 +43,11 @@ namespace VirtualCampaign_Manager.Rendering
 
             process.Execute();
             string output = process.StandardOutput.ReadToEnd();
-            job.RenderJobID = RenderIDParser.Parse(output);
+            job.RenderID = RenderIDParser.Parse(output);
             process.WaitForExit();
             process.Close();
 
-            return (job.RenderJobID != null);
+            return (job.RenderID != null);
         }
     }
 }

@@ -63,7 +63,7 @@ namespace VirtualCampaign_Manager.Parsers
                     //and continue from there
                     if (JobDict["RenderID"] != null && JobDict["RenderID"].Length > 0)
                     { 
-                        result.RenderJobID = Convert.ToString(JobDict["RenderID"]);
+                        result.RenderID = Convert.ToString(JobDict["RenderID"]);
                         if (currentStatus == JobStatus.JS_RENDER_JOB)
                         {
                             result.Status = JobStatus.JS_GET_JOB_ID;

@@ -13,7 +13,7 @@ namespace VirtualCampaign_Manager
 {
     public static class GlobalValues
     {
-        private static ObservableCollection<Production> productionList;
+        private static ObservableCollection<Production> productionList = new ObservableCollection<Production>();
 
         public static ObservableCollection<Production> ProductionList
         {
@@ -23,6 +23,14 @@ namespace VirtualCampaign_Manager
 
                 productionList = value;
             }
+        }
+
+        private static ObservableCollection<Job> jobList = new ObservableCollection<Job>();
+
+        public static ObservableCollection<Job> JobList
+        {
+            get { return jobList; }
+            set { jobList = value; }
         }
 
         public static Dictionary<ProductionStatus, string> ProductionStatusString = new Dictionary<ProductionStatus, string>()

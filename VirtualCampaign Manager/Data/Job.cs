@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Workers;
 
@@ -94,7 +95,7 @@ namespace VirtualCampaign_Manager.Data
         public int MasterProductID { get; set; }
 
         //List of motifs associated with this job
-        public List<Motif> MotifList;
+        public List<Motif> MotifList = new List<Motif>();
 
         //number of motifs downloaded/available on local file system
         private int motifsAvailableCount;
@@ -166,7 +167,36 @@ namespace VirtualCampaign_Manager.Data
         public Production Production { get; set; }
 
         //ID of production this job belongs  to
-        public int ProductionID { get { return Production.ID; } }
+        public int ProductionID
+        {
+            get
+            {
+                if (Production != null)
+                {
+                    return Production.ID;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+        }
+
+        public string IDString
+        {
+            get
+            {
+                return Production.Name + " (" + Production.Film.ID + ")";
+            }
+        }
+
+        public string UserIDString
+        {
+            get
+            {
+                return Production.Username + " (" + Production.AccountID + ")";
+            }
+        }
 
         private ProductionStatus _productionStatus;
         public ProductionStatus ProductionStatus
@@ -189,6 +219,23 @@ namespace VirtualCampaign_Manager.Data
             {
                 _productionErrorStatus = value;
                 RaisePropertyChangedEvent("ProductionStatusString");
+                RaisePropertyChangedEvent("ProductionStatusColor");
+            }
+        }
+
+        public Brush ProductionStatusColor
+        {
+            get
+            {
+                if (Production.ErrorStatus == ProductionErrorStatus.PES_NONE)
+                {
+                    return new SolidColorBrush(Colors.Black);
+                }
+                else
+                {
+                    return new SolidColorBrush(Colors.Red);
+
+                }
             }
         }
 
@@ -208,11 +255,26 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
+        private float productionProgress;
+
+        public float ProductionProgress
+        {
+            get { return productionProgress; }
+            set {
+                if (value == productionProgress) return;
+
+                productionProgress = value;
+
+                RaisePropertyChangedEvent("ProductionProgress");
+            }
+        }
+
+
         //this job's render progress
         public float Progress { get; set; }
 
         //ID of render job provided by deadline
-        public string RenderJobID { get; set; }
+        public string RenderID { get; set; }
 
         public List<RenderChunkStatus> RenderChunkStatusList { get; set; }
         public List<RenderChunkStatus> FinishedChunkList { get; set; }
@@ -236,6 +298,33 @@ namespace VirtualCampaign_Manager.Data
                 if (IsActive == true)
                 {
                     JobRepository.UpdateJob(this, UpdateType.Status);
+                }
+            }
+        }
+
+        public string StatusString
+        {
+            get
+            {
+                if (ErrorStatus == JobErrorStatus.JES_NONE)
+                    return GlobalValues.JobStatusString[Status];
+                else
+                    return "ERROR: " + GlobalValues.JobErrorStatusString[ErrorStatus];
+            }
+        }
+
+        public Brush StatusColor
+        {
+            get
+            {
+                if (ErrorStatus == JobErrorStatus.JES_NONE)
+                {
+                    return new SolidColorBrush(Colors.Black);
+                }
+                else
+                {
+                    return new SolidColorBrush(Colors.Red);
+
                 }
             }
         }
@@ -280,9 +369,10 @@ namespace VirtualCampaign_Manager.Data
             workerThread.Start();
         }
 
+        private delegate void UpdateProgressBarDelegate(System.Windows.DependencyProperty dp, Object value);
+
         public Job()
         {
-
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -30,7 +30,7 @@ namespace VirtualCampaign_Manager.Repositories
         {
             List<Production> result = new List<Production>();
 
-            string productionListString = RemoteDataManager.ExecuteRequest("getOpenProductions");
+            string productionListString = RemoteDataManager.ExecuteRequest("getOpenProductionList");
 
             List<Dictionary<string, string>> productionDict = JsonDeserializer.Deserialize(productionListString);
 

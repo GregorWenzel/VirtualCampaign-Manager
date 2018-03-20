@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,26 +9,26 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace VirtualCampaign_Manager
+using Telerik.Windows.Controls;
+
+namespace VirtualCampaign_Manager.MainHub
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainHubWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainHubWindow
     {
-        public MainWindow()
+        public MainHubWindow()
         {
             InitializeComponent();
-            InitializeWindow();
-
+            this.Initialized += MainHubWindow_Initialized; 
         }
 
-        private void InitializeWindow()
+        private void MainHubWindow_Initialized(object sender, EventArgs e)
         {
-            this.Title = "Manager for '" + Settings.ServerUrl + ", Version " + Settings.Version;
+            this.ParentOfType<Window>().ShowInTaskbar = true;
         }
     }
 }

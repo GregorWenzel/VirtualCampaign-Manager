@@ -1,0 +1,10 @@
+﻿<telerik:RadWindow x:Class="VirtualCampaign_Manager.MainHub.MainHubWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        xmlns:local="clr-namespace:VirtualCampaign_Manager.MainHub"
+        Header="MainHubWindow" Height="300" Width="1200">
+    <Grid>
+        <local:MainHubView HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+    </Grid>
+</telerik:RadWindow>

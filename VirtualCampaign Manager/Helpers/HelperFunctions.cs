@@ -14,7 +14,7 @@ namespace VirtualCampaign_Manager.Helpers
 
             UInt64 updateInt = 0;
 
-            if (StringToParse != null || StringToParse != "")
+            if (StringToParse.Contains("-") == false && StringToParse != null && StringToParse != "")
             {
                 try
                 {

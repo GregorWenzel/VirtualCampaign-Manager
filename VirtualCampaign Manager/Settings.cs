@@ -88,7 +88,7 @@ namespace VirtualCampaign_Manager
             LocalProductionPath = IniFileHelper.ReadValue("LocalPaths", "ProductionPath", iniFilePath);
 
             ServerUrl = IniFileHelper.ReadValue("ExternalPaths", "ServerUrl", iniFilePath);
-            ServicesUrl = IniFileHelper.ReadValue("ExternalPaths", "ServerUrl", iniFilePath);
+            ServicesUrl = IniFileHelper.ReadValue("ExternalPaths", "ServicesUrl", iniFilePath);
             FilmUrl = IniFileHelper.ReadValue("ExternalPaths", "FilmUrl", iniFilePath);
             
             FtpUserDirectoryLogin = new LoginData(
@@ -120,6 +120,8 @@ namespace VirtualCampaign_Manager
                 Password: IniFileHelper.ReadValue("Email", "EmailPassword", iniFilePath));
 
             EmailSender = IniFileHelper.ReadValue("Email", "EmailAddress", iniFilePath);
+
+            SALTED = IniFileHelper.ReadValue("RemoteService", "SALTED", iniFilePath);
         }
     }
 }

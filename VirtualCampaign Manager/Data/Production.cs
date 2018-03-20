@@ -220,7 +220,7 @@ namespace VirtualCampaign_Manager.Data
                 EmailManager.SendErrorMail(this);
             }
         }
-
+        
         private Film film;
         public Film Film
         {

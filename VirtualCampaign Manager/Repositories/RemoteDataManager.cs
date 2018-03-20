@@ -14,6 +14,7 @@ namespace VirtualCampaign_Manager.Repositories
     {
         private static string ServiceCallString(string serviceName)
         {
+            string SALTED = Settings.SALTED;
             string pass = Encrypt.GetSHA1Hash(Encrypt.GetSHA1Hash(serviceName) + Settings.SALTED);
 
             string result = Settings.ServicesUrl + "?pass=" + pass + "&call=" + serviceName;
@@ -73,10 +74,13 @@ namespace VirtualCampaign_Manager.Repositories
         public static string ExecuteRequest(string serivceName, Dictionary<string, string> postDict, int retryCounter = 0)
         {
             Console.WriteLine(serivceName);
+
+            /* DEBUG OUTPUT of parameters
             foreach (KeyValuePair<string, string> kvp in postDict)
             {
                 Console.WriteLine("Key = {0}, Value = {1}", kvp.Key, kvp.Value);
             }
+            */
 
             string result = "";
             string postData = GetPostData(postDict);

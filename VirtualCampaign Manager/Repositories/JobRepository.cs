@@ -78,7 +78,7 @@ namespace VirtualCampaign_Manager.Repositories
                     param["output_extension"] = Job.OutputExtension;
                     break;
                 case UpdateType.RenderID:
-                    param["render_id"] = Job.RenderJobID;
+                    param["render_id"] = Job.RenderID;
                     break;
             }
 

@@ -159,7 +159,7 @@ namespace VirtualCampaign_Manager.Transfers
         {
             Parent = motif;
             SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + motif.AccountID + "/motifs/" + motif.ID + motif.Extension;
-            TargetPath = Path.Combine(Settings.LocalProductionPath, motif.ID);
+            TargetPath = Path.Combine(Settings.LocalProductionPath, motif.ID.ToString());
             Type = TransferType.DownloadAnimatedMotif;
             LoginData = Settings.FtpUserDirectoryLogin;
         }

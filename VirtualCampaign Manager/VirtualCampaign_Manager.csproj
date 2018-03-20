@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VirtualCampaign_Manager</RootNamespace>
     <AssemblyName>VirtualCampaign_Manager</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -37,6 +37,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>VirtualCampaign_Manager.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ComponentPro.Common, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
@@ -94,8 +97,28 @@
       <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Controls.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Telerik.Windows.Themes.Office2013">
-      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Themes.Office2013.dll</HintPath>
+    <Reference Include="Telerik.Windows.Controls.Docking">
+      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Controls.Docking.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Controls.GridView">
+      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Controls.GridView.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Controls.Input">
+      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Controls.Input.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Controls.Navigation">
+      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Controls.Navigation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Data">
+      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Telerik.Windows.Themes.Windows8">
+      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Themes.Windows8.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="WindowsBase" />
@@ -108,7 +131,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Data\AnimatedMotif.cs" />
-    <Compile Include="Data\AnimatedMotifData.cs" />
     <Compile Include="Data\AudioData.cs" />
     <Compile Include="Data\DownloadData.cs" />
     <Compile Include="Data\Film.cs" />
@@ -137,6 +159,9 @@
     <Compile Include="Helpers\Uri.cs" />
     <Compile Include="Helpers\VCProcess.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MainHub\MainHubWindow.xaml.cs">
+      <DependentUpon>MainHubWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Parsers\MotifParser.cs" />
     <Compile Include="Parsers\RenderIDParser.cs" />
@@ -167,6 +192,10 @@
     <Compile Include="Repositories\ProductionRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Views\Jobs\JobViewModel.cs" />
+    <Compile Include="Views\Jobs\JobView.xaml.cs">
+      <DependentUpon>JobView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Workers\AnimatedMotifWorker.cs" />
     <Compile Include="Workers\DirectoryWorker.cs" />
     <Compile Include="Workers\JobRenderProgressMonitor.cs" />
@@ -176,6 +205,10 @@
     <Page Include="MainHub\MainHubView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainHub\MainHubWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -189,6 +222,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Transfers\TransferManagerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Jobs\JobView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

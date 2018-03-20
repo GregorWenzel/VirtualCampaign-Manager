@@ -1,0 +1,79 @@
+﻿<UserControl x:Class="VirtualCampaign_Manager.Views.Jobs.JobView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VirtualCampaign_Manager.Views.Jobs"
+             xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <local:JobViewModel />
+    </UserControl.DataContext>
+    <Grid>
+        <telerik:RadGridView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" CanUserSelect="False"
+            ItemsSource="{Binding JobList}" AutoGenerateColumns="False">
+            <telerik:RadGridView.GroupDescriptors>
+                <telerik:GroupDescriptor Member="ProductionID" SortDirection="Descending" />
+            </telerik:RadGridView.GroupDescriptors>
+            <telerik:RadGridView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Margin" Value="5"/>
+                            </Style>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="Margin" Value="5"/>
+                            </Style>
+                        </StackPanel.Resources>
+                        <TextBlock Text="Film (ID):" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Path=Group.Items[0].IDString}"/>
+                        <TextBlock Text="Production ID:" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Path=Group.Items[0].ProductionID}"/>
+                        <TextBlock Text="Account (ID):" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Path=Group.Items[0].UserIDString}"/>
+                        <TextBlock Text="Status:" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Path=Group.Items[0].ProductionStatusString}" Foreground="{Binding Group.Items[0].ProductionStatusColor}"/>
+                        <TextBlock Text="Progress:" FontWeight="Bold"/>
+                        <ProgressBar Maximum="100" Minimum="0" Value="{Binding Path=Group.Items[0].ProductionProgress, UpdateSourceTrigger=PropertyChanged}" Height="10" Width="100" />
+                        <TextBlock Text="Priority:" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Path=Group.Items[0].Production.Priority}"/>
+                        <Button Content="Reset"/>
+                        <Button Content="Delete"/>
+                    </StackPanel>
+                </DataTemplate>
+            </telerik:RadGridView.GroupHeaderTemplate>
+            <telerik:RadGridView.Columns>
+                <telerik:GridViewDataColumn Header="Job ID" DataMemberBinding="{Binding ID}"/>
+                <telerik:GridViewDataColumn Header="Product ID" DataMemberBinding="{Binding ProductID}"/>
+                <telerik:GridViewDataColumn Header="Frames" DataMemberBinding="{Binding FrameCount}"/>
+                <telerik:GridViewDataColumn Header="In Frame" DataMemberBinding="{Binding InFrame}"/>
+                <telerik:GridViewDataColumn Header="Out Frame" DataMemberBinding="{Binding OutFrame}"/>
+                <telerik:GridViewDataColumn Header="Render ID" DataMemberBinding="{Binding RenderID}" Width="100"/>
+                <telerik:GridViewColumn Header="Status" Width="100">
+                    <telerik:GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding StatusString}" Foreground="{Binding StatusColor}"/>
+                        </DataTemplate>
+                    </telerik:GridViewColumn.CellTemplate>
+                </telerik:GridViewColumn>
+                <telerik:GridViewColumn Header="Progress" Width="100">
+                    <telerik:GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <ProgressBar Maximum="100" Minimum="0" Value="{Binding Path=Progress, UpdateSourceTrigger=PropertyChanged}" Height="10" Width="100" />
+                        </DataTemplate>
+                    </telerik:GridViewColumn.CellTemplate>
+                </telerik:GridViewColumn>
+                <telerik:GridViewColumn Header="Progress">
+                    <telerik:GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Reset"/>
+                        </DataTemplate>
+                    </telerik:GridViewColumn.CellTemplate>
+                </telerik:GridViewColumn>
+            </telerik:RadGridView.Columns>
+            
+        </telerik:RadGridView>
+    </Grid>
+</UserControl>

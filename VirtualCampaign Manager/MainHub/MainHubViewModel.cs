@@ -16,14 +16,6 @@ namespace VirtualCampaign_Manager.MainHub
         private Timer productionsTimer;
         private Timer animatedMotifsTimer;
 
-        private ObservableCollection<Job> jobList;
-
-        public ObservableCollection<Job> JobList
-        {
-            get { return jobList; }
-            set { jobList = value; }
-        }
-
         private ObservableCollection<AnimatedMotif> animatedMotifList;
 
         public ObservableCollection<AnimatedMotif> AnimatedMotifList
@@ -42,6 +34,7 @@ namespace VirtualCampaign_Manager.MainHub
             productionsTimer = new Timer();
             productionsTimer.Interval = Settings.MainUpdateInterval;
             productionsTimer.Elapsed += Timer_Elapsed;
+            productionsTimer.Start();
 
             animatedMotifsTimer = new Timer();
             animatedMotifsTimer.Interval = Settings.MotifUpdateInterval;
@@ -74,7 +67,7 @@ namespace VirtualCampaign_Manager.MainHub
                     productionList.Add(newProduction);
                     foreach (Job newJob in newProduction.JobList)
                     {
-                        jobList.Add(newJob);
+                        GlobalValues.JobList.Add(newJob);
                     }
                     newProduction.StartWorker();
                 }
@@ -91,9 +84,9 @@ namespace VirtualCampaign_Manager.MainHub
 
                 foreach (Job job in production.JobList)
                 {
-                    if (jobList.Any(item => item.ID == job.ID))
+                    if (GlobalValues.JobList.Any(item => item.ID == job.ID))
                     {
-                        jobList.Remove(job);
+                        GlobalValues.JobList.Remove(job);
                     }
                 }
             }

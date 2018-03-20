@@ -9,7 +9,7 @@
     <UserControl.DataContext>
         <local:TransferManagerViewModel />
     </UserControl.DataContext>
-    <Grid>
+    <Grid Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
             <ColumnDefinition Width="1*"/>
@@ -19,7 +19,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold" FontSize="12" Content="Downloads" HorizontalAlignment="Center"/>
-        <Label Grid.Row="0" Grid.Column="1" FontWeight="Bold" Content="Uploads" HorizontalAlignment="Center"/>
+        <Label Grid.Row="0" Grid.Column="1" FontWeight="Bold" FontSize="12" Content="Uploads" HorizontalAlignment="Center"/>
         <DataGrid Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" ItemsSource="{Binding DownloadList}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Filename" Width="250" />
