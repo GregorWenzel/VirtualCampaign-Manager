@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using VirtualCampaign_Manager.Logging;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Workers;
 
@@ -358,6 +359,8 @@ namespace VirtualCampaign_Manager.Data
             //TODO: Kill Render Task
         }
 
+        public Logger Logger;
+
         private Thread workerThread;
 
         public void StartWorker()
@@ -369,10 +372,9 @@ namespace VirtualCampaign_Manager.Data
             workerThread.Start();
         }
 
-        private delegate void UpdateProgressBarDelegate(System.Windows.DependencyProperty dp, Object value);
-
         public Job()
         {
+            Logger = new Logger(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

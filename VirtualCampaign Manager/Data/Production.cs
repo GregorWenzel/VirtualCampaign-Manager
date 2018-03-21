@@ -332,12 +332,15 @@ namespace VirtualCampaign_Manager.Data
 
         public bool IsPreview { get; set; }
 
+        public Logging.Logger Logger;
+
         private ProductionWorker worker;
 
         //empty constructor
         public Production()
         {
             Film = new Film();
+            Logger = new Logging.Logger(this);
         }
 
         public void SetPriority()

@@ -160,6 +160,10 @@
     <Compile Include="Helpers\VCProcess.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\LogView.xaml.cs">
+      <DependentUpon>LogView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainHub\MainHubWindow.xaml.cs">
       <DependentUpon>MainHubWindow.xaml</DependentUpon>
     </Compile>
@@ -202,6 +206,10 @@
     <Compile Include="Workers\JobWorker.cs" />
     <Compile Include="Workers\ProductionWorker.cs" />
     <Compile Include="Workers\WorkerBase.cs" />
+    <Page Include="Logging\LogView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainHub\MainHubView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -260,6 +268,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libraries\ComponentPro.Common.dll" />
+    <Resource Include="Refractoring Brain Storm.txt" />
     <Resource Include="Libraries\ComponentPro.Common.xml" />
     <Content Include="Libraries\ComponentPro.FileSystem.dll" />
     <Resource Include="Libraries\ComponentPro.FileSystem.xml" />
