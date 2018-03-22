@@ -1,4 +1,5 @@
-﻿using ComponentPro.Net;
+﻿using ComponentPro.IO;
+using ComponentPro.Net;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -35,28 +36,84 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        public void AddTransferPacket(TransferPacket Packet)
+        private TransferQueue queue;
+
+        public void AddTransferPacket(TransferPacket packet)
         {
-            if (TransferPacketList.Any(item => item.SourcePath == Packet.SourcePath && item.TargetPath == Packet.TargetPath) == false)
+            if (System.IO.File.Exists(packet.TargetPath))
             {
-                TransferPacketList.Add(Packet);
-                CheckClient(Packet);
-                Continue();
+                packet.FireSuccessEvent();
+                return;
+            }
+
+            List<TransferPacket> buffer = new List<TransferPacket>(transferPacketList);
+
+            if (buffer.Any(item => item.ItemID == packet.ItemID)) return;
+
+            transferPacketList.Add(packet);
+
+            string logText = "Adding transfer packet:\r\n";
+            logText += "Source: " + packet.SourcePath;
+            logText += "\r\nTarget: " + packet.TargetPath;
+            
+            if (packet.Parent is Job)
+            {
+                (packet.Parent as Job).LogText(logText);
+            }
+            else if (packet.Parent is Production)
+            {
+                (packet.Parent as Production).LogText(logText);
+            }
+
+            Sftp client = GetClient(packet);
+
+            if (client.IsConnected && client.IsAuthenticated)
+            {
+                FileInfoBase sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
+                FileInfoBase targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
+                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
+                progressFileItem.Tag = packet.ItemID;
+                queue.Start();                
             }
         }
 
-        private void CheckClient(TransferPacket packet)
+        private Sftp GetClient(TransferPacket packet)
         {
+            Sftp ftpClient;
+
             if (FtpClientsDict.ContainsKey(packet.LoginData.Url+packet.LoginData.Username) == false)
             {
                 //initialize new Sftp connection
-                Sftp ftpClient = new Sftp();
+                ftpClient = new Sftp();
                 ftpClient.Timeout = -1;
                 ftpClient.ReconnectionMaxRetries = 10;
                 ftpClient.DownloadFileCompleted += FtpClient_DownloadFileCompleted;
                 FtpClientsDict[packet.LoginData.Url + packet.LoginData.Username] = ftpClient;
                 FtpTransfersDict[packet.LoginData.Url + packet.LoginData.Username] = 0;
             }
+            else
+            {
+                ftpClient = FtpClientsDict[packet.LoginData.Url + packet.LoginData.Username];
+            }
+
+            if (ftpClient.IsConnected == false)
+            {
+                string serverURL = packet.LoginData.Url;
+                if (serverURL.Contains("ftp://"))
+                {
+                    serverURL = serverURL.Replace("ftp://", "");
+                }
+                ftpClient.Connect(serverURL);
+            }
+
+            if (ftpClient.IsAuthenticated == false)
+            {
+                string password = packet.LoginData.Password;
+                string user = packet.LoginData.Username;
+                ftpClient.Authenticate(user, password);
+            }
+
+            return ftpClient;
         }
 
         private void FtpClient_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
@@ -86,61 +143,6 @@ namespace VirtualCampaign_Manager.Transfers
                     }
                 }
             }
-            Continue();
-        }
-
-        private void Continue()
-        {
-            if (TransferPacketList.Count == 0) return;
-
-            //get ftp connections with free slots
-            List<KeyValuePair<string, int>> freeFtpList = FtpTransfersDict.Where(item => item.Value < Settings.MaxDownloadCount).ToList();
-
-            //find files that will use any of the free ftp connections
-            foreach (KeyValuePair<string, int> kvp in freeFtpList)
-            {
-                List<TransferPacket> packetList = TransferPacketList.Where(item =>(item.IsInTransit == false) && (item.LoginData.Url + item.LoginData.Username == kvp.Key)).ToList();
-                if (packetList.Count == 0) continue;
-
-                int packetsToTransfer = Math.Min(kvp.Value, packetList.Count);
-
-                for (int i=0; i<packetsToTransfer; i++)
-                {
-                    TransferPacket thisPacket = packetList[i];
-                    thisPacket.IsInTransit = true;
-
-                    Sftp ftpClient = GetClientForTransfer(kvp.Key, thisPacket);
-                    if (ftpClient.IsAuthenticated == true)
-                    {
-                        thisPacket.Task = ftpClient.DownloadFileAsync(thisPacket.SourcePath, thisPacket.TargetPath);
-                        FtpTransfersDict[kvp.Key] += 1;
-                    }
-                }
-            }
-        }
-
-        private Sftp GetClientForTransfer(string clientKey, TransferPacket packet)
-        {
-            Sftp ftpClient = FtpClientsDict[clientKey];
-
-            if (ftpClient.IsConnected == false)
-            {
-                string serverURL = packet.LoginData.Url;
-                if (serverURL.Contains("ftp://"))
-                {
-                    serverURL = serverURL.Replace("ftp://", "");
-                }
-                ftpClient.Connect(serverURL);
-            }
-
-            if (ftpClient.IsAuthenticated == false)
-            {
-                string password = packet.LoginData.Password;
-                string user = packet.LoginData.Username;
-                ftpClient.Authenticate(user, password);
-            }
-
-            return ftpClient;
         }
 
         private void FireSuccessEvent(TransferPacket packet)
@@ -163,7 +165,42 @@ namespace VirtualCampaign_Manager.Transfers
         private static volatile DownloadManager instance;
         private static object syncRoot = new object();
 
-        private DownloadManager() { }
+        private DownloadManager()
+        {
+            queue = new TransferQueue(Settings.MaxDownloadThreads);
+            queue.ItemProcessed += Queue_ItemProcessed;
+            queue.BrowsingThreadStateChanged += Queue_BrowsingThreadStateChanged;
+            queue.StateChanged += Queue_StateChanged;
+            queue.Start();
+        }
+
+        private void Queue_StateChanged(object sender, TransferQueueStateChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Queue_BrowsingThreadStateChanged(object sender, TransferThreadStateChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Queue_ItemProcessed(object sender, TransferQueueItemProcessedEventArgs e)
+        {
+            ProgressFileItem item = e.Item;
+            TransferPacket packet = TransferPacketList.First(packetItem => packetItem.ItemID == (int)item.Tag);
+            if (e.Item.State == TransferState.FileCopied)
+            {                        
+                packet.IsInTransit = false;
+                packet.IsSuccessful = true;
+                packet.FireSuccessEvent();
+            }
+            else
+            {
+                packet.IsInTransit = false;
+                packet.IsSuccessful = false;
+                packet.FireFailureEvent();
+            }
+        }
 
         public static DownloadManager Instance
         {

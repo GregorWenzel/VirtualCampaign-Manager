@@ -1,2 +1,3 @@
 ﻿- call to getOpenJobsList instead of getOpenProductionList
-- 
+- check if ghostscript is installed at startup 
+- work with inframe and outframe for products

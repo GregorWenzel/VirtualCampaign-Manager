@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,7 +25,8 @@ namespace VirtualCampaign_Manager.Data
         PES_UPLOAD = 7,
         PES_INDICATIVE_MISSING = 8,
         PES_ABDICATIVE_MISSING = 9,
-        PES_CREATE_MP4PREVIEWS = 10
+        PES_CREATE_MP4PREVIEWS = 10,
+        PES_CREATE_DIRECTORIES = 11
     };
 
     public enum ProductionStatus
@@ -40,10 +42,18 @@ namespace VirtualCampaign_Manager.Data
         PS_DONE = 8
     };
 
-    public class Production : VCObject
+    public class Production : VCObject, INotifyPropertyChanged
     {
         public EventHandler<EventArgs> SuccessEvent;
         public EventHandler<ResultEventArgs> FailureEvent;
+
+        private bool CanUpdateRemoteData
+        {
+            get
+            {
+                return GlobalValues.IsSimulation == false;
+            }
+        }
 
         //list of jobs associated to this production
         public List<Job> JobList;
@@ -52,15 +62,6 @@ namespace VirtualCampaign_Manager.Data
         public bool HasSpecialIntroMusic { get; set; }
 
         //getters and setters
-        //return path to directory where production is being processed
-        public string ProductionDirectory
-        {
-            get
-            {
-                return Path.Combine(new string[] { Settings.LocalProductionPath, "productions", this.ID.ToString() });
-            }
-        }
-
         //returns the number of frames for the indicative
         public int IndicativeFrames
         {
@@ -73,9 +74,6 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        private bool IsActive = false;
-
-        private bool CanUpdateRemoteData = false;
         public string creationTime = "";
         public int UploadCounter = 0;
 
@@ -177,6 +175,12 @@ namespace VirtualCampaign_Manager.Data
 
                 status = value;
 
+                if (JobList.Count > 0)
+                {
+                    JobList[0].RaisePropertyChangedEvent("ProductionStatusString");
+                    JobList[0].RaisePropertyChangedEvent("ProductionStatusColor");
+                }
+
                 if (!CanUpdateRemoteData)
                     return;
 
@@ -210,6 +214,8 @@ namespace VirtualCampaign_Manager.Data
                 }
 
                 errorStatus = value;
+
+                LogText("Error: " + GlobalValues.ProductionErrorStatusString[ErrorStatus]);
 
                 JobList[0].ProductionErrorStatus = errorStatus;
 
@@ -332,7 +338,15 @@ namespace VirtualCampaign_Manager.Data
 
         public bool IsPreview { get; set; }
 
-        public Logging.Logger Logger;
+        private Logging.Logger logger;
+
+        public string Log
+        {
+            get
+            {
+                return logger.Log;
+            }           
+        }
 
         private ProductionWorker worker;
 
@@ -340,7 +354,13 @@ namespace VirtualCampaign_Manager.Data
         public Production()
         {
             Film = new Film();
-            Logger = new Logging.Logger(this);
+            logger = new Logging.Logger(this);
+        }
+
+        public void LogText(string text)
+        {
+            logger.LogText(text);
+            RaisePropertyChangedEvent("Log");
         }
 
         public void SetPriority()
@@ -376,10 +396,15 @@ namespace VirtualCampaign_Manager.Data
 
         public void StartWorker()
         {
-            IsActive = true;
+            if (GlobalValues.IsSimulation)
+            {
+                SetErrorStatus(ProductionErrorStatus.PES_NONE);
+            }
+
             worker = new ProductionWorker(this);
             worker.SuccessEvent += OnProductionSuccess;
             workerThread = new Thread(worker.Work);
+            LogText("NEW THREAD ID: " + workerThread.ManagedThreadId);
             workerThread.Start();
         }
 
@@ -412,6 +437,16 @@ namespace VirtualCampaign_Manager.Data
         protected void FireFailureEvent(object ResultObject = null)
         {
             FailureEvent?.Invoke(null, new ResultEventArgs(ResultObject));
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void RaisePropertyChangedEvent(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
+                PropertyChanged(this, e);
+            }
         }
 
     }

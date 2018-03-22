@@ -24,5 +24,12 @@ namespace VirtualCampaign_Manager.MainHub
         {
             InitializeComponent();
         }
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            (this.DataContext as MainHubViewModel).Start();
+            base.OnInitialized(e);
+        }
+
     }
 }

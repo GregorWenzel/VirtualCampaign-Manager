@@ -5,7 +5,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telerik.Windows.Controls;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Logging;
 using VirtualCampaign_Manager.Parsers;
 using VirtualCampaign_Manager.Repositories;
 
@@ -13,6 +15,10 @@ namespace VirtualCampaign_Manager
 {
     public static class GlobalValues
     {
+        public static bool IsSimulation = true;
+
+        public static LogWindow LogWindow = new LogWindow();
+
         private static ObservableCollection<Production> productionList = new ObservableCollection<Production>();
 
         public static ObservableCollection<Production> ProductionList
@@ -74,7 +80,8 @@ namespace VirtualCampaign_Manager
             {ProductionErrorStatus.PES_UPLOAD, "Upload Films"},
             {ProductionErrorStatus.PES_INDICATIVE_MISSING, "Missing indicative file"},
             {ProductionErrorStatus.PES_ABDICATIVE_MISSING, "Missing abdicative file"},
-            {ProductionErrorStatus.PES_CREATE_MP4PREVIEWS, "Create MP4 previews" }
+            {ProductionErrorStatus.PES_CREATE_MP4PREVIEWS, "Create MP4 previews" },
+            {ProductionErrorStatus.PES_CREATE_DIRECTORIES, "Create directories" }
         };
 
         public static Dictionary<JobErrorStatus, string> JobErrorStatusString = new Dictionary<JobErrorStatus, string>()
@@ -94,7 +101,8 @@ namespace VirtualCampaign_Manager
             {JobErrorStatus.JES_ENCODE_IMAGES, "Encode MPEG"},
             {JobErrorStatus.JES_OUTPUTFILE_COUNT_MISMATCH, "Output count mismatch"},
             {JobErrorStatus.JES_PREVIEWFRAME_MISSING, "Preview frame missing" },
-            {JobErrorStatus.JES_COMP_MISSING, "Comp file missing" }
+            {JobErrorStatus.JES_COMP_MISSING, "Comp file missing" },
+            {JobErrorStatus.JES_MODIFY_MOTIF, "Modify motif" }
         };
 
         public static Dictionary<int, FilmOutputFormat> CodecDict = new Dictionary<int, FilmOutputFormat>();

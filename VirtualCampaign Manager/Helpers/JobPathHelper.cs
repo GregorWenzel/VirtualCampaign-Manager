@@ -26,13 +26,13 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalJobDirectory(job), formattedIndex + ".comp");
         }
 
-        public static string GetLocalJobMotifPath(Job Job, Motif Motif)
+        public static string GetLocalJobMotifPath(Job job, Motif motif)
         {
             return Path.Combine(new string[]
                 {
-                    GetLocalJobDirectory(Job),
+                    ProductionPathHelper.GetLocalProductionDirectory(job.Production),
                     "motifs",
-                    Motif.DownloadName
+                    motif.DownloadName
                 });
         }
 
@@ -41,9 +41,14 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalJobDirectory(job), job.ID + "_job.txt");
         }
 
-        public static string GetLocalJobRenderOutputDirectory(Job Job)
+        public static string GetLocalJobRenderOutputDirectory(Job job)
         {
-            return Path.Combine(GetLocalJobDirectory(Job), "output");
+            return Path.Combine(GetLocalJobDirectory(job), "output");
+        }
+        
+        public static string GetLocalJobRenderOutputPathForZip(Job job)
+        {
+            return Path.Combine(GetLocalJobDirectory(job), "output", "F" + job.OutputExtension);
         }
 
         public static string GetLocalJobRenderOutputFileMask(Job job)
@@ -69,18 +74,9 @@ namespace VirtualCampaign_Manager.Helpers
         public static string GetProductCompositionPath(Job job)
         {
             string formattedIndex = String.Format("{0:D4}", job.ProductID);
-            return Path.Combine(new string[] { ProductionPathHelper.GetProductPath(job.ProductID), formattedIndex, formattedIndex + ".comp" }); 
+            return Path.Combine(Settings.LocalProductPath, formattedIndex, formattedIndex+".comp");
         }
 
-        public static string GetProductCompositionDirectory(Job job)
-        {
-            string formattedIndex = String.Format("{0:D4}", job.ProductID);
-            return Path.Combine(ProductionPathHelper.GetProductPath(job.ProductID), formattedIndex);
-        }
 
-        public static string GetLocalJobRenderOutputDirectoryForZip(Job job)
-        {
-            return Path.Combine(GetLocalJobRenderOutputDirectory(job), "F" + job.OutputExtension);
-        }
     }
 }

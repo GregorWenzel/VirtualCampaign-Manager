@@ -23,8 +23,7 @@ namespace VirtualCampaign_Manager.MainHub
             get { return animatedMotifList; }
             set { animatedMotifList = value; }
         }
-
-
+        
         private List<Production> productionList;
 
         public MainHubViewModel()
@@ -34,11 +33,15 @@ namespace VirtualCampaign_Manager.MainHub
             productionsTimer = new Timer();
             productionsTimer.Interval = Settings.MainUpdateInterval;
             productionsTimer.Elapsed += Timer_Elapsed;
-            productionsTimer.Start();
 
             animatedMotifsTimer = new Timer();
             animatedMotifsTimer.Interval = Settings.MotifUpdateInterval;
             animatedMotifsTimer.Elapsed += AnimatedMotifsTimer_Elapsed;
+        }
+
+        public void Start()
+        {
+            productionsTimer.Start();
         }
 
         private void AnimatedMotifsTimer_Elapsed(object sender, ElapsedEventArgs e)

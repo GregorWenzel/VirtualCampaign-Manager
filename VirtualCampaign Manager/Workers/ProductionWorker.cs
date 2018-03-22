@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Encoding;
+using VirtualCampaign_Manager.Helpers;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Transfers;
 
@@ -28,7 +30,7 @@ namespace VirtualCampaign_Manager.Workers
         public ProductionWorker(Production Production)
         {
             production = Production;
-            IsActive = false;
+            IsActive = true;
             IsFinished = false;
         }
 
@@ -39,8 +41,7 @@ namespace VirtualCampaign_Manager.Workers
             switch (production.Status)
             {
                 case ProductionStatus.PS_READY:
-                    production.Status = ProductionStatus.PS_RENDER_JOBS;
-                    Work();
+                    CreateDirectories();
                     break;
                 case ProductionStatus.PS_RENDER_JOBS:
                     StartJobs();
@@ -68,6 +69,30 @@ namespace VirtualCampaign_Manager.Workers
                     UpdateHistoryTable();
                     break;
             }
+        }
+
+        private void CreateDirectories()
+        {
+            if (GlobalValues.IsSimulation)
+            {
+                production.LogText("Create directory " + ProductionPathHelper.GetLocalProductionDirectory(production));
+                production.LogText("Create directory " + ProductionPathHelper.GetProductionMotifDirectory(production));
+                production.Status = ProductionStatus.PS_RENDER_JOBS;
+                Work();
+                return;
+            }
+
+            bool success = IOHelper.CreateDirectory(ProductionPathHelper.GetLocalProductionDirectory(production));
+            success = success && IOHelper.CreateDirectory(ProductionPathHelper.GetProductionMotifDirectory(production));
+
+            if (success == false)
+            {
+                production.ErrorStatus = ProductionErrorStatus.PES_CREATE_DIRECTORIES;
+                return;
+            }
+
+            production.Status = ProductionStatus.PS_RENDER_JOBS;
+            Work();            
         }
 
         private void EncodeAudio()
@@ -213,8 +238,16 @@ namespace VirtualCampaign_Manager.Workers
                     continue;
                 }
 
+                production.LogText("Starting job ID " + thisJob.ID + " (product ID " + thisJob.ProductID + ")");
+                thisJob.SuccessEvent += OnJobSuccess;
                 thisJob.StartWorker();
             }
+        }
+
+        private void OnJobSuccess(object sender, EventArgs ea)
+        {
+            (sender as Job).SuccessEvent -= OnJobSuccess;
+            Work();
         }
 
         private void FireSuccessEvent()

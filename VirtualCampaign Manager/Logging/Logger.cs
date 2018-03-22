@@ -37,13 +37,14 @@ namespace VirtualCampaign_Manager.Logging
             string logText;
             if (job != null)
             {
-                logText = string.Format("Job {0} - {1}: {2}", job.ID, time, text);
+                logText = string.Format("[{0}]: {1}", time, text);
             }
             else
             {
-                logText = string.Format("Job {0} - {1}: {2}", production.ID, time, text);
+                logText = string.Format("[{0}]: {1}", time, text);
             }
 
+            logLines.Add(logText);
             Console.WriteLine(logText);
             RaisePropertyChangedEvent("Log");
         }

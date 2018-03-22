@@ -65,7 +65,7 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalProductionDirectory(Production), "final_music.wav");
         }
 
-        public static string GetProductPath(int ProductID)
+        public static string GetProductDirectory(int ProductID)
         {
             string formattedIndex = String.Format("{0:D4}", ProductID);
             return Path.Combine(Settings.LocalProductPath, formattedIndex);
@@ -74,13 +74,13 @@ namespace VirtualCampaign_Manager.Helpers
         public static string GetProductMp4PathByOutputFormat(int ProductID, int OutputFormatID)
         {
             string formattedIndex = String.Format("{0:D4}", ProductID);
-            return Path.Combine(GetProductPath(ProductID) , formattedIndex + "_" + OutputFormatID + ".mp4" );
+            return Path.Combine(GetProductDirectory(ProductID) , formattedIndex + "_" + OutputFormatID + ".mp4" );
         }
 
         public static string GetProductMp4Path(int ProductID)
         {
             string formattedIndex = String.Format("{0:D4}", ProductID);
-            return Path.Combine(GetProductPath(ProductID), formattedIndex + ".mp4");
+            return Path.Combine(GetProductDirectory(ProductID), formattedIndex + ".mp4");
         }
 
         public static string GetLocalProductPreviewProductionDirectory(int ProductID)

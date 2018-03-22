@@ -14,15 +14,19 @@ namespace VirtualCampaign_Manager
         //Version
         public static string Version = "4.0b";
         //interval for polling new productions in milliseconds
-        public static int MainUpdateInterval = 2000;
+        public static int MainUpdateInterval = 5000;
         //interval for polling new animated motifs to generate preview frame for
         public static int MotifUpdateInterval = 10000;
-        //max number of parallel downloads
-        public static int MaxDownloadCount = 3;
+        //max number of parallel download threads
+        public static int MaxDownloadThreads = 3;
         //max number of failed transfers before giving up
         public static int MaxTransferErrorCount = 3;
 
         //Paths to local file system     
+        //Base path to local files (data, tools, ressources)
+        public static string LocalBasePath;
+        //Variable used in Fusion comp files to replace with base path
+        public static string BasePathVariable;
         //Path to product clips
         public static string LocalProductPath;
         //Path to audio clips
@@ -80,6 +84,8 @@ namespace VirtualCampaign_Manager
             RenderChunkSize = Convert.ToInt32(IniFileHelper.ReadValue("Constants", "RenderChunkSize", iniFilePath));
             MaxRenderIdleCount = Convert.ToInt32(IniFileHelper.ReadValue("Constants", "MaxRenderIdleCount", iniFilePath));
 
+            BasePathVariable = IniFileHelper.ReadValue("LocalPaths", "BasePathVariable", iniFilePath);
+            LocalBasePath = IniFileHelper.ReadValue("LocalPaths", "BasePath", iniFilePath);
             LocalProductPath = IniFileHelper.ReadValue("LocalPaths", "ProductPath", iniFilePath);
             LocalAudioPath = IniFileHelper.ReadValue("LocalPaths", "AudioPath", iniFilePath);
             LocalFusionPluginPath = IniFileHelper.ReadValue("LocalPaths", "FusionPluginPath", iniFilePath);

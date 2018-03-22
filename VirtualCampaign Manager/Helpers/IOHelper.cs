@@ -10,12 +10,20 @@ namespace VirtualCampaign_Manager.Helpers
 {
     public static class IOHelper
     {
-        public static void CreateDirectory(string Path)
+        public static bool CreateDirectory(string Path)
         {
             if (!Directory.Exists(Path))
             {
-                Directory.CreateDirectory(Path);
+                try
+                {
+                    Directory.CreateDirectory(Path);
+                }
+                catch
+                {
+                    return false;
+                }
             }
+            return true;
         }
 
         public static void DeleteDirectory(string Path)

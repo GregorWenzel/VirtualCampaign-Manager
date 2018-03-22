@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using VirtualCampaign_Manager.Logging;
+using VirtualCampaign_Manager.Managers;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Workers;
 
@@ -31,7 +32,8 @@ namespace VirtualCampaign_Manager.Data
         JES_DEADLINE_REGISTER_ENCODINGJOB = 13,
         JES_ENCODE_IMAGES = 14,
         JES_PREVIEWFRAME_MISSING = 15,
-        JES_COMP_MISSING = 16
+        JES_COMP_MISSING = 16,
+        JES_MODIFY_MOTIF = 17
     };
 
     public enum JobStatus
@@ -53,6 +55,8 @@ namespace VirtualCampaign_Manager.Data
 
     public class Job : VCObject, INotifyPropertyChanged
     {
+        public EventHandler<EventArgs> SuccessEvent;
+
         private static readonly Object obj = new Object();
 
         //PUBLIC fields
@@ -64,11 +68,43 @@ namespace VirtualCampaign_Manager.Data
         public bool CanReformat { get; set; }
 
         //determins whether updates can be propagated to the server at this time
-        public bool CanUpdateRemoteData { get; set; }
+        public bool CanUpdateRemoteData
+        {
+            get
+            {
+                return GlobalValues.IsSimulation == false;
+            }
+        }
 
         //This job's error status
-        public JobErrorStatus ErrorStatus { get; set; }
+        private JobErrorStatus errorStatus;
+        public JobErrorStatus ErrorStatus
+        {
+            get
+            {
+                return errorStatus;
+            }
+            set
+            {
+                UpdateDate = DateTime.Now;
 
+                if (errorStatus == value) return;
+
+                errorStatus = value;
+
+                LogText("Error: " + GlobalValues.JobErrorStatusString[ErrorStatus]);
+
+                RaisePropertyChangedEvent("StatusString");
+                RaisePropertyChangedEvent("StatusColor");
+
+                if (!CanUpdateRemoteData)
+                    return;
+
+                JobRepository.UpdateJob(this, UpdateType.ErrorCode);
+                EmailManager.SendErrorMail(this);
+            }
+        }
+        
         //number of frames for this job's product
         private int frameCount;
 
@@ -296,6 +332,10 @@ namespace VirtualCampaign_Manager.Data
                 if (value == status) return;
 
                 status = value;
+
+                RaisePropertyChangedEvent("StatusString");
+                RaisePropertyChangedEvent("StatusColor");
+
                 if (IsActive == true)
                 {
                     JobRepository.UpdateJob(this, UpdateType.Status);
@@ -332,23 +372,6 @@ namespace VirtualCampaign_Manager.Data
 
         //--------------
         //PRIVATE fields
-        //path to the directory where this job is being processed
-        public string JobDirectory
-        {
-            get
-            {
-                return Path.Combine(Production.ProductionDirectory, this.ID.ToString());
-            }
-        }
-
-        //path to the directory where this job's production is being processed
-        public string ProductionDirectory
-        {
-            get
-            {
-                return Production.ProductionDirectory;
-            }
-        }
 
         public void Reset()
         {
@@ -359,32 +382,56 @@ namespace VirtualCampaign_Manager.Data
             //TODO: Kill Render Task
         }
 
-        public Logger Logger;
+        private Logger logger;
+
+        public string Log
+        {
+            get
+            {
+                return logger.Log;
+            }
+        }
 
         private Thread workerThread;
 
+        public void LogText(string text)
+        {
+            logger.LogText(text);
+            RaisePropertyChangedEvent("Log");
+        }
+
         public void StartWorker()
         {
+            if (GlobalValues.IsSimulation)
+            {
+                this.ErrorStatus = JobErrorStatus.JES_NONE;
+            }
+
             IsActive = true;
             worker = new JobWorker(this);
             workerThread = new Thread(new ThreadStart(worker.Work));
-            Console.WriteLine("NEW THREAD FOR JOB ID " + this.ID + ": " + workerThread.ManagedThreadId);
+            LogText("NEW THREAD ID: " + workerThread.ManagedThreadId);
             workerThread.Start();
         }
 
         public Job()
         {
-            Logger = new Logger(this);
+            logger = new Logger(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void RaisePropertyChangedEvent(string propertyName)
+        public void RaisePropertyChangedEvent(string propertyName)
         {
             if (PropertyChanged != null)
             {
                 PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
                 PropertyChanged(this, e);
             }
+        }
+
+        private void FireSuccessEvent()
+        {
+            SuccessEvent?.Invoke(this, new EventArgs());
         }
     }
 }

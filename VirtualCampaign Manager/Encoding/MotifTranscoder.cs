@@ -1,0 +1,55 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using VirtualCampaign_Manager.Data;
+using ImageMagick;
+using VirtualCampaign_Manager.Helpers;
+
+namespace VirtualCampaign_Manager.Encoding
+{
+    public static class MotifTranscoder
+    {
+        public static bool Transcode(Job job, Motif motif)
+        {
+            bool result = true;
+
+            MagickReadSettings settings = new MagickReadSettings();
+            // Settings the density to 300 dpi will create an image with a better quality
+            settings.Density = new Density(300, 300);
+
+            string motifPath = JobPathHelper.GetLocalJobMotifPath(job, motif);
+
+            MagickImage image = new MagickImage();
+            try
+            {
+                image.Read(motifPath, settings);
+            }
+            catch
+            {
+                job.LogText("Ghostscript not installed.");
+                return false;
+            }
+            
+            if ((image.Format != MagickFormat.Jpg && image.Format != MagickFormat.Jpeg) || image.ColorSpace != ColorSpace.sRGB
+                || image.Width > 2000 || image.Height > 2000)
+            {
+                image.Format = MagickFormat.Jpg;
+                image.ColorSpace = ColorSpace.sRGB;
+                motif.Extension = ".jpg";
+
+                if (image.Width > 2000 || image.Height > 2000)
+                {
+                    image.Resize(1024, 0);
+                }
+
+                string motifOutputPath = JobPathHelper.GetLocalJobMotifPath(job, motif);
+                image.Write(motifOutputPath);
+                return (System.IO.File.Exists(motifOutputPath));
+            }
+
+            return result;
+        }
+    }
+}

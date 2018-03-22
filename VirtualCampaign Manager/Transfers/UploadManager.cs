@@ -94,7 +94,7 @@ namespace VirtualCampaign_Manager.Transfers
             if (TransferPacketList.Count == 0) return;
 
             //get ftp connections with free slots
-            List<KeyValuePair<string, int>> freeFtpList = FtpTransfersDict.Where(item => item.Value < Settings.MaxDownloadCount).ToList();
+            List<KeyValuePair<string, int>> freeFtpList = FtpTransfersDict.Where(item => item.Value < Settings.MaxDownloadThreads).ToList();
 
             //find files that will use any of the free ftp connections
             foreach (KeyValuePair<string, int> kvp in freeFtpList)

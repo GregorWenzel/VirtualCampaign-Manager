@@ -29,6 +29,7 @@ namespace VirtualCampaign_Manager.Transfers
 
         public Object Task { get; set; } //unique sftp transfer task id
         public Object Parent { get; set; }
+        public int ItemID { get; set; }
 
         private string sourcePath;
 
@@ -135,21 +136,23 @@ namespace VirtualCampaign_Manager.Transfers
         }
         
         //transfers a motif from remote user account to local filesystem
-        public TransferPacket(Job Job, Motif Motif)
+        public TransferPacket(Job job, Motif motif)
         {
-            Parent = Job;
-            SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + Job.AccountID + "/motifs/" + Motif.DownloadName;
-            TargetPath = Path.Combine(Job.Production.ProductionDirectory, "motifs", Motif.DownloadName);
+            ItemID = motif.ID;
+            Parent = motif;
+            SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + job.AccountID + "/motifs/" + motif.DownloadName;
+            TargetPath = JobPathHelper.GetLocalJobMotifPath(job, motif);
             Type = TransferType.DownloadMotif;
             LoginData = Settings.FtpUserDirectoryLogin;
         }
 
         //uploads a preview pricture for an animated motif from local filesystem to remote user account
-        public TransferPacket(int AccountID, Motif Motif)
+        public TransferPacket(int accountID, Motif motif)
         {
-            Parent = AccountID;
+            ItemID = motif.ID;
+            Parent = accountID;
             SourcePath = "";
-            TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + AccountID + "/motifs/" + Motif.DownloadName;
+            TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + accountID + "/motifs/" + motif.DownloadName;
             Type = TransferType.UploadMotifPreview;
             LoginData = Settings.FtpUserDirectoryLogin;
         }
@@ -157,6 +160,7 @@ namespace VirtualCampaign_Manager.Transfers
         //transfers an animated motif from remote to local file system
         public TransferPacket(AnimatedMotif motif)
         {
+            ItemID = motif.ID;
             Parent = motif;
             SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + motif.AccountID + "/motifs/" + motif.ID + motif.Extension;
             TargetPath = Path.Combine(Settings.LocalProductionPath, motif.ID.ToString());
@@ -167,6 +171,7 @@ namespace VirtualCampaign_Manager.Transfers
         //transfers a film from local file system to remote user account
         public TransferPacket(Production production, TransferType type)
         {
+            ItemID = production.ID;
             Parent = production;
 
             switch (type)
@@ -192,11 +197,12 @@ namespace VirtualCampaign_Manager.Transfers
         }
 
         //transfers a user's custom audio file to local file system
-        public TransferPacket(AudioData AudioData)
+        public TransferPacket(AudioData audioData)
         {
-            Parent = AudioData;
-            SourcePath = AudioData.Filename;
-            TargetPath = AudioData.AudioPath;
+            ItemID = audioData.ID;
+            Parent = audioData;
+            SourcePath = audioData.Filename;
+            TargetPath = audioData.AudioPath;
             Type = TransferType.DownloadAudio;
             LoginData = Settings.FtpAudioDirectoryLogin;
         }

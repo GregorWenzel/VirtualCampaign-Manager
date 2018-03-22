@@ -26,7 +26,8 @@ namespace VirtualCampaign_Manager.Helpers
         {
             Console.WriteLine(this.StartInfo.FileName + " " + this.StartInfo.Arguments);
             logger.WriteLine(this.StartInfo.FileName + " " + this.StartInfo.Arguments);
-            return base.Start();
+            return true;
+            //return base.Start();
         }
     }
 }

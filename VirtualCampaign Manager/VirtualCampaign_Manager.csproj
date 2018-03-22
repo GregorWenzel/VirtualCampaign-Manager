@@ -62,6 +62,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libraries\ComponentPro.Sftp.dll</HintPath>
     </Reference>
+    <Reference Include="Magick.NET-Q16-AnyCPU">
+      <HintPath>Libraries\Magick.NET-Q16-AnyCPU.dll</HintPath>
+    </Reference>
     <Reference Include="MongoDB.Bson, Version=2.3.0.131, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libraries\MongoDB.Bson.dll</HintPath>
@@ -84,6 +87,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -117,6 +121,10 @@
       <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Telerik.Windows.Themes.Office2013">
+      <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Themes.Office2013.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Telerik.Windows.Themes.Windows8">
       <HintPath>..\lib\RCWPF\2017.1.222.40.NoXaml\Telerik.Windows.Themes.Windows8.dll</HintPath>
       <Private>True</Private>
@@ -145,6 +153,7 @@
     <Compile Include="Encoding\AudioEncoder.cs" />
     <Compile Include="Encoding\ClipJoiner.cs" />
     <Compile Include="Encoding\FilmEncoder.cs" />
+    <Compile Include="Encoding\MotifTranscoder.cs" />
     <Compile Include="Encoding\PreviewFilmEncoder.cs" />
     <Compile Include="Encoding\RenderChunkEncoder.cs" />
     <Compile Include="EventFireBase.cs" />
@@ -164,6 +173,9 @@
     <Compile Include="Logging\LogView.xaml.cs">
       <DependentUpon>LogView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Logging\LogWindow.xaml.cs">
+      <DependentUpon>LogWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainHub\MainHubWindow.xaml.cs">
       <DependentUpon>MainHubWindow.xaml</DependentUpon>
     </Compile>
@@ -174,6 +186,10 @@
     <Compile Include="Rendering\DeadlineRenderer.cs" />
     <Compile Include="Rendering\RenderFilePreparer.cs" />
     <Compile Include="Rendering\RenderMonitor.cs" />
+    <Compile Include="SplashScreen\SplashScreenWindow.xaml.cs">
+      <DependentUpon>SplashScreenWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SplashScreen\SplashScreenWindowViewModel.cs" />
     <Compile Include="Transfers\UploadManager.cs" />
     <Compile Include="Transfers\DownloadManager.cs" />
     <Compile Include="Transfers\FilmUploader.cs" />
@@ -201,7 +217,6 @@
       <DependentUpon>JobView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Workers\AnimatedMotifWorker.cs" />
-    <Compile Include="Workers\DirectoryWorker.cs" />
     <Compile Include="Workers\JobRenderProgressMonitor.cs" />
     <Compile Include="Workers\JobWorker.cs" />
     <Compile Include="Workers\ProductionWorker.cs" />
@@ -209,6 +224,10 @@
     <Page Include="Logging\LogView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Logging\LogWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="MainHub\MainHubView.xaml">
       <SubType>Designer</SubType>
@@ -229,6 +248,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SplashScreen\SplashScreenWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Transfers\TransferManagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -278,6 +301,9 @@
     <Resource Include="Libraries\ComponentPro.Network.xml" />
     <Content Include="Libraries\ComponentPro.Sftp.dll" />
     <Resource Include="Libraries\ComponentPro.Sftp.xml" />
+    <Content Include="Libraries\Magick.NET-Q16-HDRI-x64.dll" />
+    <Content Include="Libraries\Magick.NET-Q16-HDRI-x64.Native.dll" />
+    <Resource Include="Libraries\Magick.NET-Q16-HDRI-x64.xml" />
     <Content Include="Libraries\MongoDB.Bson.dll" />
     <Content Include="Libraries\MongoDB.Bson.pdb" />
     <Resource Include="Libraries\MongoDB.Bson.xml" />

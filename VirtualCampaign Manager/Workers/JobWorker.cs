@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Encoding;
+using VirtualCampaign_Manager.Helpers;
 using VirtualCampaign_Manager.Rendering;
 using VirtualCampaign_Manager.Transfers;
 
@@ -36,9 +38,7 @@ namespace VirtualCampaign_Manager.Workers
                     job.Status = JobStatus.JS_CREATE_DIRECTORIES;
                     goto case JobStatus.JS_CREATE_DIRECTORIES;                     
                 case JobStatus.JS_CREATE_DIRECTORIES:
-                    DirectoryWorker.SuccessEvent += OnCreateDirectorySuccess;
-                    DirectoryWorker.FailureEvent += OnCreateDirectoryFailure;
-                    DirectoryWorker.CreateJobDirectories(job);
+                    CreateDirectories();
                     break;
                 case JobStatus.JS_PREPARE_RESOURCES:
                     DownloadMotifs();
@@ -47,7 +47,7 @@ namespace VirtualCampaign_Manager.Workers
                     PrepareRenderFiles();
                     break;
                 case JobStatus.JS_SEND_RENDER_JOB:
-                    RenderJob();
+                    //RenderJob();
                     break;
                 case JobStatus.JS_GET_JOB_ID:
                     job.Status = JobStatus.JS_RENDER_JOB;
@@ -91,6 +91,24 @@ namespace VirtualCampaign_Manager.Workers
                     break;
             }
         }
+
+        private void CreateDirectories()
+        {
+            job.LogText("Create directory " + JobPathHelper.GetLocalJobDirectory(job));
+            job.LogText("Create directory " + JobPathHelper.GetLocalJobRenderOutputDirectory(job));
+
+            bool success = IOHelper.CreateDirectory(JobPathHelper.GetLocalJobDirectory(job));
+            success = success && IOHelper.CreateDirectory(JobPathHelper.GetLocalJobRenderOutputDirectory(job));
+
+            if (success == false)
+            {
+                job.ErrorStatus = JobErrorStatus.JES_CREATE_DIRECTORIES;
+                return;
+            }
+
+            job.Status = JobStatus.JS_PREPARE_RESOURCES;
+            Work();
+        }
      
         private void DownloadMotifs()
         {
@@ -105,14 +123,6 @@ namespace VirtualCampaign_Manager.Workers
             }
         }
         
-        private void OnCreateDirectorySuccess(object obj, EventArgs ea)
-        {
-            DirectoryWorker.SuccessEvent -= OnCreateDirectorySuccess;
-            DirectoryWorker.FailureEvent -= OnCreateDirectoryFailure;
-            job.Status = JobStatus.JS_PREPARE_RESOURCES;
-            Work();
-        }
-
         private void PrepareRenderFiles()
         {
             RenderFilePreparer renderFilePreparer = new RenderFilePreparer(job);
@@ -141,19 +151,21 @@ namespace VirtualCampaign_Manager.Workers
 
         }
 
-        private void OnCreateDirectoryFailure(object obj, ResultEventArgs ea)
-        {
-            DirectoryWorker.SuccessEvent -= OnCreateDirectorySuccess;
-            DirectoryWorker.FailureEvent -= OnCreateDirectoryFailure;
-            job.ErrorStatus = JobErrorStatus.JES_CREATE_DIRECTORIES;
-            FailureEvent?.Invoke(this, ea);
-        }
-
         private void OnMotifTransferSuccess(object obj, EventArgs ea)
         {
             TransferPacket motifTransferPacket = obj as TransferPacket;
             motifTransferPacket.FailureEvent -= OnMotifTransferFailure;
             motifTransferPacket.SuccessEvent -= OnMotifTransferSuccess;
+
+            Motif motif = motifTransferPacket.Parent as Motif;
+            if (motif != null)
+            {
+                if (MotifTranscoder.Transcode(job, motif) != true)
+                {
+                    job.ErrorStatus = JobErrorStatus.JES_MODIFY_MOTIF;
+                    return;
+                }
+            }
 
             MotifTransferCounter += 1;
             if (MotifTransferCounter == job.MotifList.Count)

@@ -37,12 +37,24 @@ namespace VirtualCampaign_Manager.Parsers
             result.ErrorStatus = (JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["ErrorCode"]));
             result.Position = Convert.ToInt32(JobDict["Position"]);
             result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
+            
             //DEBUG::: InFrame and OutFrame MUST be available for EVERY product, even indicatives and abdicatives!!
-            result.InFrame = Convert.ToInt32(JobDict["InFrame"]);
-            result.OutFrame = Convert.ToInt32(JobDict["OutFrame"]);
+            result.IsDicative = (Convert.ToInt32(JobDict["IsDicative"]) == 1);
+            if (result.IsDicative == false)
+            {
+                if (JobDict.ContainsKey("InFrame"))
+                    result.InFrame = Convert.ToInt32(JobDict["InFrame"]);
+                if (JobDict.ContainsKey("OutFrame"))
+                    result.OutFrame = Convert.ToInt32(JobDict["OutFrame"]);
+            }
+            else
+            {
+                result.InFrame = 0;
+                result.OutFrame = 0;
+            }
             result.PreviewFrame = Convert.ToInt32(JobDict["ProductFrames"]);
             result.AccountID = Convert.ToInt32(JobDict["AccountID"]);
-            result.IsDicative = (Convert.ToInt32(JobDict["IsDicative"]) == 1);
+
             result.MotifList = new List<Motif>();
 
             //required fields that are not provided by the database for indicatives and abdicatives

@@ -40,6 +40,8 @@ namespace VirtualCampaign_Manager.Rendering
 
         private int ReadComposition()
         {
+            job.LogText("Reading composition file " + JobPathHelper.GetProductCompositionPath(job));
+
             if (!File.Exists(JobPathHelper.GetProductCompositionPath(job)))
             {
                 ErrorStatus = JobErrorStatus.JES_COMP_MISSING;
@@ -74,10 +76,10 @@ namespace VirtualCampaign_Manager.Rendering
             {
                 string line = CompLines[i];
 
-                if (line.IndexOf("comp:") >= 0)
+                if (line.IndexOf(Settings.BasePathVariable) >= 0)
                 {
                     line = line.Replace(@"\\", @"\");
-                    line = line.Replace("comp:", JobPathHelper.GetProductCompositionDirectory(job));
+                    line = line.Replace(Settings.BasePathVariable, Settings.LocalBasePath);
                     line = line.Replace(@"\", @"\\");
                     CompLines[i] = line;
                 }
@@ -100,9 +102,10 @@ namespace VirtualCampaign_Manager.Rendering
             if (ErrorStatus != JobErrorStatus.JES_NONE) return -1;
 
             string outputPath;
+            bool isZipProduction = job.Production.Film.FilmOutputFormatList.Any(item => item.Name.ToLower().Contains("zip"));
 
-            if (saverCount == 1)
-                outputPath = JobPathHelper.GetLocalJobRenderOutputDirectoryForZip(job);
+            if (isZipProduction)
+                outputPath = JobPathHelper.GetLocalJobRenderOutputPathForZip(job);
             else
                 outputPath = JobPathHelper.GetLocalJobRenderOutputDirectory(job);
 
@@ -114,10 +117,10 @@ namespace VirtualCampaign_Manager.Rendering
             {
                 bool subResult = false;
 
-                if (saverCount == 1)
-                    subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath);
-                else
+                if (isZipProduction)
                     subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath, true);
+                else
+                    subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath, false);
 
                 if (subResult == true)
                     saverResult++;
@@ -141,7 +144,7 @@ namespace VirtualCampaign_Manager.Rendering
                     result++;
                     start = i;
                     end = GetEndLine(start);
-                    SetResourceValue(start, end, "Filename", ProductionPathHelper.GetProductPath(job.ProductID));
+                    SetResourceValue(start, end, "Filename", ProductionPathHelper.GetProductDirectory(job.ProductID));
                 }
 
             return result;
@@ -246,7 +249,7 @@ namespace VirtualCampaign_Manager.Rendering
                 {
                     start = i;
                     end = GetEndLine(start);
-                    if (SetFootageValue(start, end, "Filename", ProductionPathHelper.GetProductPath(job.ProductID)))
+                    if (SetFootageValue(start, end, "Filename", ProductionPathHelper.GetProductDirectory(job.ProductID)))
                     {
                         result++;
                     }

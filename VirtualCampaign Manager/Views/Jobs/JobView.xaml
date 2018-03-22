@@ -12,7 +12,10 @@
     </UserControl.DataContext>
     <Grid>
         <telerik:RadGridView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" CanUserSelect="False"
-            ItemsSource="{Binding JobList}" AutoGenerateColumns="False">
+            ItemsSource="{Binding JobList}" AutoGenerateColumns="False" >
+            <telerik:EventToCommandBehavior.EventBindings>
+                <telerik:EventBinding Command="{Binding GridDoubleClickCommand}" EventName="MouseDoubleClick" RaiseOnHandledEvents="True" PassEventArgsToCommand="True"/>
+            </telerik:EventToCommandBehavior.EventBindings>        
             <telerik:RadGridView.GroupDescriptors>
                 <telerik:GroupDescriptor Member="ProductionID" SortDirection="Descending" />
             </telerik:RadGridView.GroupDescriptors>
