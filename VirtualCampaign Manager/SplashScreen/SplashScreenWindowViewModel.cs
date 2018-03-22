@@ -29,7 +29,7 @@ namespace VirtualCampaign_Manager.SplashScreen
         {
             get
             {
-                return Settings.Version;
+                return "Version " + Settings.Version;
             }
         }
 
