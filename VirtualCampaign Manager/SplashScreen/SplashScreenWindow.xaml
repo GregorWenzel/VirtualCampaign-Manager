@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VirtualCampaign_Manager.SplashScreen"
         mc:Ignorable="d"
-        Title="SplashScreenWindow" Height="200" Width="400" WindowStyle="None">
+        Title="SplashScreenWindow" Height="200" Width="450" WindowStyle="None">
     <Grid>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Label Content="Virtual Campaign Manager" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" FontWeight="Bold"/>
