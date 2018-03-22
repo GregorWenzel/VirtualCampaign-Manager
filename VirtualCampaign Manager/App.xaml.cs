@@ -26,12 +26,12 @@ namespace VirtualCampaign_Manager
         {
             GlobalValues.ReadOutputFormats();
 
-            mainHub = new MainHubWindow();
+            //DEBUG: Skip Splash
+            //splash = new SplashScreenWindow();
+            //(splash.DataContext as SplashScreenWindowViewModel).SuccessEvent += OnSplashSucccess;
+            //splash.ShowDialog();
 
-            splash = new SplashScreenWindow();
-            (splash.DataContext as SplashScreenWindowViewModel).SuccessEvent += OnSplashSucccess;
-            splash.Show();
-
+            OnSplashSucccess(this, null);
             base.OnStartup(e);
         }      
 
@@ -39,7 +39,10 @@ namespace VirtualCampaign_Manager
         {
             Dispatcher.Invoke((Action)delegate
             {
-                splash.Visibility = Visibility.Hidden;                
+                if (splash != null)
+                    splash.Visibility = Visibility.Hidden;
+
+                mainHub = new MainHubWindow();
                 mainHub.ShowDialog();
             });
         }

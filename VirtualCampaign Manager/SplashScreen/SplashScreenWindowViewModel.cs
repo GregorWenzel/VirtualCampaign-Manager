@@ -21,6 +21,8 @@ namespace VirtualCampaign_Manager.SplashScreen
         public EventHandler<EventArgs> SuccessEvent;
         public EventHandler<EventArgs> FailureEvent;
 
+        private Timer timer;
+
         public string ErrorString { get; set; } = "";
 
         public string VersionString
@@ -62,53 +64,56 @@ namespace VirtualCampaign_Manager.SplashScreen
             }
         }
 
-        private Timer timer;
         private int stepCounter = 0;
 
         public SplashScreenWindowViewModel()
         {
-            StatusString = "Checking " + statusStringArr[0, 0] + "...";
-
             timer = new Timer(100);
             timer.Elapsed += Timer_Elapsed;
+
+            StatusString = "Checking " + statusStringArr[0, 0] + "...";
+        }
+
+        public void Start()
+        {
             timer.Start();
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (stepCounter > 0)
+            timer.Stop();
+            stepCounter++;
+
+            if (stepCounter < statusStringArr.Length / 2)
             {
-                if (stepCounter < statusStringArr.Length / 2)
+                StatusString = statusStringArr[stepCounter, 0] + "...";
+                CheckSetting(statusStringArr[stepCounter, 0], statusStringArr[stepCounter, 1]);
+            }
+            else
+            {
+                if (ErrorString.Length == 0)
                 {
-                    StatusString = statusStringArr[stepCounter, 0] + "...";
-                    CheckSetting(statusStringArr[stepCounter, 0], statusStringArr[stepCounter, 1]);
+                    SuccessEvent?.Invoke(this, new EventArgs());
                 }
                 else
                 {
-                    timer.Stop();
+                    //DEBUG: Ignore errors for development
+                    SuccessEvent?.Invoke(this, new EventArgs());
+                    return;
 
-                    if (ErrorString.Length == 0)
+                    MessageBox.Show(ErrorString, "Errors in settings file detected!", MessageBoxButton.OK);
+                    Application.Current.Dispatcher.Invoke((Action)delegate
                     {
-                        SuccessEvent?.Invoke(this, new EventArgs());
-                    }
-                    else
-                    {
-                        MessageBox.Show(ErrorString, "Errors in settings file detected!", MessageBoxButton.OK);
-                        Application.Current.Dispatcher.Invoke((Action)delegate
-                        {
-                            Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.ini"));
-                            Environment.Exit(-1);
-                            //Application.Current.Shutdown();
-                            return;
-                        });
-                    }
+                        Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.ini"));
+                        Environment.Exit(-1);
+                        //Application.Current.Shutdown();
+                        return;
+                    });
                 }
             }
-
-            stepCounter++;
-
+            timer.Start();
         }
-
+        
         private void CheckSetting(string settingKey, string settingValue)
         {
             string url = "";
@@ -207,7 +212,14 @@ namespace VirtualCampaign_Manager.SplashScreen
         private string IsSFtpServerAvailable(LoginData loginData)
         {
             Sftp ftpClient = new Sftp();
-            ftpClient.Connect(loginData.Url);
+            try
+            {
+                ftpClient.Connect(loginData.Url);
+            }
+            catch (Exception ex)
+            {
+                return string.Format("- Cannot connect to ftp server '{0}'", loginData.Url);
+            }
 
             if (!ftpClient.IsConnected)
             {

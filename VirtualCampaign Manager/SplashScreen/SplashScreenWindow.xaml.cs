@@ -20,13 +20,32 @@ namespace VirtualCampaign_Manager.SplashScreen
     /// </summary>
     public partial class SplashScreenWindow : Window
     {
+        SplashScreenWindowViewModel viewModel;
+
         public SplashScreenWindow()
         {
+            bool loaded = false;
             InitializeComponent();
 
-            SplashScreenWindowViewModel viewModel = new SplashScreenWindowViewModel();
+            viewModel = new SplashScreenWindowViewModel();
             this.DataContext = viewModel;
+            this.Loaded += SplashScreenWindow_Loaded;
         }
 
+        private void SplashScreenWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            PresentationSource presentationSource = PresentationSource.FromVisual((Visual)sender);
+
+            // Subscribe to PresentationSource's ContentRendered event
+            presentationSource.ContentRendered += TestUserControl_ContentRendered;
+        }
+
+        void TestUserControl_ContentRendered(object sender, EventArgs e)
+        {
+            // Don't forget to unsubscribe from the event
+            ((PresentationSource)sender).ContentRendered -= TestUserControl_ContentRendered;
+
+            viewModel.Start();
+        }
     }
 }

@@ -10,24 +10,30 @@ namespace VirtualCampaign_Manager.Helpers
 {
     public class VCProcess : Process
     {
-        private Logger logger;
+        VCObject sender;
 
         public VCProcess(Job job)
         {
-            logger = new Logger(job);
+            sender = job;
         }
 
         public VCProcess(Production production)
         {
-            logger = new Logger(production);
+            sender = production;
         }
 
         public bool Execute()
         {
-            Console.WriteLine(this.StartInfo.FileName + " " + this.StartInfo.Arguments);
-            logger.WriteLine(this.StartInfo.FileName + " " + this.StartInfo.Arguments);
-            return true;
-            //return base.Start();
+            string logString = this.StartInfo.FileName + " " + this.StartInfo.Arguments;
+            if (sender is Job)
+            {
+                (sender as Job).LogText(logString);
+            }
+            else if (sender is Production)
+            {
+                (sender as Production).LogText(logString);
+            }
+            return base.Start();
         }
     }
 }

@@ -15,6 +15,11 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalProductionDirectory(production), "cliplist.txt");
         }
 
+        public static string GetLogFilePath(Production production)
+        {
+            return Path.Combine(GetLocalProductionDirectory(production), "production_" + production.ID + "_log.txt");
+        }
+
         public static string GetProductionMotifDirectory(Production production)
         {
             return Path.Combine(GetLocalProductionDirectory(production), "motifs");

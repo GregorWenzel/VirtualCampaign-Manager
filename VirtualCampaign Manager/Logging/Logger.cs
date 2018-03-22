@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Helpers;
 
 namespace VirtualCampaign_Manager.Logging
 {
@@ -31,6 +32,7 @@ namespace VirtualCampaign_Manager.Logging
             this.job = job;
         }
 
+        //log text to visual log, console and log file
         public void LogText(string text)
         {
             DateTime time = DateTime.Now;
@@ -45,7 +47,23 @@ namespace VirtualCampaign_Manager.Logging
             }
 
             logLines.Add(logText);
+
             Console.WriteLine(logText);
+
+            string logfilePath;
+
+            if (job != null)
+            {
+                logfilePath = JobPathHelper.GetLogFilePath(job);
+            }
+            else
+            {
+                logfilePath = ProductionPathHelper.GetLogFilePath(production);
+
+            }
+
+            System.IO.File.AppendAllText(logfilePath, string.Format("{0}{1}", logText, Environment.NewLine));
+            
             RaisePropertyChangedEvent("Log");
         }
 

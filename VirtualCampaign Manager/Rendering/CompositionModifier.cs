@@ -18,8 +18,6 @@ namespace VirtualCampaign_Manager.Rendering
 
         public JobErrorStatus ErrorStatus = JobErrorStatus.JES_NONE;
 
-        //Logger logger;
-
         public CompositionModifier(Job job)
         {
             this.job = job;
@@ -132,24 +130,6 @@ namespace VirtualCampaign_Manager.Rendering
             return result;
         }
 
-        private int ModifyResources()
-        {
-            int result = 0;
-            int start = -1;
-            int end = -1;
-
-            for (int i = 0; i < CompLines.Length; i++)
-                if (CompLines[i].Contains("res_"))
-                {
-                    result++;
-                    start = i;
-                    end = GetEndLine(start);
-                    SetResourceValue(start, end, "Filename", ProductionPathHelper.GetProductDirectory(job.ProductID));
-                }
-
-            return result;
-        }
-
         private int ModifyMotifs()
         {
             int result = 0;
@@ -237,88 +217,10 @@ namespace VirtualCampaign_Manager.Rendering
             return "." + result;
         }
 
-        private int ModifyFootage()
-        {
-            int result = 0;
-
-            int start = -1;
-            int end = -1;
-
-            for (int i = 0; i < CompLines.Length; i++)
-                if (CompLines[i].Contains("ft_"))
-                {
-                    start = i;
-                    end = GetEndLine(start);
-                    if (SetFootageValue(start, end, "Filename", ProductionPathHelper.GetProductDirectory(job.ProductID)))
-                    {
-                        result++;
-                    }
-                }
-
-            return result;
-        }
-
-        private bool SetFootageValue(int start, int end, string ParameterName, string value)
-        {
-            if (ParameterName.Length == 0)
-                start += 1;
-
-            for (int i = start; i < end; i++)
-                if (CompLines[i].Contains(ParameterName))
-                {
-                    CompLines[i] = ExchangeFootage(i, value);
-                    return true;
-                }
-
-            return false;
-        }
-
-        private string ExchangeFootage(int index, string value)
-        {
-            string result = CompLines[index];
-
-            result = result.Replace(@"\\", @"\");
-
-            result = result.Replace("comp:", value);
-
-            return result.Replace(@"\", @"\\");
-        }
-
-        private void SetResourceValue(int start, int end, string ParameterName, string value)
-        {
-            if (ParameterName.Length == 0)
-                start += 1;
-
-            for (int i = start; i < end; i++)
-                if (CompLines[i].Contains(ParameterName))
-                {
-                    CompLines[i] = ExchangeResource(i, value);
-                    return;
-                }
-        }
-
-        private string ExchangeResource(int index, string value)
-        {
-            string result = CompLines[index];
-
-            /*
-            int start = result.IndexOf("\"");
-            int end = result.IndexOf(job.FormattedProductID + @"\\ressources");
-
-            result = result.Remove(start + 1, end - start - 1).Replace(@"\\", @"\");
-            result = result.Insert(start + 1, value + @"\");
-            */
-
-            result = result.Replace(@"\\", @"\");
-
-            result = result.Replace("comp:", value);
-
-            return result.Replace(@"\", @"\\");
-        }
-
         private void WriteComposition()
         {
             string path = JobPathHelper.GetJobCompPath(job);
+            job.LogText(string.Format("Saving comp '{0}'", path));
             File.WriteAllLines(path, CompLines);
         }
 
@@ -328,7 +230,7 @@ namespace VirtualCampaign_Manager.Rendering
             int end = -1;
             ToolName += " = ";
 
-            //logger.WriteLine("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
+            job.LogText("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
 
             for (int i = 0; i < CompLines.Length; i++)
                 if (CompLines[i].Contains(ToolName))
@@ -380,7 +282,7 @@ namespace VirtualCampaign_Manager.Rendering
             int end = -1;
             ToolName += " = ";
 
-            //logger.WriteLine("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
+            job.LogText("-TOOL: " + ToolName + ", PARAMETER: " + ParameterName + " --> " + value);
 
             for (int i = 0; i < CompLines.Length; i++)
                 if (CompLines[i].Contains(ToolName))

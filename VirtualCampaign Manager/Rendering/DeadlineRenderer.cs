@@ -19,8 +19,6 @@ namespace VirtualCampaign_Manager.Rendering
 
         private static void PrepareRendering(Job job)
         { 
-            IOHelper.CreateDirectory(JobPathHelper.GetLocalJobRenderOutputDirectory(job));
-
             job.RenderChunkStatusList = new List<RenderChunkStatus>();
             job.FinishedChunkList = new List<RenderChunkStatus>();
         }

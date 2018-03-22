@@ -15,6 +15,11 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(ProductionPathHelper.GetLocalProductionDirectory(Job.Production), Job.ID.ToString());
         }
 
+        public static string GetLogFilePath(Job job)
+        {
+            return Path.Combine(GetLocalJobDirectory(job), "job_" + job.ID + "_log.txt");
+        }
+
         public static string GetJobClipPath(Job Job)
         {
             return Path.Combine(GetLocalJobDirectory(Job), "clip_" + Job.Position + ".mp4");
@@ -22,7 +27,7 @@ namespace VirtualCampaign_Manager.Helpers
 
         public static string GetJobCompPath(Job job)
         {
-            string formattedIndex = String.Format("{0:D4}", job.ProductID);
+            string formattedIndex = String.Format("{0:D4}", job.ID);
             return Path.Combine(GetLocalJobDirectory(job), formattedIndex + ".comp");
         }
 
