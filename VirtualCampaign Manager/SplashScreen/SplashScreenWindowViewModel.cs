@@ -1,5 +1,6 @@
 ﻿using ComponentPro.IO;
 using ComponentPro.Net;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -50,7 +51,8 @@ namespace VirtualCampaign_Manager.SplashScreen
             { "Remote HASH directory", "Settings.FtpHashDirectoryLogin" },
             { "Remote product preview directory", "Settings.FtpProductPreviewDirectoryLogin" },
             { "SALTED string", Settings.SALTED },
-            { "Email server settings", "Settings.EmailServerLogin" }
+            { "Email server settings", "Settings.EmailServerLogin" },
+            { "Ghostscript installation", "" },
         };
 
         private string statusString;
@@ -167,6 +169,13 @@ namespace VirtualCampaign_Manager.SplashScreen
                     }
                     break;
                 case "Email server settings": //"Settings.EmailServerLogin"
+                    break;
+                case "Ghostscript installation":
+                    RegistryKey gsKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\GPL Ghostscript", false);
+                    if (gsKey == null)
+                    {
+                        ErrorString += "Ghostscript not installed (required to process PDFs)";
+                    }
                     break;
             }
 

@@ -47,43 +47,16 @@ namespace VirtualCampaign_Manager.Workers
                     PrepareRenderFiles();
                     break;
                 case JobStatus.JS_SEND_RENDER_JOB:
-                    RenderJob();
+                    //DEBUG: SKIP THIS STEP
+                    //RenderJob();
+                    MonitorRenderStatus();
                     break;
                 case JobStatus.JS_GET_JOB_ID:
                     job.Status = JobStatus.JS_RENDER_JOB;
                     break;
                 case JobStatus.JS_RENDER_JOB:
-                    MonitorRenderStatus();
-                    break;
                 case JobStatus.JS_SEND_ENCODE_JOB:
-                    //Alle außer ZIP normal encoden
-                    /*
-                    if (_Production.CodecInfoList[0].Codec.ID != 12)
-                    {
-                        EncodeJob();
-                    }
-                    else
-                    {
-                        string sourceDirectory = Path.Combine(new string[] { this.SourceJobDirectory, "output" });
-
-                        RemoveTrailingDigitsFromOutputFiles(sourceDirectory);
-
-                        string targetFile = Path.Combine(_Production.EncodingProductionDirectory, _Production.Film.UrlHash, "film_" + _Production.FilmID + "_" + _Production.CodecInfoList[0].Codec.ID + _Production.CodecInfoList[0].Codec.Extension);
-
-                        if (!Directory.Exists(Path.Combine(_Production.EncodingProductionDirectory, _Production.Film.UrlHash)))
-                        {
-                            Directory.CreateDirectory(Path.Combine(_Production.EncodingProductionDirectory, _Production.Film.UrlHash));
-                        }
-
-                        if (File.Exists(targetFile))
-                            File.Delete(targetFile);
-
-                        //Thread.Sleep(10000);
-
-                        System.IO.Compression.ZipFile.CreateFromDirectory(sourceDirectory, targetFile);
-                        this.Status = JobStatus.JS_ENCODINGDONE;
-                    }
-                    */
+                    MonitorRenderStatus();
                     break;
                 case JobStatus.JS_ENCODINGDONE:
                     //reset = false;
@@ -147,6 +120,19 @@ namespace VirtualCampaign_Manager.Workers
         }
 
         private void MonitorRenderStatus()
+        {
+            RenderMonitor renderMonitor = new RenderMonitor(job);
+            renderMonitor.FailureEvent += OnRenderFailure;
+            renderMonitor.SuccessEvent += OnRenderSuccess;
+            renderMonitor.Start();
+        }
+
+        private void OnRenderFailure(object sender, EventArgs ea)
+        {
+
+        }
+
+        private void OnRenderSuccess(object sender, EventArgs ea)
         {
 
         }
