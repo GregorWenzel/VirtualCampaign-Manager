@@ -197,10 +197,10 @@ namespace VirtualCampaign_Manager.Transfers
         }
 
         //transfers a user's custom audio file to local file system
-        public TransferPacket(AudioData audioData)
+        public TransferPacket(Production production, AudioData audioData)
         {
             ItemID = audioData.ID;
-            Parent = audioData;
+            Parent = production;
             SourcePath = audioData.Filename;
             TargetPath = audioData.AudioPath;
             Type = TransferType.DownloadAudio;

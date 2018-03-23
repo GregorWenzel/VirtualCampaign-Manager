@@ -47,6 +47,14 @@ namespace VirtualCampaign_Manager.Data
         public EventHandler<EventArgs> SuccessEvent;
         public EventHandler<ResultEventArgs> FailureEvent;
 
+        public bool IsZipProduction
+        {
+            get
+            {
+                return Film.FilmOutputFormatList.Any(item => item.Name.ToLower().Contains("zip"));
+            }
+        }
+
         private bool CanUpdateRemoteData
         {
             get

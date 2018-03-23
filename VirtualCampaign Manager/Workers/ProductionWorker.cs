@@ -36,6 +36,9 @@ namespace VirtualCampaign_Manager.Workers
 
         public void Work()
         {
+            //DEBUG
+            UploadFilms(); return;
+
             if (CheckStatusOk() == false) return;
 
             switch (production.Status)
@@ -47,14 +50,15 @@ namespace VirtualCampaign_Manager.Workers
                     StartJobs();
                     break;
                 case ProductionStatus.PS_MUX_AUDIO:
-                    //Zip format?
-                    if (production.Film.FilmOutputFormatList.Any(item => item.ID == 12))
+                    if (production.IsZipProduction)
                     {
                         production.Status = ProductionStatus.PS_UPLOAD_FILMS;
                         Work();
                     }
                     else
+                    {
                         EncodeAudio();
+                    }
                     break;
                 case ProductionStatus.PS_JOIN_CLIPS:
                     JoinClips();
@@ -99,6 +103,8 @@ namespace VirtualCampaign_Manager.Workers
         {
             AudioEncoder audioEncoder = new AudioEncoder(production);
             audioEncoder.SuccessEvent += OnAudioEncoderSuccess;
+            audioEncoder.FailureEvent += OnAudioEncoderFailure;
+            audioEncoder.Encode();
         }
 
         private void OnAudioEncoderSuccess(object sender, EventArgs ea)
@@ -127,16 +133,16 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnClipJoinerSuccess(object sender, EventArgs ea)
         {
-            (sender as AudioEncoder).SuccessEvent -= OnClipJoinerSuccess;
-            (sender as AudioEncoder).FailureEvent -= OnClipJoinerFailure;
+            (sender as ClipJoiner).SuccessEvent -= OnClipJoinerSuccess;
+            (sender as ClipJoiner).FailureEvent -= OnClipJoinerFailure;
             production.Status = ProductionStatus.PS_ENCODE_FILMS;
             Work();
         }
 
         private void OnClipJoinerFailure(object sender, ResultEventArgs ea)
         {
-            (sender as AudioEncoder).SuccessEvent -= OnClipJoinerSuccess;
-            (sender as AudioEncoder).FailureEvent -= OnClipJoinerFailure;
+            (sender as ClipJoiner).SuccessEvent -= OnClipJoinerSuccess;
+            (sender as ClipJoiner).FailureEvent -= OnClipJoinerFailure;
             production.ErrorStatus = (ProductionErrorStatus)ea.Result;
             FireFailureEvent();
         }

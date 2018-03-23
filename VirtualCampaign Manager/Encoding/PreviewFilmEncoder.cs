@@ -97,14 +97,18 @@ namespace VirtualCampaign_Manager.Encoding
         {
             VCProcess process = new VCProcess(production);
             process.StartInfo.FileName = Settings.LocalFfmpegExePath;
+            process.StartInfo.Arguments = parameters;
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardError = false;
             process.StartInfo.RedirectStandardOutput = false;
-            process.Execute();
-            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            process.WaitForExit();
+            bool success = process.Execute();
 
+            if (success)
+            {
+                process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                process.WaitForExit();
+            }
         }
     }
 }

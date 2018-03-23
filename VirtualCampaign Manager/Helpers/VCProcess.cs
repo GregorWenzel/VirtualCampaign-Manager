@@ -22,9 +22,8 @@ namespace VirtualCampaign_Manager.Helpers
             sender = production;
         }
 
-        public bool Execute()
+        private void LogText(string logString)
         {
-            string logString = this.StartInfo.FileName + " " + this.StartInfo.Arguments;
             if (sender is Job)
             {
                 (sender as Job).LogText(logString);
@@ -33,7 +32,22 @@ namespace VirtualCampaign_Manager.Helpers
             {
                 (sender as Production).LogText(logString);
             }
-            return base.Start();
+        }
+
+        public bool Execute()
+        {
+            string logString = this.StartInfo.FileName + " " + this.StartInfo.Arguments;
+            LogText(logString);
+
+            try
+            {
+                return base.Start();
+            }
+            catch (Exception ex)
+            {
+                LogText(string.Format("Cannot execute process: {0}", ex.Message));
+                return false;
+            }
         }
     }
 }

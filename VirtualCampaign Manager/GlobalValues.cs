@@ -102,7 +102,8 @@ namespace VirtualCampaign_Manager
             {JobErrorStatus.JES_OUTPUTFILE_COUNT_MISMATCH, "Output count mismatch"},
             {JobErrorStatus.JES_PREVIEWFRAME_MISSING, "Preview frame missing" },
             {JobErrorStatus.JES_COMP_MISSING, "Comp file missing" },
-            {JobErrorStatus.JES_MODIFY_MOTIF, "Modify motif" }
+            {JobErrorStatus.JES_MODIFY_MOTIF, "Modify motif" },
+            {JobErrorStatus.JES_CREATE_ZIP, "Create Zip file" }
         };
 
         public static Dictionary<int, FilmOutputFormat> CodecDict = new Dictionary<int, FilmOutputFormat>();

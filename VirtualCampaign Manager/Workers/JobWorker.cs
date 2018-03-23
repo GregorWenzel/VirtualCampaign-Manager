@@ -36,7 +36,7 @@ namespace VirtualCampaign_Manager.Workers
             {
                 case JobStatus.JS_IDLE:
                     job.Status = JobStatus.JS_CREATE_DIRECTORIES;
-                    goto case JobStatus.JS_CREATE_DIRECTORIES;                     
+                    goto case JobStatus.JS_CREATE_DIRECTORIES;
                 case JobStatus.JS_CREATE_DIRECTORIES:
                     CreateDirectories();
                     break;
@@ -55,12 +55,13 @@ namespace VirtualCampaign_Manager.Workers
                     job.Status = JobStatus.JS_RENDER_JOB;
                     break;
                 case JobStatus.JS_RENDER_JOB:
-                case JobStatus.JS_SEND_ENCODE_JOB:
                     MonitorRenderStatus();
                     break;
+                case JobStatus.JS_SEND_ENCODE_JOB:
+                    EncodeJob();
+                    break;
                 case JobStatus.JS_ENCODINGDONE:
-                    //reset = false;
-                    //CleanUp();
+                    CleanUp(reset: false);
                     break;
             }
         }
@@ -82,7 +83,7 @@ namespace VirtualCampaign_Manager.Workers
             job.Status = JobStatus.JS_PREPARE_RESOURCES;
             Work();
         }
-     
+
         private void DownloadMotifs()
         {
             MotifTransferCounter = 0;
@@ -95,7 +96,7 @@ namespace VirtualCampaign_Manager.Workers
                 DownloadManager.Instance.AddTransferPacket(motifTransferPacket);
             }
         }
-        
+
         private void PrepareRenderFiles()
         {
             RenderFilePreparer renderFilePreparer = new RenderFilePreparer(job);
@@ -129,13 +130,36 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnRenderFailure(object sender, EventArgs ea)
         {
-
+            (sender as RenderMonitor).FailureEvent -= OnRenderFailure;
+            (sender as RenderMonitor).SuccessEvent -= OnRenderSuccess;
+            job.ErrorStatus = JobErrorStatus.JES_DEADLINE_RENDER_JOB;
+            FireFailureEvent();
         }
 
         private void OnRenderSuccess(object sender, EventArgs ea)
         {
-
+            (sender as RenderMonitor).FailureEvent -= OnRenderFailure;
+            (sender as RenderMonitor).SuccessEvent -= OnRenderSuccess;
+            job.Status = JobStatus.JS_SEND_ENCODE_JOB;
+            Work();
         }
+
+        private void EncodeJob()
+        {
+            bool isZipProduction = job.Production.Film.FilmOutputFormatList.Any(item => item.Name.ToLower().Contains("zip"));
+            if (isZipProduction)
+            {
+                if (ZipFileCreator.Create(job) == false)
+                {
+                    job.ErrorStatus = JobErrorStatus.JES_CREATE_ZIP;
+                    return;
+                }
+            }
+
+            job.Status = JobStatus.JS_ENCODINGDONE;
+            Work();
+        }
+
 
         private void OnMotifTransferSuccess(object obj, EventArgs ea)
         {
@@ -169,6 +193,22 @@ namespace VirtualCampaign_Manager.Workers
 
             job.ErrorStatus = JobErrorStatus.JES_DOWNLOAD_MOTIFS;
             FireFailureEvent();
+        }
+
+        private void CleanUp(bool reset)
+        {
+            DeadlineRenderer.DeleteJob(job);
+
+            if (reset == false)
+            {
+                job.Status = JobStatus.JS_DONE;
+                FireSuccessEvent();
+            }
+            else
+            {
+                job.ErrorStatus = JobErrorStatus.JES_NONE;
+                job.Status = JobStatus.JS_IDLE;
+            }
         }
     }
 }

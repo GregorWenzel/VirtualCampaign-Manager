@@ -47,5 +47,21 @@ namespace VirtualCampaign_Manager.Rendering
 
             return (job.RenderID != null);
         }
+
+        public static void DeleteJob(Job job)
+        {
+            VCProcess suspendProcess = new VCProcess(job);
+
+            string arguments = "-deletejob " + job.RenderID;
+
+            suspendProcess.StartInfo.FileName = Settings.LocalDeadlineExePath;
+            suspendProcess.StartInfo.CreateNoWindow = true;
+            suspendProcess.StartInfo.UseShellExecute = false;
+            suspendProcess.StartInfo.RedirectStandardError = false;
+            suspendProcess.StartInfo.RedirectStandardOutput = false;
+            suspendProcess.StartInfo.Arguments = arguments;
+            suspendProcess.EnableRaisingEvents = false;
+            suspendProcess.Execute();
+        }
     }
 }

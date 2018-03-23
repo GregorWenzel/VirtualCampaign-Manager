@@ -42,17 +42,20 @@ namespace VirtualCampaign_Manager.Encoding
         {
             bool result = true;
 
-            string parameters = GetParameterString();
-
             VCProcess process = new VCProcess(production);
             process.StartInfo.FileName = Settings.LocalFfmpegExePath;
+            process.StartInfo.Arguments = GetParameterString();
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardError = false;
             process.StartInfo.RedirectStandardOutput = false;
-            process.Execute();
-            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            process.WaitForExit();
+
+            bool success = process.Execute();
+            if (success)
+            {
+                process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                process.WaitForExit();
+            }
 
             //check if all films have been created
             foreach (FilmOutputFormat format in production.Film.FilmOutputFormatList)
@@ -89,7 +92,7 @@ namespace VirtualCampaign_Manager.Encoding
             (sender as PreviewFilmEncoder).FailureEvent -= OnPreviewEncoderFailure;
             (sender as PreviewFilmEncoder).SuccessEvent -= OnPreviewEncoderSuccess;
 
-            FireFailureEvent(rea);
+            FireFailureEvent(rea.Result);
         }
 
         private void OnPreviewEncoderSuccess(object sender, EventArgs rea)

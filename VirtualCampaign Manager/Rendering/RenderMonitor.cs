@@ -172,7 +172,6 @@ namespace VirtualCampaign_Manager.Rendering
         private void CompleteJob()
         {
             timer.Stop();
-            job.Status = JobStatus.JS_SEND_ENCODE_JOB;
             FireSuccessEvent();
         }
 

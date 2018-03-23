@@ -33,7 +33,8 @@ namespace VirtualCampaign_Manager.Data
         JES_ENCODE_IMAGES = 14,
         JES_PREVIEWFRAME_MISSING = 15,
         JES_COMP_MISSING = 16,
-        JES_MODIFY_MOTIF = 17
+        JES_MODIFY_MOTIF = 17,
+        JES_CREATE_ZIP = 18
     };
 
     public enum JobStatus
@@ -50,7 +51,7 @@ namespace VirtualCampaign_Manager.Data
         JS_ENCODINGDONE,
         JS_DONE,
         JS_RENDER_DONE,
-        JS_HAS_ERRORS
+        JS_HAS_ERRORS,
     };
 
     public class Job : VCObject, INotifyPropertyChanged

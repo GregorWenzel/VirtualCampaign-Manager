@@ -55,7 +55,27 @@ namespace VirtualCampaign_Manager.Transfers
             string logText = "Adding transfer packet:\r\n";
             logText += "Source: " + packet.SourcePath;
             logText += "\r\nTarget: " + packet.TargetPath;
-            
+
+            LogText(packet, logText);
+
+            Sftp client = GetClient(packet);
+
+            if (client != null && client.IsConnected && client.IsAuthenticated)
+            {
+                FileInfoBase sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
+                FileInfoBase targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
+                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
+                progressFileItem.Tag = packet.ItemID;
+                queue.Start();                
+            }
+            else
+            {
+                packet.FireFailureEvent();
+            }
+        }
+
+        private void LogText(TransferPacket packet, string logText)
+        {
             if (packet.Parent is Job)
             {
                 (packet.Parent as Job).LogText(logText);
@@ -63,17 +83,6 @@ namespace VirtualCampaign_Manager.Transfers
             else if (packet.Parent is Production)
             {
                 (packet.Parent as Production).LogText(logText);
-            }
-
-            Sftp client = GetClient(packet);
-
-            if (client.IsConnected && client.IsAuthenticated)
-            {
-                FileInfoBase sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
-                FileInfoBase targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
-                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
-                progressFileItem.Tag = packet.ItemID;
-                queue.Start();                
             }
         }
 
@@ -103,14 +112,31 @@ namespace VirtualCampaign_Manager.Transfers
                 {
                     serverURL = serverURL.Replace("ftp://", "");
                 }
-                ftpClient.Connect(serverURL);
+
+                try
+                {
+                    ftpClient.Connect(serverURL);
+                }
+                catch (Exception ex)
+                {
+                    LogText(packet, string.Format("Connection to server '{0}' failed. \r\n--Error Message: {1}", packet.LoginData.Url, ex.Message));
+                    return null;
+                }
             }
 
             if (ftpClient.IsAuthenticated == false)
             {
                 string password = packet.LoginData.Password;
                 string user = packet.LoginData.Username;
-                ftpClient.Authenticate(user, password);
+                try
+                {
+                    ftpClient.Authenticate(user, password);
+                }
+                catch
+                {
+                    LogText(packet, string.Format("Authentication to server '{0}' with user '{1}' failed.", packet.LoginData.Url, packet.LoginData.Username));
+                    return null;
+                }
             }
 
             return ftpClient;

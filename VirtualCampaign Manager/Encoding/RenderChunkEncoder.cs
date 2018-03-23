@@ -23,22 +23,27 @@ namespace VirtualCampaign_Manager.Encoding
 
             IsBusy = true;
 
-            for (int i = LargestChunk.StartIndex; i <= LargestChunk.EndIndex; i++)
+            bool isZipProduction = LargestChunk.Job.Production.IsZipProduction;
+
+            if (isZipProduction == false)
             {
-                LargestChunk.Job.RenderChunkStatusList.First(item => item.StartIndex == i).Status = 6;
+                for (int i = LargestChunk.StartIndex; i <= LargestChunk.EndIndex; i++)
+                {
+                    LargestChunk.Job.RenderChunkStatusList.First(item => item.StartIndex == i).Status = 6;
+                }
+
+                string cmd = " -hwaccel cuvid";
+                //string cmd = "";
+                cmd += " -y -loglevel panic";
+                cmd += " -start_number " + LargestChunk.StartFrame;
+                cmd += " -f image2";
+                cmd += " -i " + JobPathHelper.GetLocalJobRenderOutputFileMask(LargestChunk.Job);
+                cmd += " -vframes " + (LargestChunk.EndFrame - LargestChunk.StartFrame + 1);
+                cmd += " -pix_fmt yuv420p -c:v h264_nvenc -profile:v high -qp 19 -preset fast ";
+                cmd += JobPathHelper.GetRenderChunkPath(LargestChunk);
+
+                Encode(LargestChunk.Job, cmd);
             }
-
-            string cmd = " -hwaccel cuvid";
-            //string cmd = "";
-            cmd += " -y -loglevel panic";
-            cmd += " -start_number " + LargestChunk.StartFrame;
-            cmd += " -f image2";
-            cmd += " -i " + JobPathHelper.GetLocalJobRenderOutputFileMask(LargestChunk.Job);
-            cmd += " -vframes " + (LargestChunk.EndFrame - LargestChunk.StartFrame + 1);
-            cmd += " -pix_fmt yuv420p -c:v h264_nvenc -profile:v high -qp 19 -preset fast ";
-            cmd += JobPathHelper.GetRenderChunkPath(LargestChunk);
-
-            Encode(LargestChunk.Job, cmd);
 
             for (int i = LargestChunk.StartIndex; i <= LargestChunk.EndIndex; i++)
             {
@@ -51,6 +56,9 @@ namespace VirtualCampaign_Manager.Encoding
         public static void MergeChunks(Job job)
         {
             SavePreviewImage(job);
+
+            if (job.Production.IsZipProduction) return;
+
             CreateChunklistFile(job);
 
             string cmd = "-y -loglevel panic -safe 0 -f concat -i " + JobPathHelper.GetChunkListPath(job) + " -c copy ";
@@ -90,7 +98,15 @@ namespace VirtualCampaign_Manager.Encoding
 
             IOHelper.CreateDirectory(directoryName);
 
-            job.PreviewFrame = 20;
+            if (job.Production.IsZipProduction == false)
+            {
+                job.PreviewFrame = 20;
+            }
+            else
+            {
+                //
+                job.PreviewFrame = 0;
+            }
 
             Dictionary<string, string> previewPicDict = new Dictionary<string, string>
             {

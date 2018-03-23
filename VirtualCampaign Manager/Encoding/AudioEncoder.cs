@@ -47,7 +47,7 @@ namespace VirtualCampaign_Manager.Encoding
 
         private void DownloadAudio()
         {
-            TransferPacket audioTransferPacket = new TransferPacket(audioData);
+            TransferPacket audioTransferPacket = new TransferPacket(production, audioData);
             audioTransferPacket.FailureEvent += OnAudioTransferFailure;
             audioTransferPacket.SuccessEvent += OnAudioTransferSuccess;
 
@@ -106,8 +106,12 @@ namespace VirtualCampaign_Manager.Encoding
             MusicProcess.StartInfo.RedirectStandardOutput = false;
             MusicProcess.EnableRaisingEvents = true;
             MusicProcess.StartInfo.Arguments = cmd;
-            MusicProcess.Execute();
-            MusicProcess.WaitForExit();
+            bool success = MusicProcess.Execute();
+
+            if (success)
+            {
+                MusicProcess.WaitForExit();
+            }
 
             if (!File.Exists(ProductionPathHelper.GetTrimmedMusicPath(production)))
             {
@@ -145,8 +149,11 @@ namespace VirtualCampaign_Manager.Encoding
             MusicProcess.StartInfo.RedirectStandardOutput = false;
             MusicProcess.EnableRaisingEvents = true;
             MusicProcess.StartInfo.Arguments = cmd;
-            MusicProcess.Execute();
-            MusicProcess.WaitForExit();
+            bool success = MusicProcess.Execute();
+            if (success)
+            {
+                MusicProcess.WaitForExit();
+            }
 
             if (!File.Exists(ProductionPathHelper.GetTrimmedMusicPath(production)))
             {
@@ -184,8 +191,12 @@ namespace VirtualCampaign_Manager.Encoding
             MusicProcess.StartInfo.RedirectStandardOutput = false;
             MusicProcess.EnableRaisingEvents = true;
             MusicProcess.StartInfo.Arguments = cmd;
-            MusicProcess.Execute();
-            MusicProcess.WaitForExit();
+            bool success = MusicProcess.Execute();
+
+            if (success)
+            {
+                MusicProcess.WaitForExit();
+            }
 
             if (!File.Exists(ProductionPathHelper.GetFinalMusicPath(production)))
             {

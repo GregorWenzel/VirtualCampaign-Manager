@@ -108,8 +108,12 @@ namespace VirtualCampaign_Manager.Encoding
             ConcatenateProcess.StartInfo.RedirectStandardError = false;
             ConcatenateProcess.StartInfo.RedirectStandardOutput = false;
             ConcatenateProcess.StartInfo.Arguments = cmd;
-            ConcatenateProcess.Execute();
-            ConcatenateProcess.WaitForExit();
+            bool success = ConcatenateProcess.Execute();
+
+            if (success)
+            {
+                ConcatenateProcess.WaitForExit();
+            }
 
             if (!File.Exists(ProductionPathHelper.GetFullMp4Path(production)))
             {
