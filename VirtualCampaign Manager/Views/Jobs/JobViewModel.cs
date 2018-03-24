@@ -17,7 +17,7 @@ namespace VirtualCampaign_Manager.Views.Jobs
 {
     public class JobViewModel : INotifyPropertyChanged
     {
-        public ICommand GridDoubleClickCommand { get; set; }
+        public ICommand GridDoubleClickCommand { get; set; }        
 
         public ObservableCollection<Job> JobList
         {
@@ -33,6 +33,7 @@ namespace VirtualCampaign_Manager.Views.Jobs
         public JobViewModel()
         {
             GridDoubleClickCommand = new DelegateCommand(OnGridDoubleClicked);
+
         }
 
         private void OnGridDoubleClicked(object obj)
@@ -42,13 +43,13 @@ namespace VirtualCampaign_Manager.Views.Jobs
             var parentRow = senderEement.ParentOfType<GridViewRow>();
             var parentRowGroup = senderEement.ParentOfType<GridViewGroupRow>();
 
-            if (parentRow == null && parentRowGroup != null)
+            if (parentRow == null && parentRowGroup != null && parentRowGroup.ItemsSource != null)
             {
                 //production double clicked
                 Production selectedProduction = ((parentRowGroup.ItemsSource as System.Collections.ObjectModel.ReadOnlyObservableCollection<object>)[0] as Job).Production;
                 ShowLog(selectedProduction);
             }
-            else
+            else if (parentRowGroup.ItemsSource != null)
             {
                 //job double clicked
                 Job selectedJob = (parentRowGroup.ItemsSource as System.Collections.ObjectModel.ReadOnlyObservableCollection<object>)[0] as Job;

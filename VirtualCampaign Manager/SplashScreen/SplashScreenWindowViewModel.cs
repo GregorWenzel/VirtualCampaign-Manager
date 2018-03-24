@@ -99,16 +99,11 @@ namespace VirtualCampaign_Manager.SplashScreen
                 }
                 else
                 {
-                    //DEBUG: Ignore errors for development
-                    SuccessEvent?.Invoke(this, new EventArgs());
-                    return;
-
                     MessageBox.Show(ErrorString, "Errors in settings file detected!", MessageBoxButton.OK);
                     Application.Current.Dispatcher.Invoke((Action)delegate
                     {
                         Process.Start(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.ini"));
                         Environment.Exit(-1);
-                        //Application.Current.Shutdown();
                         return;
                     });
                 }

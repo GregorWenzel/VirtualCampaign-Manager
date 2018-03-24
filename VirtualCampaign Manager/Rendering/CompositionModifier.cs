@@ -105,7 +105,7 @@ namespace VirtualCampaign_Manager.Rendering
             if (isZipProduction)
                 outputPath = JobPathHelper.GetLocalJobRenderOutputPathForZip(job);
             else
-                outputPath = JobPathHelper.GetLocalJobRenderOutputDirectory(job);
+                outputPath = JobPathHelper.GetLocalJobRenderOutputMask(job);
 
             if (SetValueInTool("OutputClips", "", outputPath))
                 result++;

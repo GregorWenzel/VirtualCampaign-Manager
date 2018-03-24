@@ -15,8 +15,9 @@ namespace VirtualCampaign_Manager.Data
         public string Text { get; set; }
         public int Frames { get; set; }
         public bool IsAvailable { get; set; } = false;
+        public Job Job { get; set; }
 
-        public Motif(int ID, string Type, int Position, string Extension, string LoaderName, string Text)
+        public Motif(int ID, string Type, int Position, string Extension, string LoaderName, string Text, Job job)
         {
             this.ID = ID;
             this.Type = Type;
@@ -25,6 +26,7 @@ namespace VirtualCampaign_Manager.Data
             this.LoaderName = LoaderName;
             this.Text = Text;
             this.Frames = 0;
+            this.Job = job;
         }
 
         public bool IsMovie

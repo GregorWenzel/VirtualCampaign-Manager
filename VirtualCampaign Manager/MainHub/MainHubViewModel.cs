@@ -41,6 +41,7 @@ namespace VirtualCampaign_Manager.MainHub
 
         public void Start()
         {
+            productionsTimer.Elapsed += Timer_Elapsed;
             productionsTimer.Start();
         }
 

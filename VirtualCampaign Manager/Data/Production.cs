@@ -309,7 +309,7 @@ namespace VirtualCampaign_Manager.Data
             set { _username = value; }
         }
 
-        private int _priority = -1;
+        private int _priority = -99;
         public int Priority
         {
             get
@@ -318,11 +318,16 @@ namespace VirtualCampaign_Manager.Data
             }
             set
             {
-                bool propagate = (_priority != -1);
-
                 if (value == _priority) return;
 
-                _priority = value;
+                if (value < 0)
+                {
+                    _priority = GlobalValues.GetNextRenderQueueSlot();
+                }
+                else
+                {
+                    _priority = value;
+                }
             }
         }
 
@@ -404,11 +409,6 @@ namespace VirtualCampaign_Manager.Data
 
         public void StartWorker()
         {
-            if (GlobalValues.IsSimulation)
-            {
-                SetErrorStatus(ProductionErrorStatus.PES_NONE);
-            }
-
             worker = new ProductionWorker(this);
             worker.SuccessEvent += OnProductionSuccess;
             workerThread = new Thread(worker.Work);
@@ -426,6 +426,15 @@ namespace VirtualCampaign_Manager.Data
         
         public void Reset()
         {
+            if (worker != null)
+            {
+                worker.SuccessEvent -= OnProductionSuccess;
+                if (workerThread != null)
+                {
+                    workerThread.Abort();
+                }
+            }
+
             foreach (Job thisJob in JobList)
             {
                 thisJob.Reset();
@@ -435,6 +444,7 @@ namespace VirtualCampaign_Manager.Data
             
             ErrorStatus = ProductionErrorStatus.PES_NONE;
             Status = ProductionStatus.PS_READY;
+            StartWorker();
         }
 
         protected void FireSuccessEvent()

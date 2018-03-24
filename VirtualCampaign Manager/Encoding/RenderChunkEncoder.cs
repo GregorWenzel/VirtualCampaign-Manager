@@ -62,7 +62,7 @@ namespace VirtualCampaign_Manager.Encoding
             CreateChunklistFile(job);
 
             string cmd = "-y -loglevel panic -safe 0 -f concat -i " + JobPathHelper.GetChunkListPath(job) + " -c copy ";
-            cmd += JobPathHelper.GetJobMp4Path(job);
+            cmd += JobPathHelper.GetJobClipPath(job);
 
             Encode(job, cmd);
         }
@@ -155,7 +155,7 @@ namespace VirtualCampaign_Manager.Encoding
         private static void CreateChunklistFile(Job job)
         {
             //get chunk files
-            string[] chunkFiles = Directory.GetFiles(JobPathHelper.GetJobClipPath(job), "clip_" + job.Position + "_chunk_*.mp4");
+            string[] chunkFiles = Directory.GetFiles(JobPathHelper.GetLocalJobDirectory(job), "clip_" + job.Position + "_chunk_*.mp4");
             chunkFiles = chunkFiles.OrderBy(x => x).ToArray();
 
             //create cliplist file

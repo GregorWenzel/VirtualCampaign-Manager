@@ -30,7 +30,11 @@ namespace VirtualCampaign_Manager.Helpers
         {
             if (Directory.Exists(Path))
             {
-                Directory.Delete(Path, true);
+                try
+                {
+                    Directory.Delete(Path, true);
+                }
+                catch { }
             }
         }
 

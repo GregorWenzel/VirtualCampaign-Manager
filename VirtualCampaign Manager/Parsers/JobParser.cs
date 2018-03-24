@@ -66,7 +66,7 @@ namespace VirtualCampaign_Manager.Parsers
                 //product preview clips do not receive motifs
                 if (result.IsPreview == false)
                 {
-                    result.MotifList.Add(new Motif(Convert.ToInt32(JobDict["ContentID"]), Convert.ToString(JobDict["ContentType"]), Convert.ToInt32(JobDict["ContentPosition"]), Convert.ToString(JobDict["ContentExtension"]), Convert.ToString(JobDict["ContentLoaderName"]), Convert.ToString(JobDict["ContentText"])));
+                    result.MotifList.Add(new Motif(Convert.ToInt32(JobDict["ContentID"]), Convert.ToString(JobDict["ContentType"]), Convert.ToInt32(JobDict["ContentPosition"]), Convert.ToString(JobDict["ContentExtension"]), Convert.ToString(JobDict["ContentLoaderName"]), Convert.ToString(JobDict["ContentText"]), result));
 
                     JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["Status"]));
                     

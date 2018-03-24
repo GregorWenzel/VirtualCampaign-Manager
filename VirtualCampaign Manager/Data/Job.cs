@@ -6,7 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Media;
+using Telerik.Windows.Controls;
 using VirtualCampaign_Manager.Logging;
 using VirtualCampaign_Manager.Managers;
 using VirtualCampaign_Manager.Repositories;
@@ -56,6 +58,10 @@ namespace VirtualCampaign_Manager.Data
 
     public class Job : VCObject, INotifyPropertyChanged
     {
+        public ICommand DeleteProductionCommand { get; set; }
+        public ICommand ResetJobCommand { get; set; }
+        public ICommand ResetProductionCommand { get; set; }
+
         public EventHandler<EventArgs> SuccessEvent;
 
         private static readonly Object obj = new Object();
@@ -376,11 +382,15 @@ namespace VirtualCampaign_Manager.Data
 
         public void Reset()
         {
-            IsActive = false;
-            workerThread.Abort();
-            Status = JobStatus.JS_IDLE;
+            if (worker != null)
+            {
+                worker.CleanUp(reset: true);
 
-            //TODO: Kill Render Task
+                if (workerThread != null)
+                {
+                    workerThread.Abort();
+                }
+            }
         }
 
         private Logger logger;
@@ -418,6 +428,28 @@ namespace VirtualCampaign_Manager.Data
         public Job()
         {
             logger = new Logger(this);
+
+            ResetProductionCommand = new DelegateCommand(OnResetProduction);
+            ResetJobCommand = new DelegateCommand(OnResetJob);
+            DeleteProductionCommand = new DelegateCommand(OnDeleteProduction);
+        }
+
+        private void OnResetProduction(object obj)
+        {
+            if (Production != null)
+            {
+                Production.Reset();
+            }
+        }
+
+        private void OnDeleteProduction(object obj)
+        {
+
+        }
+
+        private void OnResetJob(object obj)
+        {
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

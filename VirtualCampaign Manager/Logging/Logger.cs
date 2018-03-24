@@ -62,6 +62,8 @@ namespace VirtualCampaign_Manager.Logging
 
             }
 
+            IOHelper.CreateDirectory(System.IO.Path.GetDirectoryName(logfilePath));
+
             System.IO.File.AppendAllText(logfilePath, string.Format("{0}{1}", logText, Environment.NewLine));
             
             RaisePropertyChangedEvent("Log");

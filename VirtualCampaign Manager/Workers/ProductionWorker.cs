@@ -36,9 +36,6 @@ namespace VirtualCampaign_Manager.Workers
 
         public void Work()
         {
-            //DEBUG
-            UploadFilms(); return;
-
             if (CheckStatusOk() == false) return;
 
             switch (production.Status)

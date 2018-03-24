@@ -80,6 +80,10 @@ namespace VirtualCampaign_Manager.Transfers
             {
                 (packet.Parent as Job).LogText(logText);
             }
+            else if (packet.Parent is Motif)
+            {
+                (packet.Parent as Motif).Job.LogText(logText);
+            }
             else if (packet.Parent is Production)
             {
                 (packet.Parent as Production).LogText(logText);

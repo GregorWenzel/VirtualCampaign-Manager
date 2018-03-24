@@ -47,9 +47,7 @@ namespace VirtualCampaign_Manager.Workers
                     PrepareRenderFiles();
                     break;
                 case JobStatus.JS_SEND_RENDER_JOB:
-                    //DEBUG: SKIP THIS STEP
-                    //RenderJob();
-                    MonitorRenderStatus();
+                    RenderJob();
                     break;
                 case JobStatus.JS_GET_JOB_ID:
                     job.Status = JobStatus.JS_RENDER_JOB;
@@ -195,7 +193,7 @@ namespace VirtualCampaign_Manager.Workers
             FireFailureEvent();
         }
 
-        private void CleanUp(bool reset)
+        public void CleanUp(bool reset)
         {
             DeadlineRenderer.DeleteJob(job);
 

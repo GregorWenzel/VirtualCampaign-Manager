@@ -22,13 +22,9 @@ namespace VirtualCampaign_Manager.Rendering
                 jobFile.WriteLine("Frames=0-0", job.InFrame, Convert.ToInt32(Math.Max(job.OutFrame, 0)));
             else
             {
-                if (job.MasterProductID < 0)
-                    jobFile.WriteLine("Frames={0}-{1}", job.InFrame, Convert.ToInt32(Math.Max(job.FrameCount, 0)));
-                else
-                    jobFile.WriteLine("Frames={0}-{1}", job.InFrame, Convert.ToInt32(Math.Max(job.OutFrame, 0)));
+                jobFile.WriteLine("Frames={0}-{1}", job.InFrame, job.OutFrame);
             }
-            //(job.Frames - 1).ToString());
-            jobFile.WriteLine("Name=" + JobPathHelper.GetJobCompPath(job));
+            jobFile.WriteLine("Name=" + job.ID+".comp");
             jobFile.WriteLine("UserName=virtualcampaign");
             jobFile.WriteLine("Group=vc");
 

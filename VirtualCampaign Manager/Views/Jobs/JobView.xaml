@@ -11,7 +11,7 @@
         <local:JobViewModel />
     </UserControl.DataContext>
     <Grid>
-        <telerik:RadGridView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" CanUserSelect="False"
+        <telerik:RadGridView HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
             ItemsSource="{Binding JobList}" AutoGenerateColumns="False" >
             <telerik:EventToCommandBehavior.EventBindings>
                 <telerik:EventBinding Command="{Binding GridDoubleClickCommand}" EventName="MouseDoubleClick" RaiseOnHandledEvents="True" PassEventArgsToCommand="True"/>
@@ -42,8 +42,8 @@
                         <ProgressBar Maximum="100" Minimum="0" Value="{Binding Path=Group.Items[0].ProductionProgress, UpdateSourceTrigger=PropertyChanged}" Height="10" Width="100" />
                         <TextBlock Text="Priority:" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Path=Group.Items[0].Production.Priority}"/>
-                        <Button Content="Reset"/>
-                        <Button Content="Delete"/>
+                        <telerik:RadButton Content="Reset" Command="{Binding Path=Group.Items[0].ResetProductionCommand}"/>
+                        <telerik:RadButton Content="Reset" Command="{Binding Path=Group.Items[0].DeleteProductionCommand}"/>
                     </StackPanel>
                 </DataTemplate>
             </telerik:RadGridView.GroupHeaderTemplate>
@@ -71,7 +71,7 @@
                 <telerik:GridViewColumn Header="Progress">
                     <telerik:GridViewColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Reset"/>
+                            <telerik:RadButton Content="Reset" Command="{Binding ResetJobCommand}"/>
                         </DataTemplate>
                     </telerik:GridViewColumn.CellTemplate>
                 </telerik:GridViewColumn>

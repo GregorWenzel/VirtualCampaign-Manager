@@ -1,5 +1,6 @@
 ﻿- call to getOpenJobsList instead of getOpenProductionList
 - work with inframe and outframe for products
+- more granular status updates
 - Autoupdater
 - how to create a preview image for zip files
 

@@ -56,6 +56,12 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalJobDirectory(job), "output", "F" + job.OutputExtension);
         }
 
+        public static string GetLocalJobRenderOutputMask(Job job)
+        {
+            return Path.Combine(GetLocalJobDirectory(job), "output", "F" + job.OutputExtension);
+        }
+
+
         public static string GetLocalJobRenderOutputFileMask(Job job)
         {
             return Path.Combine(GetLocalJobRenderOutputDirectory(job), "F%04d" + job.OutputExtension);
@@ -68,12 +74,7 @@ namespace VirtualCampaign_Manager.Helpers
 
         public static string GetChunkListPath(Job job)
         {
-            return Path.Combine(GetJobClipPath(job), "chunklist.txt");
-        }
-
-        public static string GetJobMp4Path(Job job)
-        {
-            return Path.Combine(GetJobClipPath(job), "clip_" + job.Position + ".mp4");
+            return Path.Combine(GetLocalJobDirectory(job), "chunklist.txt");
         }
 
         public static string GetProductCompositionPath(Job job)

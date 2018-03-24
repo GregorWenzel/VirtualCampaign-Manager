@@ -35,13 +35,17 @@ namespace VirtualCampaign_Manager.Encoding
             if ((image.Format != MagickFormat.Jpg && image.Format != MagickFormat.Jpeg) || image.ColorSpace != ColorSpace.sRGB
                 || image.Width > 2000 || image.Height > 2000)
             {
+                job.LogText(string.Format("Transcoding image from format {0}, colorspace {1} to Jpg and sRGB", image.Format, image.ColorSpace));
+
                 image.Format = MagickFormat.Jpg;
                 image.ColorSpace = ColorSpace.sRGB;
                 motif.Extension = ".jpg";
 
                 if (image.Width > 2000 || image.Height > 2000)
                 {
+                    job.LogText(string.Format("Resizing image from {0}x{1} to 1024x{2}", image.Width, image.Height, (1024f / 2000f) * image.Height));
                     image.Resize(1024, 0);
+                    
                 }
 
                 string motifOutputPath = JobPathHelper.GetLocalJobMotifPath(job, motif);
