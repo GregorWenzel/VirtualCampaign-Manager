@@ -192,8 +192,7 @@
       <DependentUpon>SplashScreenWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SplashScreen\SplashScreenWindowViewModel.cs" />
-    <Compile Include="Transfers\UploadManager.cs" />
-    <Compile Include="Transfers\DownloadManager.cs" />
+    <Compile Include="Transfers\TransferManager.cs" />
     <Compile Include="Transfers\FilmUploader.cs" />
     <Compile Include="Transfers\TransferManagerView.xaml.cs">
       <DependentUpon>TransferManagerView.xaml</DependentUpon>

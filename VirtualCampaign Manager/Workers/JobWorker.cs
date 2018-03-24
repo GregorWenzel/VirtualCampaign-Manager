@@ -58,7 +58,7 @@ namespace VirtualCampaign_Manager.Workers
                 case JobStatus.JS_SEND_ENCODE_JOB:
                     EncodeJob();
                     break;
-                case JobStatus.JS_ENCODINGDONE:
+                case JobStatus.JS_ENCODING_DONE:
                     CleanUp(reset: false);
                     break;
             }
@@ -91,7 +91,7 @@ namespace VirtualCampaign_Manager.Workers
                 TransferPacket motifTransferPacket = new TransferPacket(job, motif);
                 motifTransferPacket.FailureEvent += OnMotifTransferFailure;
                 motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
-                DownloadManager.Instance.AddTransferPacket(motifTransferPacket);
+                TransferManager.Instance.AddTransferPacket(motifTransferPacket);
             }
         }
 
@@ -138,7 +138,7 @@ namespace VirtualCampaign_Manager.Workers
         {
             (sender as RenderMonitor).FailureEvent -= OnRenderFailure;
             (sender as RenderMonitor).SuccessEvent -= OnRenderSuccess;
-            job.Status = JobStatus.JS_SEND_ENCODE_JOB;
+            job.Status = JobStatus.JS_ENCODING_DONE;
             Work();
         }
 
@@ -154,7 +154,7 @@ namespace VirtualCampaign_Manager.Workers
                 }
             }
 
-            job.Status = JobStatus.JS_ENCODINGDONE;
+            job.Status = JobStatus.JS_ENCODING_DONE;
             Work();
         }
 
@@ -168,7 +168,15 @@ namespace VirtualCampaign_Manager.Workers
             Motif motif = motifTransferPacket.Parent as Motif;
             if (motif != null)
             {
-                if (MotifTranscoder.Transcode(job, motif) != true)
+                if (motif.IsMovie)
+                {
+                    if (MotifTranscoder.Extract(job, motif) != true)
+                    {
+                        job.ErrorStatus = JobErrorStatus.JES_EXTRACT_MOTIF;
+                        return;
+                    }
+                }
+                else if (MotifTranscoder.Transcode(job, motif) != true)
                 {
                     job.ErrorStatus = JobErrorStatus.JES_MODIFY_MOTIF;
                     return;
@@ -195,8 +203,6 @@ namespace VirtualCampaign_Manager.Workers
 
         public void CleanUp(bool reset)
         {
-            DeadlineRenderer.DeleteJob(job);
-
             if (reset == false)
             {
                 job.Status = JobStatus.JS_DONE;
@@ -204,6 +210,7 @@ namespace VirtualCampaign_Manager.Workers
             }
             else
             {
+                DeadlineRenderer.DeleteJob(job);
                 job.ErrorStatus = JobErrorStatus.JES_NONE;
                 job.Status = JobStatus.JS_IDLE;
             }

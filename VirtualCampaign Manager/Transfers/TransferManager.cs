@@ -4,15 +4,17 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Helpers;
 using VirtualCampaign_Manager.Workers;
 
 namespace VirtualCampaign_Manager.Transfers
 {
-    public sealed class DownloadManager : INotifyPropertyChanged
+    public sealed class TransferManager : INotifyPropertyChanged
     {
         public EventHandler<ResultEventArgs> SuccessEvent;
         public EventHandler<ResultEventArgs> FailureEvent;
@@ -40,7 +42,8 @@ namespace VirtualCampaign_Manager.Transfers
 
         public void AddTransferPacket(TransferPacket packet)
         {
-            if (System.IO.File.Exists(packet.TargetPath))
+            if ((packet.Type == TransferType.DownloadAnimatedMotif || packet.Type == TransferType.DownloadAudio || packet.Type == TransferType.DownloadMotif)
+                && (System.IO.File.Exists(packet.TargetPath)))
             {
                 packet.FireSuccessEvent();
                 return;
@@ -62,15 +65,64 @@ namespace VirtualCampaign_Manager.Transfers
 
             if (client != null && client.IsConnected && client.IsAuthenticated)
             {
-                FileInfoBase sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
-                FileInfoBase targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
-                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
-                progressFileItem.Tag = packet.ItemID;
+                FileInfoBase sourceFileInfo;
+                FileInfoBase targetFileInfo;
+
+                if (packet.IsDownload)
+                {
+                    sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
+                    targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
+
+                    ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
+                    progressFileItem.Tag = packet.ItemID;
+                }
+                else
+                {
+                    if (IOHelper.IsDirectory(packet.SourcePath))
+                    {
+                        AddFilesFromDirectory(client, packet);
+                    }
+                    else
+                    {
+                        sourceFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.SourcePath);
+                        targetFileInfo = client.CreateFileInfo(packet.TargetPath);
+
+                        ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
+                        progressFileItem.Tag = packet.ItemID;
+                    }
+                }
                 queue.Start();                
             }
             else
             {
                 packet.FireFailureEvent();
+            }
+        }
+
+        private void AddFilesFromDirectory(Sftp client, TransferPacket parentPacket)
+        {
+            string[] sourceFileArr = Directory.GetFiles(parentPacket.SourcePath);
+            foreach (string sourceFile in sourceFileArr)
+            {
+                string targetFile = "";
+                if (parentPacket.Type == TransferType.UploadFilmPreviewDirectory)
+                {
+                    targetFile = UriCombine.Uri.Combine(parentPacket.TargetPath, parentPacket.ItemID.ToString(), Path.GetFileName(sourceFile));
+                }
+                else if (parentPacket.Type == TransferType.UploadFilmDirectory)
+                {
+                    targetFile = UriCombine.Uri.Combine(parentPacket.TargetPath, (parentPacket.Parent as Production).Film.UrlHash, Path.GetFileName(sourceFile));
+                }
+                else
+                {
+                    targetFile = null;
+                }
+                TransferPacket newPacket = new TransferPacket(parentPacket, sourceFile, targetFile);
+                FileInfoBase sourceFileInfo = DiskFileSystem.Default.CreateFileInfo(newPacket.SourcePath);
+                FileInfoBase targetFileInfo = client.CreateFileInfo(newPacket.TargetPath);
+
+                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
+                progressFileItem.Tag = newPacket.ItemID;
             }
         }
 
@@ -100,7 +152,6 @@ namespace VirtualCampaign_Manager.Transfers
                 ftpClient = new Sftp();
                 ftpClient.Timeout = -1;
                 ftpClient.ReconnectionMaxRetries = 10;
-                ftpClient.DownloadFileCompleted += FtpClient_DownloadFileCompleted;
                 FtpClientsDict[packet.LoginData.Url + packet.LoginData.Username] = ftpClient;
                 FtpTransfersDict[packet.LoginData.Url + packet.LoginData.Username] = 0;
             }
@@ -146,35 +197,6 @@ namespace VirtualCampaign_Manager.Transfers
             return ftpClient;
         }
 
-        private void FtpClient_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
-        {
-            Sftp ftpClient = sender as Sftp;
-            Object task = e.UserState;
-            TransferPacket thisPacket = TransferPacketList.First(item => item.Task == task);
-            if (thisPacket != null)
-            {
-                thisPacket.IsInTransit = false;
-                if (e.Error == null)
-                {
-                    thisPacket.IsSuccessful = true;
-                    if (thisPacket.Parent is Motif)
-                    {
-                        (thisPacket.Parent as Motif).IsAvailable = true;
-                    }
-                    thisPacket.FireSuccessEvent();
-                }
-                else
-                {
-                    thisPacket.TransferErrorCounter += 1;
-                    if (thisPacket.TransferErrorCounter > Settings.MaxTransferErrorCount)
-                    {
-                        thisPacket.IsSuccessful = false;
-                        thisPacket.FireFailureEvent();
-                    }
-                }
-            }
-        }
-
         private void FireSuccessEvent(TransferPacket packet)
         {
             EventHandler<ResultEventArgs> successEvent = SuccessEvent;
@@ -192,15 +214,15 @@ namespace VirtualCampaign_Manager.Transfers
                 failureEvent(null, new ResultEventArgs(packet));
             }
         }
-        private static volatile DownloadManager instance;
+        private static volatile TransferManager instance;
         private static object syncRoot = new object();
 
-        private DownloadManager()
+        private TransferManager()
         {
             queue = new TransferQueue(Settings.MaxDownloadThreads);
             queue.ItemProcessed += Queue_ItemProcessed;
-            queue.BrowsingThreadStateChanged += Queue_BrowsingThreadStateChanged;
-            queue.StateChanged += Queue_StateChanged;
+            //queue.BrowsingThreadStateChanged += Queue_BrowsingThreadStateChanged;
+            //queue.StateChanged += Queue_StateChanged;
             queue.Start();
         }
 
@@ -217,9 +239,30 @@ namespace VirtualCampaign_Manager.Transfers
         private void Queue_ItemProcessed(object sender, TransferQueueItemProcessedEventArgs e)
         {
             ProgressFileItem item = e.Item;
-            TransferPacket packet = TransferPacketList.First(packetItem => packetItem.ItemID == (int)item.Tag);
+            TransferPacket packet;
+            bool isSubPacket = false;
+
+            if (item.Tag.ToString().Contains("packet_"))
+            {
+                string[] buffer = item.Tag.ToString().Split('_');
+                packet = TransferPacketList.First(packetItem => (string)packetItem.ItemID == buffer[1]);
+                isSubPacket = true;
+            }
+            else
+            {
+                packet = TransferPacketList.First(packetItem => (string)packetItem.ItemID == (string)item.Tag);
+            }
+
+            if (isSubPacket)
+            {
+                packet.RemainingSubPackets -= 1;
+                if (packet.RemainingSubPackets > 0) return;
+            }
+            
+            TransferPacketList.Remove(packet);
+            
             if (e.Item.State == TransferState.FileCopied)
-            {                        
+            {
                 packet.IsInTransit = false;
                 packet.IsSuccessful = true;
                 packet.FireSuccessEvent();
@@ -232,7 +275,12 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        public static DownloadManager Instance
+        private TransferPacket IdentifyTransferPacket(ProgressFileItem item)
+        {
+            return null;
+        }
+
+        public static TransferManager Instance
         {
             get
             {
@@ -242,7 +290,7 @@ namespace VirtualCampaign_Manager.Transfers
                     {
                         if (instance == null)
                         {
-                            instance = new DownloadManager();
+                            instance = new TransferManager();
                         }
                     }
                 }

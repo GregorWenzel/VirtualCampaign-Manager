@@ -37,14 +37,6 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        public string Id
-        {
-            get
-            {
-                return this.ID.ToString();
-            }
-        }
-
         public string DownloadName
         {
             get

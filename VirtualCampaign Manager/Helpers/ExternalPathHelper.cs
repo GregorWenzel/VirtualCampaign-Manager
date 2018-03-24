@@ -26,7 +26,7 @@ namespace VirtualCampaign_Manager.Helpers
 
         public static string GetProductionPreviewDirectory(Production production)
         {
-            return Uri.Combine(GetAccountFtpUrl(), production.AccountID.ToString(), "productions");
+            return Uri.Combine(production.AccountID.ToString(), "productions");
         }
     }
 }

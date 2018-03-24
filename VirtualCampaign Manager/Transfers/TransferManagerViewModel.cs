@@ -14,7 +14,7 @@ namespace VirtualCampaign_Manager.Transfers
         {
             get
             {
-                return DownloadManager.Instance.TransferPacketList;
+                return TransferManager.Instance.TransferPacketList;
             }
         }
         

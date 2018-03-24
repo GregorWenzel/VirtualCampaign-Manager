@@ -41,6 +41,16 @@ namespace VirtualCampaign_Manager.Helpers
                 });
         }
 
+        public static string GetLocalJobAnimatedMotifDiretory(Production production, Motif motif)
+        {
+            return Path.Combine(new string[]
+                {
+                    ProductionPathHelper.GetLocalProductionDirectory(production),
+                    "motifs",
+                    motif.ID.ToString()
+                });
+        }
+
         public static string GetDeadlineJobFile(Job job)
         {
             return Path.Combine(GetLocalJobDirectory(job), job.ID + "_job.txt");
@@ -82,7 +92,5 @@ namespace VirtualCampaign_Manager.Helpers
             string formattedIndex = String.Format("{0:D4}", job.ProductID);
             return Path.Combine(Settings.LocalProductPath, formattedIndex, formattedIndex+".comp");
         }
-
-
     }
 }

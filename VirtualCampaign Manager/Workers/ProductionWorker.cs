@@ -69,20 +69,15 @@ namespace VirtualCampaign_Manager.Workers
                 case ProductionStatus.PS_UPDATE_HISTORY:
                     UpdateHistoryTable();
                     break;
+                case ProductionStatus.PS_DONE:
+                    FireSuccessEvent();
+                    production.CleanUp();
+                    break;
             }
         }
 
         private void CreateDirectories()
         {
-            if (GlobalValues.IsSimulation)
-            {
-                production.LogText("Create directory " + ProductionPathHelper.GetLocalProductionDirectory(production));
-                production.LogText("Create directory " + ProductionPathHelper.GetProductionMotifDirectory(production));
-                production.Status = ProductionStatus.PS_RENDER_JOBS;
-                Work();
-                return;
-            }
-
             bool success = IOHelper.CreateDirectory(ProductionPathHelper.GetLocalProductionDirectory(production));
             success = success && IOHelper.CreateDirectory(ProductionPathHelper.GetProductionMotifDirectory(production));
 
@@ -186,9 +181,9 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnFilmUploaderSuccess(object sender, EventArgs ea)
         {
-            (sender as FilmEncoder).SuccessEvent -= OnFilmUploaderSuccess;
-            (sender as FilmEncoder).FailureEvent -= OnFilmUploaderFailure;
-            production.Status = ProductionStatus.PS_UPLOAD_FILMS;
+            (sender as FilmUploader).SuccessEvent -= OnFilmUploaderSuccess;
+            (sender as FilmUploader).FailureEvent -= OnFilmUploaderFailure;
+            production.Status = ProductionStatus.PS_UPDATE_HISTORY;
             Work();
         }
 
@@ -196,7 +191,6 @@ namespace VirtualCampaign_Manager.Workers
         {
             FilmRepository.UpdateHistoryTable(production);
             production.Status = ProductionStatus.PS_DONE;
-            Delete();
         }
 
         public void Delete()
@@ -235,7 +229,7 @@ namespace VirtualCampaign_Manager.Workers
         private void StartJobs()
         {
             foreach (Job thisJob in production.JobList)
-            {                               
+            {                 
                 if (thisJob.Status == JobStatus.JS_DONE)
                 {
                     continue;

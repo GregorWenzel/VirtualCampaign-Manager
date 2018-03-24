@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using ImageMagick;
 using VirtualCampaign_Manager.Helpers;
+using System.IO;
 
 namespace VirtualCampaign_Manager.Encoding
 {
@@ -31,7 +32,7 @@ namespace VirtualCampaign_Manager.Encoding
                 job.LogText("Ghostscript not installed.");
                 return false;
             }
-            
+
             if ((image.Format != MagickFormat.Jpg && image.Format != MagickFormat.Jpeg) || image.ColorSpace != ColorSpace.sRGB
                 || image.Width > 2000 || image.Height > 2000)
             {
@@ -45,7 +46,7 @@ namespace VirtualCampaign_Manager.Encoding
                 {
                     job.LogText(string.Format("Resizing image from {0}x{1} to 1024x{2}", image.Width, image.Height, (1024f / 2000f) * image.Height));
                     image.Resize(1024, 0);
-                    
+
                 }
 
                 string motifOutputPath = JobPathHelper.GetLocalJobMotifPath(job, motif);
@@ -54,6 +55,32 @@ namespace VirtualCampaign_Manager.Encoding
             }
 
             return result;
+        }
+
+        public static bool Extract(Job job, Motif motif)
+        {
+            IOHelper.CreateDirectory(JobPathHelper.GetLocalJobAnimatedMotifDiretory(job.Production, motif));
+
+            string sourcePath = JobPathHelper.GetLocalJobMotifPath(job, motif);
+            string targetPath = Path.Combine(JobPathHelper.GetLocalJobAnimatedMotifDiretory(job.Production, motif), @"motif_F%04d.tga");
+
+            string parameters = "-i " + sourcePath + " " + targetPath;
+
+            VCProcess process = new VCProcess(job);
+            process.StartInfo.FileName = Settings.LocalFfmpegExePath;
+            process.StartInfo.Arguments = parameters;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardError = false;
+            process.StartInfo.RedirectStandardOutput = false;
+            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            process.Execute();
+            process.WaitForExit();
+
+            motif.Frames = Directory.GetFiles(Path.Combine(JobPathHelper.GetLocalJobAnimatedMotifDiretory(job.Production, motif), "*.tga")).Length;
+            motif.Extension = ".tga";
+
+            return motif.Frames > 0;
         }
     }
 }

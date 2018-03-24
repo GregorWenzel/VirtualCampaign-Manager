@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Helpers;
 using VirtualCampaign_Manager.MainHub;
 
 namespace VirtualCampaign_Manager.SplashScreen
@@ -124,8 +125,7 @@ namespace VirtualCampaign_Manager.SplashScreen
                 case "Audio path": //Settings.LocalAudioPath
                 case "Fusion plugin path": //Settings.LocalFusionPluginPath
                 case "Deadline executable path": //Settings.LocalDeadlineExePath 
-                    string extension = Path.GetExtension(settingValue);
-                    if (extension.Length == 0)
+                    if (IOHelper.IsDirectory(settingValue))
                     {
                         if (!Directory.Exists(settingValue))
                         {

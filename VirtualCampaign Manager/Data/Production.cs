@@ -424,7 +424,7 @@ namespace VirtualCampaign_Manager.Data
             FireSuccessEvent();
         }
         
-        public void Reset()
+        public void CleanUp()
         {
             if (worker != null)
             {
@@ -435,13 +435,18 @@ namespace VirtualCampaign_Manager.Data
                 }
             }
 
+            IOHelper.DeleteDirectory(ProductionPathHelper.GetLocalProductionDirectory(this));
+        }
+
+        public void Reset()
+        {
             foreach (Job thisJob in JobList)
             {
                 thisJob.Reset();
             }
 
-            IOHelper.DeleteDirectory(ProductionPathHelper.GetLocalProductionDirectory(this));
-            
+            CleanUp();
+
             ErrorStatus = ProductionErrorStatus.PES_NONE;
             Status = ProductionStatus.PS_READY;
             StartWorker();

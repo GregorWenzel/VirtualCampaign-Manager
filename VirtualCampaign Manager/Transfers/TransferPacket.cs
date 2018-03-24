@@ -19,7 +19,8 @@ namespace VirtualCampaign_Manager.Transfers
         UploadFilmDirectory,
         UploadMotifPreview,
         UploadProductDirectory,
-        UploadProductPreviewDirectory
+        UploadProductPreviewDirectory,
+        UploadSubPacket
     }
 
     public class TransferPacket : INotifyPropertyChanged
@@ -27,9 +28,21 @@ namespace VirtualCampaign_Manager.Transfers
         public EventHandler<EventArgs> SuccessEvent;
         public EventHandler<EventArgs> FailureEvent;
 
-        public Object Task { get; set; } //unique sftp transfer task id
         public Object Parent { get; set; }
-        public int ItemID { get; set; }
+        private string itemID;
+        public object ItemID
+        {
+            get
+            {
+                return itemID;
+            }
+            set
+            {
+                itemID = Convert.ToString(value);
+            }
+        }
+
+        public int RemainingSubPackets { get; set; } = 0;
 
         private string sourcePath;
 
@@ -121,6 +134,14 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
+        public bool IsDownload
+        {
+            get
+            {
+                return Type == TransferType.DownloadAnimatedMotif || Type == TransferType.DownloadAudio || Type == TransferType.DownloadMotif;
+            }
+        }
+
         private bool isInTransit;
 
         public bool IsInTransit
@@ -133,6 +154,18 @@ namespace VirtualCampaign_Manager.Transfers
                 isInTransit = value;
                 RaisePropertyChangedEvent("Status");
             }
+        }
+
+        //creates a copy from given transferpacket with that packet as parent
+        public TransferPacket(TransferPacket parentPacket, string sourcePath, string targetPath)
+        {
+            ItemID = "packet_" + parentPacket.ItemID+"_"+parentPacket.RemainingSubPackets;
+            parentPacket.RemainingSubPackets += 1;
+            Parent = parentPacket;
+            SourcePath = sourcePath;
+            TargetPath = targetPath;
+            Type = TransferType.UploadSubPacket;
+            LoginData = parentPacket.LoginData;
         }
         
         //transfers a motif from remote user account to local filesystem
@@ -171,7 +204,7 @@ namespace VirtualCampaign_Manager.Transfers
         //transfers a film from local file system to remote user account
         public TransferPacket(Production production, TransferType type)
         {
-            ItemID = production.ID;
+            ItemID = production.Film.ID;
             Parent = production;
 
             switch (type)

@@ -34,9 +34,10 @@ namespace VirtualCampaign_Manager.Data
         JES_DEADLINE_REGISTER_ENCODINGJOB = 13,
         JES_ENCODE_IMAGES = 14,
         JES_PREVIEWFRAME_MISSING = 15,
-        JES_COMP_MISSING = 16,
-        JES_MODIFY_MOTIF = 17,
-        JES_CREATE_ZIP = 18
+        JES_EXTRACT_MOTIF = 16,
+        JES_COMP_MISSING = 17,
+        JES_MODIFY_MOTIF = 18,
+        JES_CREATE_ZIP = 19
     };
 
     public enum JobStatus
@@ -50,7 +51,7 @@ namespace VirtualCampaign_Manager.Data
         JS_RENDER_JOB,
         JS_SEND_ENCODE_JOB,
         JS_ENCODE_JOB,
-        JS_ENCODINGDONE,
+        JS_ENCODING_DONE,
         JS_DONE,
         JS_RENDER_DONE,
         JS_HAS_ERRORS,
@@ -111,15 +112,7 @@ namespace VirtualCampaign_Manager.Data
                 EmailManager.SendErrorMail(this);
             }
         }
-        
-        //number of frames for this job's product
-        private int frameCount;
-
-        public int FrameCount
-        {
-            get { return OutFrame - InFrame + 1; }
-        }
-        
+               
         //usually 0, can be >0 for a subclip
         public int InFrame { get; set; }
 
@@ -141,21 +134,17 @@ namespace VirtualCampaign_Manager.Data
         //List of motifs associated with this job
         public List<Motif> MotifList = new List<Motif>();
 
-        //number of motifs downloaded/available on local file system
-        private int motifsAvailableCount;
-        public int MotifsAvailableCount
+        //index of the last frame to be rendered
+        public int OutFrame { get; set; }
+
+        //net number of frames
+        public int FrameCount
         {
             get
             {
-                return MotifList.Count(item => item.IsAvailable == true);
+                return OutFrame - InFrame + 1;
             }
         }
-
-        //index of the last frame to be rendered
-        //this is only relevant for subclips
-        //for full clips, the last frame is the frame count (Frames)
-        public int OutFrame { get; set; }
-
         private string outputExtension;
         public string OutputExtension
         {
@@ -313,9 +302,19 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-
         //this job's render progress
-        public float Progress { get; set; }
+        private float progress;
+
+        public float Progress
+        {
+            get { return progress; }
+            set
+            {
+                if (value == progress) return;
+                progress = value;
+                RaisePropertyChangedEvent("Progress");
+            }
+        }
 
         //ID of render job provided by deadline
         public string RenderID { get; set; }
@@ -338,15 +337,22 @@ namespace VirtualCampaign_Manager.Data
             {
                 if (value == status) return;
 
-                status = value;
+                if (IsDicative && !IsPreview)
+                {
+                    status = JobStatus.JS_DONE;
+                }
+                else
+                {
+                    status = value;
+
+                    if (IsActive == true)
+                    {
+                        JobRepository.UpdateJob(this, UpdateType.Status);
+                    }
+                }
 
                 RaisePropertyChangedEvent("StatusString");
                 RaisePropertyChangedEvent("StatusColor");
-
-                if (IsActive == true)
-                {
-                    JobRepository.UpdateJob(this, UpdateType.Status);
-                }
             }
         }
 
@@ -420,9 +426,17 @@ namespace VirtualCampaign_Manager.Data
 
             IsActive = true;
             worker = new JobWorker(this);
+            worker.SuccessEvent += OnWorkerSuccess;
             workerThread = new Thread(new ThreadStart(worker.Work));
             LogText("NEW THREAD ID: " + workerThread.ManagedThreadId);
             workerThread.Start();
+        }
+
+        private void OnWorkerSuccess(object sender, EventArgs ea)
+        {
+            worker.SuccessEvent -= OnWorkerSuccess;
+
+            FireSuccessEvent();
         }
 
         public Job()

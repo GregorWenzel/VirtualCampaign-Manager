@@ -51,7 +51,7 @@ namespace VirtualCampaign_Manager.Encoding
             audioTransferPacket.FailureEvent += OnAudioTransferFailure;
             audioTransferPacket.SuccessEvent += OnAudioTransferSuccess;
 
-            DownloadManager.Instance.AddTransferPacket(audioTransferPacket);
+            TransferManager.Instance.AddTransferPacket(audioTransferPacket);
         }
 
         private void OnAudioTransferFailure(Object obj, EventArgs ea)

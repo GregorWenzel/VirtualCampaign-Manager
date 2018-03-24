@@ -32,7 +32,7 @@ namespace VirtualCampaign_Manager.Helpers
 
         public static string GetProductionAnimatedMotifPath(Production production, Motif motif)
         {
-            return Path.Combine(new string[] { GetProductionMotifDirectory(production), motif.Id, "motif_F0001.tga" });
+            return Path.Combine(new string[] { JobPathHelper.GetLocalJobAnimatedMotifDiretory(production, motif), "motif_F0001.tga" });
         }
 
         public static string GetFullMp4Path(Production production)

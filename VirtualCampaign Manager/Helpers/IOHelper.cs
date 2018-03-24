@@ -26,6 +26,11 @@ namespace VirtualCampaign_Manager.Helpers
             return true;
         }
 
+        public static bool IsDirectory(string path)
+        {
+            return Path.GetExtension(path).Length == 0;
+        }
+
         public static void DeleteDirectory(string Path)
         {
             if (Directory.Exists(Path))
