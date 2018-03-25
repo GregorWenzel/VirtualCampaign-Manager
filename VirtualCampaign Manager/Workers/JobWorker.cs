@@ -87,11 +87,24 @@ namespace VirtualCampaign_Manager.Workers
             MotifTransferCounter = 0;
 
             foreach (Motif motif in job.MotifList)
-            {
+            { 
                 TransferPacket motifTransferPacket = new TransferPacket(job, motif);
-                motifTransferPacket.FailureEvent += OnMotifTransferFailure;
-                motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
-                TransferManager.Instance.AddTransferPacket(motifTransferPacket);
+
+                //check if the same transfer is already in progress (other job with the same motif id)
+                TransferPacket inTransitPacket = TransferManager.Instance.GetTransferPacket(motifTransferPacket.ItemID);
+
+                //if transfer already in proggress just subscribe to finished/failure events of that transfer
+                if (inTransitPacket != null)
+                {
+                    inTransitPacket.FailureEvent += OnMotifTransferFailure;
+                    inTransitPacket.SuccessEvent += OnMotifTransferSuccess;
+                }
+                else
+                {
+                    motifTransferPacket.FailureEvent += OnMotifTransferFailure;
+                    motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
+                    TransferManager.Instance.AddTransferPacket(motifTransferPacket);
+                }
             }
         }
 

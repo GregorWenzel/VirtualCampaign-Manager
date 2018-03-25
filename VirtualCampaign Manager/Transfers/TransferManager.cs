@@ -1,318 +1,161 @@
-﻿using ComponentPro.IO;
-using ComponentPro.Net;
+﻿using ComponentPro.Net;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Helpers;
-using VirtualCampaign_Manager.Workers;
 
 namespace VirtualCampaign_Manager.Transfers
 {
-    public sealed class TransferManager : INotifyPropertyChanged
+    public sealed class TransferManager
     {
-        public EventHandler<ResultEventArgs> SuccessEvent;
-        public EventHandler<ResultEventArgs> FailureEvent;
+        private List<TransferPacket> transferList = new List<TransferPacket>();
 
-        private Dictionary<string, Sftp> FtpClientsDict = new Dictionary<string, Sftp>();
-        private Dictionary<Sftp, bool> FtpTransfersDict = new Dictionary<Sftp, bool>();
-
-        private ObservableCollection<TransferPacket> transferPacketList = new ObservableCollection<TransferPacket>();
-        public ObservableCollection<TransferPacket> TransferPacketList
+        private int activePacketCount
         {
             get
             {
-                return transferPacketList;
-            }
-            set
-            {
-                if (value == transferPacketList) return;
-
-                transferPacketList = value;
-                RaisePropertyChangedEvent("TransferPacketList");
+                return transferList.Count(item => item.IsInTransit);
             }
         }
 
-        private TransferQueue queue;
-
-        public void AddTransferPacket(TransferPacket packet)
+        public TransferPacket GetTransferPacket(object itemID)
         {
-            if ((packet.Type == TransferType.DownloadAnimatedMotif || packet.Type == TransferType.DownloadAudio || packet.Type == TransferType.DownloadMotif)
-                && (System.IO.File.Exists(packet.TargetPath)))
+            if (transferList.Any(item => (string)item.ItemID == (string)itemID))
             {
-                packet.FireSuccessEvent();
-                return;
-            }
-
-            List<TransferPacket> buffer = new List<TransferPacket>(transferPacketList);
-
-            if (buffer.Any(item => (string)item.ItemID == (string)packet.ItemID))
-            {
-                packet.FireSuccessEvent();
-                return;
-            }
-            packet.Client = GetClient(packet);
-            packet.ClientConnectedEvent += OnClientConnected;
-
-            transferPacketList.Add(packet);
-
-            string logText = "Adding transfer packet:\r\n";
-            logText += "Source: " + packet.SourcePath;
-            logText += "\r\nTarget: " + packet.TargetPath;
-
-            LogText(packet, logText);
-
-            ConnectClient(packet, packet.Client);
-        }
-
-        private void OnClientConnected(object sender, EventArgs ea)
-        {
-            TransferPacket packet = sender as TransferPacket;
-            Sftp client = packet.Client;
-
-            packet.ClientAuthenticatedEvent += OnClientAuthenticated;
-
-            AuthenticateClient(packet, client);
-        }
-
-        private void AuthenticateClient(TransferPacket packet, Sftp client)
-        {
-            string password = packet.LoginData.Password;
-            string user = packet.LoginData.Username;
-            try
-            {
-                client.AuthenticateAsync(user, password);
-            }
-            catch (Exception ex)
-            {
-                LogText(packet, string.Format("Authentication to server '{0}' with user '{1}' failed.", packet.LoginData.Url, packet.LoginData.Username));
-            }
-        }
-
-        private void ConnectClient(TransferPacket packet, Sftp client)
-        {
-            if (FtpTransfersDict[client] == true) return;
-
-            FtpTransfersDict[client] = true;
-
-            string serverURL = packet.LoginData.Url;
-            if (serverURL.Contains("ftp://"))
-            {
-                serverURL = serverURL.Replace("ftp://", "");
-            }
-
-            try
-            {
-                client.ConnectAsync(packet.LoginData.Url, 22);
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message.ToLower().Contains("already connecting"))
-                {
-                    return;
-                }
-                else
-                {
-                    LogText(packet, string.Format("Connection to server '{0}' failed. \r\n--Error Message: {1}", packet.LoginData.Url, ex.Message));
-                    ConnectClient(packet, client);
-                }
-            }
-        }
-
-        private void OnClientAuthenticated(object sender, EventArgs ea)
-        {
-            TransferPacket packet = sender as TransferPacket;
-            Sftp client = packet.Client;
-
-            packet.ClientAuthenticatedEvent -= OnClientAuthenticated;
-
-            TransferPacket(packet, client);
-        }
-
-        private void TransferPacket(TransferPacket packet, Sftp client)
-        {
-            FileInfoBase sourceFileInfo;
-            FileInfoBase targetFileInfo;
-
-            if (packet.IsDownload)
-            {
-                sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
-                targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
-
-                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
-                progressFileItem.Tag = packet.ItemID;
+                return transferList.First(item => (string)item.ItemID == (string)itemID);
             }
             else
             {
-                if (IOHelper.IsDirectory(packet.SourcePath))
+                return null;
+            }
+        }
+            
+        public void AddTransferPacket(TransferPacket packet)
+        {
+            packet.IsInTransit = false;
+
+            transferList.Add(packet);
+
+            ProcessQueue();
+        }
+
+        private void ProcessQueue()
+        {
+            List<TransferPacket> idleTransferList = transferList.Where(item => item.IsInTransit == false).ToList();
+
+            int packetsToProcess = Settings.MaxDownloadThreads - idleTransferList.Count;
+            for (int i=0; i<packetsToProcess; i++)
+            {
+                TransferPacket newPacket = idleTransferList[i];
+                newPacket.Client = GetFtpClient(newPacket);
+
+                if (newPacket.Client != null)
                 {
-                    AddFilesFromDirectory(client, packet);
+                    InitiateTransfer(newPacket);
+                }
+            }
+        }
+
+        private void InitiateTransfer(TransferPacket packet)
+        {
+            packet.IsInTransit = true;
+
+            switch (packet.Type)
+            {
+                case TransferType.DownloadAnimatedMotif:
+                case TransferType.DownloadAudio:
+                case TransferType.DownloadMotif:
+                    packet.Client.DownloadFileCompleted += Client_DownloadFileCompleted;
+                    packet.Client.DownloadFileAsync(packet.SourcePath, packet.TargetPath, packet);
+                    break;
+                case TransferType.UploadFilmDirectory:
+                case TransferType.UploadFilmPreviewDirectory:
+                case TransferType.UploadProductDirectory:
+                case TransferType.UploadProductPreviewDirectory:
+                    packet.Client.UploadFileCompleted += Client_UploadFileCompleted;
+                    packet.Client.UploadDirectoryCompleted += Client_UploadDirectoryCompleted;
+                    packet.Client.UploadDirectoryAsync(packet.SourcePath, packet.TargetPath, packet);
+                    break;
+                case TransferType.UploadMotifPreview:
+                    packet.Client.UploadFileCompleted += Client_UploadFileCompleted;
+                    packet.Client.UploadFileAsync(packet.SourcePath, packet.TargetPath, packet);
+                    break;
+            }
+        }
+
+        private void Client_UploadDirectoryCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<ComponentPro.IO.FileSystemTransferStatistics> e)
+        {
+            ProcessQueue();
+        }
+
+        private void Client_UploadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
+        {
+            ProcessQueue();
+        }
+
+        private void Client_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
+        {
+            Sftp client = sender as Sftp;
+            client.DownloadFileCompleted -= Client_DownloadFileCompleted;
+
+            TransferPacket packet = e.UserState as TransferPacket;
+
+            if (packet != null)
+            {
+                packet.IsInTransit = false;
+                if (e.Error == null)
+                {
+                    packet.FireSuccessEvent();
                 }
                 else
                 {
-                    sourceFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.SourcePath);
-                    targetFileInfo = client.CreateFileInfo(packet.TargetPath);
-
-                    ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
-                    progressFileItem.Tag = packet.ItemID;
+                    packet.FireFailureEvent();
                 }
             }
-            queue.Start();
+
+            ProcessQueue();
         }
 
-
-        private void AddFilesFromDirectory(Sftp client, TransferPacket parentPacket)
-        {
-            string[] sourceFileArr = Directory.GetFiles(parentPacket.SourcePath);
-            foreach (string sourceFile in sourceFileArr)
-            {
-                string targetFile = "";
-                if (parentPacket.Type == TransferType.UploadFilmPreviewDirectory)
-                {
-                    targetFile = UriCombine.Uri.Combine(parentPacket.TargetPath, parentPacket.ItemID.ToString(), Path.GetFileName(sourceFile));
-                }
-                else if (parentPacket.Type == TransferType.UploadFilmDirectory)
-                {
-                    targetFile = UriCombine.Uri.Combine(parentPacket.TargetPath, (parentPacket.Parent as Production).Film.UrlHash, Path.GetFileName(sourceFile));
-                }
-                else
-                {
-                    targetFile = null;
-                }
-                TransferPacket newPacket = new TransferPacket(parentPacket, sourceFile, targetFile);
-                FileInfoBase sourceFileInfo = DiskFileSystem.Default.CreateFileInfo(newPacket.SourcePath);
-                FileInfoBase targetFileInfo = client.CreateFileInfo(newPacket.TargetPath);
-
-                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
-                progressFileItem.Tag = newPacket.ItemID;
-            }
-        }
-
-        private void LogText(TransferPacket packet, string logText)
-        {
-            if (packet.Parent is Job)
-            {
-                (packet.Parent as Job).LogText(logText);
-            }
-            else if (packet.Parent is Motif)
-            {
-                (packet.Parent as Motif).Job.LogText(logText);
-            }
-            else if (packet.Parent is Production)
-            {
-                (packet.Parent as Production).LogText(logText);
-            }
-        }
-
-        private Sftp GetClient(TransferPacket packet)
+        private Sftp GetFtpClient(TransferPacket packet)
         {
             Sftp ftpClient;
 
-            if (FtpClientsDict.ContainsKey(packet.LoginData.Url+packet.LoginData.Username) == false)
+            //initialize new Sftp connection
+            ftpClient = new Sftp();
+            ftpClient.Timeout = -1;
+            ftpClient.ReconnectionMaxRetries = 10;
+
+            //connect to client
+            try
             {
-                //initialize new Sftp connection
-                ftpClient = new Sftp();
-                ftpClient.Timeout = -1;
-                ftpClient.ReconnectionMaxRetries = 10;
-                FtpClientsDict[packet.LoginData.Url + packet.LoginData.Username] = ftpClient;
-                FtpTransfersDict[ftpClient] = false;
+                ftpClient.Connect(packet.LoginData.Url);
             }
-            else
+            catch (Exception ex)
             {
-                ftpClient = FtpClientsDict[packet.LoginData.Url + packet.LoginData.Username];
+
+            }
+
+            //authenticate user
+            try
+            {
+                ftpClient.Authenticate(packet.LoginData.Username, packet.LoginData.Password);
+            }
+            catch (Exception ex)
+            {
+                
             }
 
             return ftpClient;
         }
 
-        private void FireSuccessEvent(TransferPacket packet)
-        {
-            EventHandler<ResultEventArgs> successEvent = SuccessEvent;
-            if (successEvent != null)
-            {
-                successEvent(null, new ResultEventArgs(packet));
-            }
-        }
 
-        private void FireFailureEvent(TransferPacket packet)
-        {
-            EventHandler<ResultEventArgs> failureEvent = FailureEvent;
-            if (failureEvent != null)
-            {
-                failureEvent(null, new ResultEventArgs(packet));
-            }
-        }
+        public TransferManager()
+        { }
+
         private static volatile TransferManager instance;
         private static object syncRoot = new object();
-
-        private TransferManager()
-        {
-            queue = new TransferQueue(Settings.MaxDownloadThreads);
-            queue.ItemProcessed += Queue_ItemProcessed;
-            //queue.BrowsingThreadStateChanged += Queue_BrowsingThreadStateChanged;
-            //queue.StateChanged += Queue_StateChanged;
-            queue.Start();
-        }
-
-        private void Queue_StateChanged(object sender, TransferQueueStateChangedEventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void Queue_BrowsingThreadStateChanged(object sender, TransferThreadStateChangedEventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void Queue_ItemProcessed(object sender, TransferQueueItemProcessedEventArgs e)
-        {
-            ProgressFileItem item = e.Item;
-            TransferPacket packet;
-            bool isSubPacket = false;
-
-            if (item.Tag.ToString().Contains("packet_"))
-            {
-                string[] buffer = item.Tag.ToString().Split('_');
-                packet = TransferPacketList.First(packetItem => (string)packetItem.ItemID == buffer[1]);
-                isSubPacket = true;
-            }
-            else
-            {
-                packet = TransferPacketList.First(packetItem => (string)packetItem.ItemID == (string)item.Tag);
-            }
-
-            if (isSubPacket)
-            {
-                packet.RemainingSubPackets -= 1;
-                if (packet.RemainingSubPackets > 0) return;
-            }
-            
-            TransferPacketList.Remove(packet);
-            
-            if (e.Item.State == TransferState.FileCopied)
-            {
-                packet.IsInTransit = false;
-                packet.IsSuccessful = true;
-                packet.FireSuccessEvent();
-            }
-            else
-            {
-                packet.IsInTransit = false;
-                packet.IsSuccessful = false;
-                packet.FireFailureEvent();
-            }
-        }
-
-        private TransferPacket IdentifyTransferPacket(ProgressFileItem item)
-        {
-            return null;
-        }
 
         public static TransferManager Instance
         {
@@ -333,14 +176,5 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void RaisePropertyChangedEvent(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
-                PropertyChanged(null, e);
-            }
-        }
     }
 }

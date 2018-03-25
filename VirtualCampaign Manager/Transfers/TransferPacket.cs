@@ -65,6 +65,7 @@ namespace VirtualCampaign_Manager.Transfers
         public LoginData LoginData { get; set; }
         public Exception TransferExcetpion { get; set; }
         public int TransferErrorCounter { get; set; } = 0;
+        public long TaskToken { get; set; }
 
         private Sftp client;
         public Sftp Client
