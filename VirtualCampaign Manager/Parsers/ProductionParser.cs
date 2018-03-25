@@ -10,20 +10,17 @@ namespace VirtualCampaign_Manager.Parsers
 {
     public static class ProductionParser
     {
-        public static List<Production> ParseList(List<Dictionary<string, string>> productionDict)
+        public static void ParseList(List<Dictionary<string, string>> productionDict)
         {
-            List<Production> result = new List<Production>();
-
             foreach (Dictionary<string,string> production in productionDict)
             {
-                Production newProduction = Parse(production);
-                if (result.Any(item => item.ID == newProduction.ID) == false)
+                int newProductionID = Convert.ToInt32(production["ID"]);
+                if (GlobalValues.ProductionList.Any(item => item.ID == newProductionID) == false)
                 {
-                    result.Add(newProduction);
+                    Production newProduction = Parse(production);
+                    GlobalValues.ProductionList.Add(newProduction);
                 }
             }
-
-            return result;
         }
 
         public static Production Parse(Dictionary<string, string> productionDict)

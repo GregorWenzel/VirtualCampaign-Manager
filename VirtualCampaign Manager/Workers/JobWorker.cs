@@ -29,7 +29,7 @@ namespace VirtualCampaign_Manager.Workers
 
         public void Work()
         {
-            if (job.IsActive == false || job.Status == JobStatus.JS_DONE || job.ErrorStatus != JobErrorStatus.JES_NONE)
+            if (job.Status == JobStatus.JS_DONE || job.ErrorStatus != JobErrorStatus.JES_NONE)
                 return;
 
             switch (job.Status)

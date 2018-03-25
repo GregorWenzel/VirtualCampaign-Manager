@@ -39,7 +39,9 @@ namespace VirtualCampaign_Manager.Helpers
                 {
                     Directory.Delete(Path, true);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                }
             }
         }
 

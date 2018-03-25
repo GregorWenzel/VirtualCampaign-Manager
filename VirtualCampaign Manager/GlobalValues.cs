@@ -15,8 +15,6 @@ namespace VirtualCampaign_Manager
 {
     public static class GlobalValues
     {
-        public static bool IsSimulation = true;
-
         public static LogWindow LogWindow = new LogWindow();
 
         private static ObservableCollection<Production> productionList = new ObservableCollection<Production>();
@@ -41,6 +39,7 @@ namespace VirtualCampaign_Manager
 
         public static Dictionary<ProductionStatus, string> ProductionStatusString = new Dictionary<ProductionStatus, string>()
         {
+            {ProductionStatus.PS_START_JOBS, "Starting Jobs" },
             {ProductionStatus.PS_ENCODE_FILMS, "Encoding Films"},
             {ProductionStatus.PS_ENCODE_PRODUCTION, "Encoding Production"},
             {ProductionStatus.PS_JOIN_CLIPS, "Joining Job Clips"},

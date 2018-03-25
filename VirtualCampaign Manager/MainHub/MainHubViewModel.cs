@@ -24,12 +24,8 @@ namespace VirtualCampaign_Manager.MainHub
             set { animatedMotifList = value; }
         }
         
-        private List<Production> productionList;
-
         public MainHubViewModel()
-        {
-            productionList = new List<Production>();
-
+        { 
             productionsTimer = new Timer();
             productionsTimer.Interval = Settings.MainUpdateInterval;
             productionsTimer.Elapsed += Timer_Elapsed;
@@ -46,7 +42,7 @@ namespace VirtualCampaign_Manager.MainHub
         }
 
         private void AnimatedMotifsTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
+        { 
             List<AnimatedMotif> animatedMotifListBuffer = ProductionRepository.ReadAnimatedMotifs();
 
             foreach (AnimatedMotif newAnimatedMotif in animatedMotifListBuffer)
@@ -61,30 +57,31 @@ namespace VirtualCampaign_Manager.MainHub
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            List<Production> productionBuffer = ProductionRepository.ReadProductions();
-            
-            foreach (Production newProduction in productionBuffer)
+            productionsTimer.Stop();
+
+            ProductionRepository.ReadProductions();
+
+            foreach (Production newProduction in GlobalValues.ProductionList)
             {
-                if (productionList.Any(item => item.ID == newProduction.ID) == false)
+                if (newProduction.HasStarted) continue;
+
+                newProduction.SuccessEvent += OnProductionSuccess;
+                foreach (Job newJob in newProduction.JobList)
                 {
-                    newProduction.SuccessEvent += OnProductionSuccess;
-                    productionList.Add(newProduction);
-                    foreach (Job newJob in newProduction.JobList)
-                    {
-                        GlobalValues.JobList.Add(newJob);
-                    }
-                    newProduction.StartWorker();
+                    GlobalValues.JobList.Add(newJob);
                 }
+                newProduction.StartWorker();
             }
+            productionsTimer.Start();
         }
 
         private void OnProductionSuccess(object sender, EventArgs ea)
         {
             Production production = sender as Production;
             production.SuccessEvent -= OnProductionSuccess;
-            if (productionList.Any(item => item.ID == production.ID))
+            if (GlobalValues.ProductionList.Any(item => item.ID == production.ID))
             {
-                productionList.Remove(production);
+                GlobalValues.ProductionList.Remove(production);
 
                 foreach (Job job in production.JobList)
                 {

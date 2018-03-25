@@ -75,15 +75,6 @@ namespace VirtualCampaign_Manager.Data
         //older product clips do not fulfill this requirement
         public bool CanReformat { get; set; }
 
-        //determins whether updates can be propagated to the server at this time
-        public bool CanUpdateRemoteData
-        {
-            get
-            {
-                return GlobalValues.IsSimulation == false;
-            }
-        }
-
         //This job's error status
         private JobErrorStatus errorStatus;
         public JobErrorStatus ErrorStatus
@@ -105,19 +96,21 @@ namespace VirtualCampaign_Manager.Data
                 RaisePropertyChangedEvent("StatusString");
                 RaisePropertyChangedEvent("StatusColor");
 
-                if (!CanUpdateRemoteData)
-                    return;
-
                 JobRepository.UpdateJob(this, UpdateType.ErrorCode);
-                EmailManager.SendErrorMail(this);
+                //EmailManager.SendErrorMail(this);
             }
         }
-               
+
+        public void SetErrorStatus(JobErrorStatus newErrorStatus)
+        {
+            errorStatus = newErrorStatus;
+
+            RaisePropertyChangedEvent("StatusString");
+            RaisePropertyChangedEvent("StatusColor");
+        }
+        
         //usually 0, can be >0 for a subclip
         public int InFrame { get; set; }
-
-        //Is this job currently being processed or idle?
-        public bool IsActive { get; set; }
 
         //is the product associated with this clip an indicative or abdicative?
         public bool IsDicative { get; set; }
@@ -276,15 +269,17 @@ namespace VirtualCampaign_Manager.Data
         {
             get
             {
-                if (Position == 1)
+                if (Production.JobList.Any(item => item.ErrorStatus != JobErrorStatus.JES_NONE))
+                {
+                    return "Clip Errors";
+                }
+                else
                 {
                     if (Production.ErrorStatus == ProductionErrorStatus.PES_NONE)
                         return GlobalValues.ProductionStatusString[Production.Status];
                     else
                         return "ERROR: " + GlobalValues.ProductionErrorStatusString[Production.ErrorStatus];
                 }
-                else
-                    return "";
             }
         }
 
@@ -292,7 +287,16 @@ namespace VirtualCampaign_Manager.Data
 
         public float ProductionProgress
         {
-            get { return productionProgress; }
+            get {
+                if (Production.Status == ProductionStatus.PS_RENDER_JOBS)
+                {
+                    return Production.JobList.Average(item => item.Progress);
+                }
+                else
+                {
+                    return productionProgress;
+                }
+            }
             set {
                 if (value == productionProgress) return;
 
@@ -312,7 +316,10 @@ namespace VirtualCampaign_Manager.Data
             {
                 if (value == progress) return;
                 progress = value;
+
                 RaisePropertyChangedEvent("Progress");
+
+                Production.JobList[0].RaisePropertyChangedEvent("ProductionProgress");
             }
         }
 
@@ -344,16 +351,20 @@ namespace VirtualCampaign_Manager.Data
                 else
                 {
                     status = value;
-
-                    if (IsActive == true)
-                    {
-                        JobRepository.UpdateJob(this, UpdateType.Status);
-                    }
+                    JobRepository.UpdateJob(this, UpdateType.Status);
                 }
 
                 RaisePropertyChangedEvent("StatusString");
                 RaisePropertyChangedEvent("StatusColor");
             }
+        }
+
+        public void SetStatus(JobStatus newStatus)
+        {
+            status = newStatus;
+
+            RaisePropertyChangedEvent("StatusString");
+            RaisePropertyChangedEvent("StatusColor");
         }
 
         public string StatusString
@@ -388,6 +399,14 @@ namespace VirtualCampaign_Manager.Data
 
         public void Reset()
         {
+            foreach (Motif motif in MotifList)
+            {
+                motif.Reset();
+            }
+
+            Progress = 0;
+            ProductionProgress = 0;
+
             if (worker != null)
             {
                 worker.CleanUp(reset: true);
@@ -419,12 +438,6 @@ namespace VirtualCampaign_Manager.Data
 
         public void StartWorker()
         {
-            if (GlobalValues.IsSimulation)
-            {
-                this.ErrorStatus = JobErrorStatus.JES_NONE;
-            }
-
-            IsActive = true;
             worker = new JobWorker(this);
             worker.SuccessEvent += OnWorkerSuccess;
             workerThread = new Thread(new ThreadStart(worker.Work));
@@ -458,7 +471,10 @@ namespace VirtualCampaign_Manager.Data
 
         private void OnDeleteProduction(object obj)
         {
-
+            if (Production != null)
+            {
+                Production.Delete();
+            }
         }
 
         private void OnResetJob(object obj)

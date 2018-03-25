@@ -27,7 +27,7 @@ namespace VirtualCampaign_Manager.Encoding
             {
                 image.Read(motifPath, settings);
             }
-            catch
+            catch (Exception ex)
             {
                 job.LogText("Ghostscript not installed.");
                 return false;
@@ -40,6 +40,7 @@ namespace VirtualCampaign_Manager.Encoding
 
                 image.Format = MagickFormat.Jpg;
                 image.ColorSpace = ColorSpace.sRGB;
+                motif.OriginalExtension = motif.Extension;
                 motif.Extension = ".jpg";
 
                 if (image.Width > 2000 || image.Height > 2000)

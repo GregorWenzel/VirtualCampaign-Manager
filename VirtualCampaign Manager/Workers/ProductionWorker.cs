@@ -43,8 +43,10 @@ namespace VirtualCampaign_Manager.Workers
                 case ProductionStatus.PS_READY:
                     CreateDirectories();
                     break;
-                case ProductionStatus.PS_RENDER_JOBS:
+                case ProductionStatus.PS_START_JOBS:
                     StartJobs();
+                    break;
+                case ProductionStatus.PS_RENDER_JOBS:
                     break;
                 case ProductionStatus.PS_MUX_AUDIO:
                     if (production.IsZipProduction)
@@ -70,8 +72,6 @@ namespace VirtualCampaign_Manager.Workers
                     UpdateHistoryTable();
                     break;
                 case ProductionStatus.PS_DONE:
-                    FireSuccessEvent();
-                    production.CleanUp();
                     break;
             }
         }
@@ -87,7 +87,7 @@ namespace VirtualCampaign_Manager.Workers
                 return;
             }
 
-            production.Status = ProductionStatus.PS_RENDER_JOBS;
+            production.Status = ProductionStatus.PS_START_JOBS;
             Work();            
         }
 
@@ -188,9 +188,11 @@ namespace VirtualCampaign_Manager.Workers
         }
 
         private void UpdateHistoryTable()
-        {
+        {           
             FilmRepository.UpdateHistoryTable(production);
             production.Status = ProductionStatus.PS_DONE;
+
+            FireSuccessEvent();
         }
 
         public void Delete()
@@ -239,6 +241,8 @@ namespace VirtualCampaign_Manager.Workers
                 thisJob.SuccessEvent += OnJobSuccess;
                 thisJob.StartWorker();
             }
+
+            production.Status = ProductionStatus.PS_RENDER_JOBS;
         }
 
         private void OnJobSuccess(object sender, EventArgs ea)

@@ -43,6 +43,8 @@ namespace VirtualCampaign_Manager.Views.Jobs
             var parentRow = senderEement.ParentOfType<GridViewRow>();
             var parentRowGroup = senderEement.ParentOfType<GridViewGroupRow>();
 
+            if (parentRow == null && parentRowGroup == null) return;
+
             if (parentRow == null && parentRowGroup != null && parentRowGroup.ItemsSource != null)
             {
                 //production double clicked

@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Helpers;
@@ -20,7 +21,7 @@ namespace VirtualCampaign_Manager.Transfers
         public EventHandler<ResultEventArgs> FailureEvent;
 
         private Dictionary<string, Sftp> FtpClientsDict = new Dictionary<string, Sftp>();
-        private Dictionary<string, int> FtpTransfersDict = new Dictionary<string, int>();
+        private Dictionary<Sftp, bool> FtpTransfersDict = new Dictionary<Sftp, bool>();
 
         private ObservableCollection<TransferPacket> transferPacketList = new ObservableCollection<TransferPacket>();
         public ObservableCollection<TransferPacket> TransferPacketList
@@ -51,7 +52,13 @@ namespace VirtualCampaign_Manager.Transfers
 
             List<TransferPacket> buffer = new List<TransferPacket>(transferPacketList);
 
-            if (buffer.Any(item => item.ItemID == packet.ItemID)) return;
+            if (buffer.Any(item => (string)item.ItemID == (string)packet.ItemID))
+            {
+                packet.FireSuccessEvent();
+                return;
+            }
+            packet.Client = GetClient(packet);
+            packet.ClientConnectedEvent += OnClientConnected;
 
             transferPacketList.Add(packet);
 
@@ -61,43 +68,104 @@ namespace VirtualCampaign_Manager.Transfers
 
             LogText(packet, logText);
 
-            Sftp client = GetClient(packet);
+            ConnectClient(packet, packet.Client);
+        }
 
-            if (client != null && client.IsConnected && client.IsAuthenticated)
+        private void OnClientConnected(object sender, EventArgs ea)
+        {
+            TransferPacket packet = sender as TransferPacket;
+            Sftp client = packet.Client;
+
+            packet.ClientAuthenticatedEvent += OnClientAuthenticated;
+
+            AuthenticateClient(packet, client);
+        }
+
+        private void AuthenticateClient(TransferPacket packet, Sftp client)
+        {
+            string password = packet.LoginData.Password;
+            string user = packet.LoginData.Username;
+            try
             {
-                FileInfoBase sourceFileInfo;
-                FileInfoBase targetFileInfo;
+                client.AuthenticateAsync(user, password);
+            }
+            catch (Exception ex)
+            {
+                LogText(packet, string.Format("Authentication to server '{0}' with user '{1}' failed.", packet.LoginData.Url, packet.LoginData.Username));
+            }
+        }
 
-                if (packet.IsDownload)
+        private void ConnectClient(TransferPacket packet, Sftp client)
+        {
+            if (FtpTransfersDict[client] == true) return;
+
+            FtpTransfersDict[client] = true;
+
+            string serverURL = packet.LoginData.Url;
+            if (serverURL.Contains("ftp://"))
+            {
+                serverURL = serverURL.Replace("ftp://", "");
+            }
+
+            try
+            {
+                client.ConnectAsync(packet.LoginData.Url, 22);
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.ToLower().Contains("already connecting"))
                 {
-                    sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
-                    targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
+                    return;
+                }
+                else
+                {
+                    LogText(packet, string.Format("Connection to server '{0}' failed. \r\n--Error Message: {1}", packet.LoginData.Url, ex.Message));
+                    ConnectClient(packet, client);
+                }
+            }
+        }
+
+        private void OnClientAuthenticated(object sender, EventArgs ea)
+        {
+            TransferPacket packet = sender as TransferPacket;
+            Sftp client = packet.Client;
+
+            packet.ClientAuthenticatedEvent -= OnClientAuthenticated;
+
+            TransferPacket(packet, client);
+        }
+
+        private void TransferPacket(TransferPacket packet, Sftp client)
+        {
+            FileInfoBase sourceFileInfo;
+            FileInfoBase targetFileInfo;
+
+            if (packet.IsDownload)
+            {
+                sourceFileInfo = client.CreateFileInfo(packet.SourcePath);
+                targetFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.TargetPath);
+
+                ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
+                progressFileItem.Tag = packet.ItemID;
+            }
+            else
+            {
+                if (IOHelper.IsDirectory(packet.SourcePath))
+                {
+                    AddFilesFromDirectory(client, packet);
+                }
+                else
+                {
+                    sourceFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.SourcePath);
+                    targetFileInfo = client.CreateFileInfo(packet.TargetPath);
 
                     ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
                     progressFileItem.Tag = packet.ItemID;
                 }
-                else
-                {
-                    if (IOHelper.IsDirectory(packet.SourcePath))
-                    {
-                        AddFilesFromDirectory(client, packet);
-                    }
-                    else
-                    {
-                        sourceFileInfo = DiskFileSystem.Default.CreateFileInfo(packet.SourcePath);
-                        targetFileInfo = client.CreateFileInfo(packet.TargetPath);
-
-                        ProgressFileItem progressFileItem = queue.Add(sourceFileInfo, targetFileInfo, false, null, 0);
-                        progressFileItem.Tag = packet.ItemID;
-                    }
-                }
-                queue.Start();                
             }
-            else
-            {
-                packet.FireFailureEvent();
-            }
+            queue.Start();
         }
+
 
         private void AddFilesFromDirectory(Sftp client, TransferPacket parentPacket)
         {
@@ -153,45 +221,11 @@ namespace VirtualCampaign_Manager.Transfers
                 ftpClient.Timeout = -1;
                 ftpClient.ReconnectionMaxRetries = 10;
                 FtpClientsDict[packet.LoginData.Url + packet.LoginData.Username] = ftpClient;
-                FtpTransfersDict[packet.LoginData.Url + packet.LoginData.Username] = 0;
+                FtpTransfersDict[ftpClient] = false;
             }
             else
             {
                 ftpClient = FtpClientsDict[packet.LoginData.Url + packet.LoginData.Username];
-            }
-
-            if (ftpClient.IsConnected == false)
-            {
-                string serverURL = packet.LoginData.Url;
-                if (serverURL.Contains("ftp://"))
-                {
-                    serverURL = serverURL.Replace("ftp://", "");
-                }
-
-                try
-                {
-                    ftpClient.Connect(serverURL);
-                }
-                catch (Exception ex)
-                {
-                    LogText(packet, string.Format("Connection to server '{0}' failed. \r\n--Error Message: {1}", packet.LoginData.Url, ex.Message));
-                    return null;
-                }
-            }
-
-            if (ftpClient.IsAuthenticated == false)
-            {
-                string password = packet.LoginData.Password;
-                string user = packet.LoginData.Username;
-                try
-                {
-                    ftpClient.Authenticate(user, password);
-                }
-                catch
-                {
-                    LogText(packet, string.Format("Authentication to server '{0}' with user '{1}' failed.", packet.LoginData.Url, packet.LoginData.Username));
-                    return null;
-                }
             }
 
             return ftpClient;

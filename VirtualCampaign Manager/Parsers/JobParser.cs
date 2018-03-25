@@ -20,6 +20,11 @@ namespace VirtualCampaign_Manager.Parsers
                 {
                     result.Add(newJob);
                 }
+                else
+                {
+                    Job oldJob = result.First(item => item.ID == newJob.ID);
+                    oldJob.MotifList.Add(newJob.MotifList[0]);
+                }
             }
 
             return result;
@@ -29,12 +34,9 @@ namespace VirtualCampaign_Manager.Parsers
         {
             Job result = new Job();
 
-            //make sure this job won't process changes while being updated
-            result.IsActive = false;
-
             result.Production = Production;
             result.ID = Convert.ToInt32(JobDict["ID"]);
-            result.ErrorStatus = (JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["ErrorCode"]));
+            result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["ErrorCode"])));
             result.Position = Convert.ToInt32(JobDict["Position"]);
             result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
             
@@ -78,22 +80,19 @@ namespace VirtualCampaign_Manager.Parsers
                         result.RenderID = Convert.ToString(JobDict["RenderID"]);
                         if (currentStatus == JobStatus.JS_RENDER_JOB)
                         {
-                            result.Status = JobStatus.JS_GET_JOB_ID;
+                            result.SetStatus(JobStatus.JS_GET_JOB_ID);
                         }
                         else
                         {
-                            result.Status = currentStatus;
+                            result.SetStatus(currentStatus);
                         }
-                    }                       
-                    
-                    //reactivate processing loop
-                    result.IsActive = true;                
+                    }                                     
                 }
             }
             else
             {
                 result.MasterProductID = -1;
-                result.Status = JobStatus.JS_DONE;
+                result.SetStatus(JobStatus.JS_DONE);
             }
 
             return result;

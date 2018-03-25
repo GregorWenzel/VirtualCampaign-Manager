@@ -55,9 +55,6 @@ namespace VirtualCampaign_Manager.Repositories
 
         public static void UpdateJob(Job Job, UpdateType Type)
         {
-            if (!Job.CanUpdateRemoteData)
-                return;
-
             DateTime temp = new DateTime(1970, 1, 1, 0, 0, 0, 0).ToLocalTime();
             TimeSpan span = (Job.UpdateDate.ToLocalTime() - temp);
 

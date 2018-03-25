@@ -107,8 +107,14 @@ namespace VirtualCampaign_Manager.Rendering
 
                 if (finishedChunks == taskList.Count)
                 {
-                    RenderChunkEncoder.MergeChunks(job);
-                    CompleteJob();
+                    if (RenderChunkEncoder.MergeChunks(job) == true)
+                    {
+                        CompleteJob();
+                    }
+                    else
+                    {
+                        FireFailureEvent(job.ErrorStatus);
+                    }
                 }
                 else
                 {

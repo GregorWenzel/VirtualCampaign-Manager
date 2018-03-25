@@ -53,11 +53,17 @@ namespace VirtualCampaign_Manager.Encoding
             IsBusy = false;
         }
 
-        public static void MergeChunks(Job job)
+        public static bool MergeChunks(Job job)
         {
+            if (CheckOutputs(job) == false)
+            {
+                job.ErrorStatus = JobErrorStatus.JES_OUTPUTFILE_COUNT_MISMATCH;
+                return false;
+            }
+
             SavePreviewImage(job);
 
-            if (job.Production.IsZipProduction) return;
+            if (job.Production.IsZipProduction) return true;
 
             CreateChunklistFile(job);
 
@@ -65,6 +71,14 @@ namespace VirtualCampaign_Manager.Encoding
             cmd += JobPathHelper.GetJobClipPath(job);
 
             Encode(job, cmd);
+
+            return true;
+        }
+
+        private static bool CheckOutputs(Job job)
+        {
+            int outputCount = Directory.GetFiles(JobPathHelper.GetLocalJobRenderOutputDirectory(job), "*" + job.OutputExtension).Length;
+            return (outputCount > 1 && outputCount == job.FrameCount);
         }
 
         private static void Encode(Job job, string parameters)

@@ -1,9 +1,10 @@
 ﻿- call to getOpenJobsList instead of getOpenProductionList
-- work with inframe and outframe for products
 - more granular status updates
-- resetting after one production cycle halts at "preparing resources"
 - Autoupdater
 - how to create a preview image for zip files
 - define when to update status (get rid of "IsActive" property)
 
 - DONE: check if ghostscript is installed at startup 
+- DONE: resetting after one production cycle halts at "preparing resources"
+- DONE: work with inframe and outframe for products
+

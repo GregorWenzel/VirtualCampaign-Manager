@@ -32,14 +32,15 @@ namespace VirtualCampaign_Manager.Data
     public enum ProductionStatus
     {
         PS_READY = 0,
-        PS_RENDER_JOBS = 1,
-        PS_MUX_AUDIO = 2,
-        PS_JOIN_CLIPS = 3,
-        PS_ENCODE_PRODUCTION = 4,
-        PS_ENCODE_FILMS = 5,
-        PS_UPLOAD_FILMS = 6,
-        PS_UPDATE_HISTORY = 7,
-        PS_DONE = 8
+        PS_START_JOBS = 1,
+        PS_RENDER_JOBS = 2,
+        PS_MUX_AUDIO = 3,
+        PS_JOIN_CLIPS = 4,
+        PS_ENCODE_PRODUCTION = 5,
+        PS_ENCODE_FILMS = 6,
+        PS_UPLOAD_FILMS = 7,
+        PS_UPDATE_HISTORY = 9,
+        PS_DONE = 10,
     };
 
     public class Production : VCObject, INotifyPropertyChanged
@@ -52,14 +53,6 @@ namespace VirtualCampaign_Manager.Data
             get
             {
                 return Film.FilmOutputFormatList.Any(item => item.Name.ToLower().Contains("zip"));
-            }
-        }
-
-        private bool CanUpdateRemoteData
-        {
-            get
-            {
-                return GlobalValues.IsSimulation == false;
             }
         }
 
@@ -189,9 +182,6 @@ namespace VirtualCampaign_Manager.Data
                     JobList[0].RaisePropertyChangedEvent("ProductionStatusColor");
                 }
 
-                if (!CanUpdateRemoteData)
-                    return;
-
                 ProductionRepository.UpdateRemoteValue(this, UpdateType.Status);
             }
         }
@@ -226,9 +216,6 @@ namespace VirtualCampaign_Manager.Data
                 LogText("Error: " + GlobalValues.ProductionErrorStatusString[ErrorStatus]);
 
                 JobList[0].ProductionErrorStatus = errorStatus;
-
-                if (!CanUpdateRemoteData)
-                    return;
 
                 ProductionRepository.UpdateRemoteValue(this, UpdateType.ErrorCode);
                 EmailManager.SendErrorMail(this);
@@ -406,9 +393,12 @@ namespace VirtualCampaign_Manager.Data
         }
 
         private Thread workerThread;
+        public bool HasStarted = false;
 
         public void StartWorker()
         {
+            if (HasStarted) return;
+            HasStarted = true;
             worker = new ProductionWorker(this);
             worker.SuccessEvent += OnProductionSuccess;
             workerThread = new Thread(worker.Work);
@@ -421,6 +411,7 @@ namespace VirtualCampaign_Manager.Data
             worker.SuccessEvent -= OnProductionSuccess;
             workerThread.Abort();
             workerThread = null;
+            CleanUp();
             FireSuccessEvent();
         }
         
@@ -438,8 +429,21 @@ namespace VirtualCampaign_Manager.Data
             IOHelper.DeleteDirectory(ProductionPathHelper.GetLocalProductionDirectory(this));
         }
 
+        public void Delete()
+        {
+            foreach (Job thisJob in JobList)
+            {
+                thisJob.Reset();
+            }
+
+            CleanUp();
+            ProductionRepository.DeleteProduction(this);
+            FireSuccessEvent();
+        }
+
         public void Reset()
         {
+            HasStarted = false;
             foreach (Job thisJob in JobList)
             {
                 thisJob.Reset();
@@ -454,12 +458,12 @@ namespace VirtualCampaign_Manager.Data
 
         protected void FireSuccessEvent()
         {
-            SuccessEvent?.Invoke(null, new EventArgs());
+            SuccessEvent?.Invoke(this, new EventArgs());
         }
 
         protected void FireFailureEvent(object ResultObject = null)
         {
-            FailureEvent?.Invoke(null, new ResultEventArgs(ResultObject));
+            FailureEvent?.Invoke(this, new ResultEventArgs(ResultObject));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

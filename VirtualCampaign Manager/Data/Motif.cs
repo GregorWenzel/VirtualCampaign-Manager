@@ -11,6 +11,7 @@ namespace VirtualCampaign_Manager.Data
         public string Type { get; set; }
         public int Position { get; set; }
         public string Extension { get; set; }
+        public string OriginalExtension { get; set; }
         public string LoaderName { get; set; }
         public string Text { get; set; }
         public int Frames { get; set; }
@@ -27,6 +28,14 @@ namespace VirtualCampaign_Manager.Data
             this.Text = Text;
             this.Frames = 0;
             this.Job = job;
+        }
+
+        public void Reset()
+        {
+            if (OriginalExtension != null && OriginalExtension.Length > 0)
+            {
+                Extension = OriginalExtension;
+            }
         }
 
         public bool IsMovie

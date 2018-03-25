@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ComponentPro.Net;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -27,6 +28,8 @@ namespace VirtualCampaign_Manager.Transfers
     {
         public EventHandler<EventArgs> SuccessEvent;
         public EventHandler<EventArgs> FailureEvent;
+        public EventHandler<EventArgs> ClientConnectedEvent;
+        public EventHandler<EventArgs> ClientAuthenticatedEvent;
 
         public Object Parent { get; set; }
         private string itemID;
@@ -62,6 +65,34 @@ namespace VirtualCampaign_Manager.Transfers
         public LoginData LoginData { get; set; }
         public Exception TransferExcetpion { get; set; }
         public int TransferErrorCounter { get; set; } = 0;
+
+        private Sftp client;
+        public Sftp Client
+        {
+            get
+            {
+                return client;
+            }
+            set
+            {
+                if (value == client) return;
+
+                client = value;
+                client.AuthenticateCompleted += Client_AuthenticateCompleted;
+                client.ConnectCompleted += Client_ConnectCompleted;
+            }
+        }
+
+        private void Client_AuthenticateCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            ClientAuthenticatedEvent?.Invoke(this, new EventArgs());
+        }
+
+        private void Client_ConnectCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+             ClientConnectedEvent?.Invoke(this, new EventArgs());
+        }
+
         public string Filename
         {
             get

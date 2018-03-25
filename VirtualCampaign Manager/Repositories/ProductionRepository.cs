@@ -26,20 +26,16 @@ namespace VirtualCampaign_Manager.Repositories
             return result;
         }
 
-        public static List<Production> ReadProductions()
+        public static void ReadProductions()
         {
-            List<Production> result = new List<Production>();
-
             string productionListString = RemoteDataManager.ExecuteRequest("getOpenProductionList");
 
             List<Dictionary<string, string>> productionDict = JsonDeserializer.Deserialize(productionListString);
 
             if (productionDict.Count > 0)
             {
-                result = ProductionParser.ParseList(productionDict);
+                ProductionParser.ParseList(productionDict);
             }
-
-            return result;
         }
 
         public static void DeleteProduction(Production Production)

@@ -43,7 +43,7 @@
                         <TextBlock Text="Priority:" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Path=Group.Items[0].Production.Priority}"/>
                         <telerik:RadButton Content="Reset" Command="{Binding Path=Group.Items[0].ResetProductionCommand}"/>
-                        <telerik:RadButton Content="Reset" Command="{Binding Path=Group.Items[0].DeleteProductionCommand}"/>
+                        <telerik:RadButton Content="Delete" Command="{Binding Path=Group.Items[0].DeleteProductionCommand}"/>
                     </StackPanel>
                 </DataTemplate>
             </telerik:RadGridView.GroupHeaderTemplate>

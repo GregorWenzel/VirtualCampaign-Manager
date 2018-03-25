@@ -205,6 +205,14 @@ namespace VirtualCampaign_Manager.Managers
             result += "User Name: " + production.Username + "\r\n";
             result += "Error Date: " + dt.ToLongDateString() + "\r\n";
             result += "Error Time: " + dt.ToLongTimeString() + "\r\n";
+            result += "Production log:\r\n\r\n" + production.Log + "\r\n\r\n";
+            result += "Job logs:";
+
+            foreach (Job job in production.JobList)
+            {
+                result += "Job ID " + job.ID + ", product ID " + job.ProductID + "\r\n";
+                result += job.Log + "\r\n\r\n";
+            }
 
             return result;
         }
@@ -233,6 +241,7 @@ namespace VirtualCampaign_Manager.Managers
             result += "User Name: " + production.Username + "\r\n";
             result += "Error Date: " + dt.ToLongDateString() + "\r\n";
             result += "Error Time: " + dt.ToLongTimeString() + "\r\n";
+            result += "Job log:\r\n\r\n" + job.Log;
 
             return result;
         }
