@@ -24,7 +24,8 @@ namespace VirtualCampaign_Manager.Rendering
             {
                 jobFile.WriteLine("Frames={0}-{1}", job.InFrame, job.OutFrame);
             }
-            jobFile.WriteLine("Name=" + job.ID+".comp");
+            job.RenderStartTime = DateTime.Now.Ticks;
+            jobFile.WriteLine(string.Format("Name={0} [{1}]", job.ID, job.RenderStartTime));
             jobFile.WriteLine("UserName=virtualcampaign");
             jobFile.WriteLine("Group=vc");
 

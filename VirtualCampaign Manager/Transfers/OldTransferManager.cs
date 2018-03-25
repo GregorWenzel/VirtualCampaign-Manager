@@ -50,7 +50,7 @@ namespace VirtualCampaign_Manager.Transfers
             if ((packet.Type == TransferType.DownloadAnimatedMotif || packet.Type == TransferType.DownloadAudio || packet.Type == TransferType.DownloadMotif)
                 && (System.IO.File.Exists(packet.TargetPath)))
             {
-                packet.FireSuccessEvent();
+                packet.RaiseSuccessEvent();
                 return;
             }
 
@@ -58,7 +58,7 @@ namespace VirtualCampaign_Manager.Transfers
 
             if (buffer.Any(item => (string)item.ItemID == (string)packet.ItemID))
             {
-                packet.FireSuccessEvent();
+                packet.RaiseSuccessEvent();
                 return;
             }
             packet.Client = GetClient(packet);
@@ -303,13 +303,13 @@ namespace VirtualCampaign_Manager.Transfers
             {
                 packet.IsInTransit = false;
                 packet.IsSuccessful = true;
-                packet.FireSuccessEvent();
+                packet.RaiseSuccessEvent();
             }
             else
             {
                 packet.IsInTransit = false;
                 packet.IsSuccessful = false;
-                packet.FireFailureEvent();
+                packet.RaiseFailureEvent();
             }
         }
 

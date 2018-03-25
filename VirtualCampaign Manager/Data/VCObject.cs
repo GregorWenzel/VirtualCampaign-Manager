@@ -24,6 +24,8 @@ namespace VirtualCampaign_Manager.Data
             set { creationDate = value; }
         }
 
+        public long RenderStartTime { get; set; }
+
         private DateTime updateDate;
 
         public DateTime UpdateDate

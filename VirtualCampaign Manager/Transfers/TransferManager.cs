@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using VirtualCampaign_Manager.Helpers;
 
 namespace VirtualCampaign_Manager.Transfers
 {
     public sealed class TransferManager
     {
+        private Timer timer;
         private List<TransferPacket> transferList = new List<TransferPacket>();
 
         private int activePacketCount
@@ -37,18 +39,21 @@ namespace VirtualCampaign_Manager.Transfers
             packet.IsInTransit = false;
 
             transferList.Add(packet);
-
-            ProcessQueue();
         }
 
         private void ProcessQueue()
         {
             List<TransferPacket> idleTransferList = transferList.Where(item => item.IsInTransit == false).ToList();
 
-            int packetsToProcess = Settings.MaxDownloadThreads - idleTransferList.Count;
+            List<TransferPacket> packetsInProcessList = transferList.Where(item => item.IsInTransit == true).ToList();
+            int packetsToProcess = Math.Min(idleTransferList.Count, Settings.MaxDownloadThreads - packetsInProcessList.Count);
+
             for (int i=0; i<packetsToProcess; i++)
             {
                 TransferPacket newPacket = idleTransferList[i];
+
+                if (packetsInProcessList.Any(item => item.ItemID == newPacket.ItemID)) continue;
+
                 newPacket.Client = GetFtpClient(newPacket);
 
                 if (newPacket.Client != null)
@@ -87,35 +92,48 @@ namespace VirtualCampaign_Manager.Transfers
 
         private void Client_UploadDirectoryCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<ComponentPro.IO.FileSystemTransferStatistics> e)
         {
-            ProcessQueue();
+            Sftp client = sender as Sftp;
+            client.UploadDirectoryCompleted -= Client_UploadDirectoryCompleted;
+            client.Disconnect();
+
+            HandleFinishedTransfer(e.UserState as TransferPacket, e.Error);
         }
 
         private void Client_UploadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
         {
-            ProcessQueue();
+            Sftp client = sender as Sftp;
+            client.UploadFileCompleted -= Client_UploadFileCompleted;
+            client.Disconnect();
+
+            HandleFinishedTransfer(e.UserState as TransferPacket, e.Error);
         }
 
         private void Client_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
         {
             Sftp client = sender as Sftp;
             client.DownloadFileCompleted -= Client_DownloadFileCompleted;
+            client.Disconnect();
 
-            TransferPacket packet = e.UserState as TransferPacket;
+            HandleFinishedTransfer(e.UserState as TransferPacket, e.Error);
+        }
 
+        private void HandleFinishedTransfer(TransferPacket packet, Exception error)
+        { 
             if (packet != null)
             {
+                transferList.Remove(packet);
                 packet.IsInTransit = false;
-                if (e.Error == null)
+                if (error == null)
                 {
-                    packet.FireSuccessEvent();
+                    packet.RaiseSuccessEvent();
                 }
                 else
                 {
-                    packet.FireFailureEvent();
+                    packet.RaiseFailureEvent();
                 }
             }
 
-            ProcessQueue();
+            timer.Start();
         }
 
         private Sftp GetFtpClient(TransferPacket packet)
@@ -152,7 +170,19 @@ namespace VirtualCampaign_Manager.Transfers
 
 
         public TransferManager()
-        { }
+        { 
+            timer = new Timer();
+            timer.Interval = 1000;
+            timer.Elapsed += Timer_Elapsed;
+            timer.Start();
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            timer.Stop();
+            ProcessQueue();
+            timer.Start();
+        }
 
         private static volatile TransferManager instance;
         private static object syncRoot = new object();

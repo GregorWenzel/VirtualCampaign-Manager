@@ -42,7 +42,8 @@ namespace VirtualCampaign_Manager.Rendering
 
             try
             {
-                jobDoc = jobCollection.Find(Builders<BsonDocument>.Filter.AnyEq("Props.Name", string.Format("{0}.comp", job.ID))).SortByDescending(bson => bson["LastWriteTime"]).First();
+                string jobName = string.Format("{0} [{1}]", job.ID, job.RenderStartTime);
+                jobDoc = jobCollection.Find(Builders<BsonDocument>.Filter.AnyEq("Props.Name", jobName)).SortByDescending(bson => bson["LastWriteTime"]).First();
 
                 int status = Convert.ToInt32(jobDoc["Stat"]);
                 double tasks = Convert.ToDouble(jobDoc["Props"]["Tasks"]);

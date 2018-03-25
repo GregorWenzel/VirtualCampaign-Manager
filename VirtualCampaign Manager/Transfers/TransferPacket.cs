@@ -272,12 +272,12 @@ namespace VirtualCampaign_Manager.Transfers
             LoginData = Settings.FtpAudioDirectoryLogin;
         }
 
-        public void FireSuccessEvent()
+        public void RaiseSuccessEvent()
         {
             SuccessEvent?.Invoke(this, new EventArgs());
         }
 
-        public void FireFailureEvent()
+        public void RaiseFailureEvent()
         {
             FailureEvent?.Invoke(this, new EventArgs());
         }
