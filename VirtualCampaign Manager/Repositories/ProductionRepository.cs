@@ -28,7 +28,7 @@ namespace VirtualCampaign_Manager.Repositories
 
         public static void ReadProductions()
         {
-            string productionListString = RemoteDataManager.ExecuteRequest("getOpenProductionList");
+            string productionListString = RemoteDataManager.ExecuteRequest("getOpenJobs");
 
             List<Dictionary<string, string>> productionDict = JsonDeserializer.Deserialize(productionListString);
 
