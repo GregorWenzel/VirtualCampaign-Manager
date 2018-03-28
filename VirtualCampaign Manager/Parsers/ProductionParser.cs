@@ -14,11 +14,38 @@ namespace VirtualCampaign_Manager.Parsers
         {
             foreach (Dictionary<string,string> production in productionDict)
             {
-                int newProductionID = Convert.ToInt32(production["ID"]);
+                int newProductionID = Convert.ToInt32(production["ProductionID"]);
+                Production thisProduction;
                 if (GlobalValues.ProductionList.Any(item => item.ID == newProductionID) == false)
                 {
-                    Production newProduction = Parse(production);
-                    GlobalValues.ProductionList.Add(newProduction);
+                    thisProduction = Parse(production);
+                    GlobalValues.ProductionList.Add(thisProduction);
+                }
+                else
+                {
+                    thisProduction = GlobalValues.ProductionList.First(item => item.ID == newProductionID);
+                }
+
+                int newJobID = Convert.ToInt32(production["JobID"]);
+                Job thisJob;
+                if (thisProduction.JobList.Any(item => item.ID == newJobID) == false)
+                {
+                    thisJob = JobParser.Parse(production);
+                    thisJob.Production = thisProduction;
+                    thisProduction.JobList.Add(thisJob);
+                    GlobalValues.JobList.Add(thisJob);
+                }
+                else
+                {
+                    thisJob = thisProduction.JobList.First(item => item.ID == newJobID);
+                }
+
+                int newMotifID = Convert.ToInt32(production["ContentID"]);
+                int newMotifPosition = Convert.ToInt32(production["ContentPosition"]);
+                if (thisJob.MotifList.Any(item => item.ID == newMotifID && item.Position == newMotifPosition) == false)
+                {
+                    Motif newMotif = MotifParser.Parse(production);
+                    thisJob.MotifList.Add(newMotif);
                 }
             }
         }
@@ -46,7 +73,7 @@ namespace VirtualCampaign_Manager.Parsers
 
             result.HasSpecialIntroMusic = Convert.ToString(productionDict["SpecialIntroMusic"]) == "1";
             result.IsPreview = Convert.ToInt32(productionDict["IsPreview"]) == 1;
-            result.ID = Convert.ToInt32(productionDict["ID"]);
+            result.ID = Convert.ToInt32(productionDict["ProductionID"]);
             result.Priority = Convert.ToInt32(productionDict["Priority"]);
             result.Email = Convert.ToString(productionDict["Email"]);
             result.Film.ID = Convert.ToInt32(productionDict["FilmID"]);
@@ -56,11 +83,11 @@ namespace VirtualCampaign_Manager.Parsers
             result.AbdicativeID = Convert.ToInt32(productionDict["AbdicativeID"]);
             result.AudioID = Convert.ToInt32(productionDict["AudioID"]);
             result.Username = Convert.ToString(productionDict["UserName"]);
-            result.Name = Convert.ToString(productionDict["Name"]);
-            result.SetStatus((ProductionStatus)Enum.ToObject(typeof(ProductionStatus), Convert.ToInt32(productionDict["Status"])));
-            result.SetErrorStatus((ProductionErrorStatus)Enum.ToObject(typeof(ProductionErrorStatus), Convert.ToInt32(productionDict["ErrorCode"])));
-            result.JobList = JobRepository.ReadJobs(result);
+            result.Name = Convert.ToString(productionDict["FilmName"]);
+            result.SetStatus((ProductionStatus)Enum.ToObject(typeof(ProductionStatus), Convert.ToInt32(productionDict["ProductionStatus"])));
+            result.SetErrorStatus((ProductionErrorStatus)Enum.ToObject(typeof(ProductionErrorStatus), Convert.ToInt32(productionDict["ProductionErrorCode"])));
 
+            result.JobList = new List<Job>();
             return result;
         }
     }

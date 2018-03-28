@@ -15,7 +15,7 @@ namespace VirtualCampaign_Manager.Parsers
 
             foreach (Dictionary<string, string> animatedMotif in motifDict)
             {
-                AnimatedMotif newAnimatedMotif = Parse(animatedMotif);
+                AnimatedMotif newAnimatedMotif = ParseAnimatedMotif(animatedMotif);
                 if (result.Any(item => item. ID == newAnimatedMotif.ID) == false)
                 {
                     result.Add(newAnimatedMotif);
@@ -25,13 +25,26 @@ namespace VirtualCampaign_Manager.Parsers
             return result;
         }
 
-        private static AnimatedMotif Parse(Dictionary<string, string> motifDict)
+        private static AnimatedMotif ParseAnimatedMotif(Dictionary<string, string> motifDict)
         {
             AnimatedMotif result = new AnimatedMotif();
             result.ID = Convert.ToInt32(motifDict["ID"]);
             result.AccountID = Convert.ToInt32(motifDict["AccountID"]);
             result.Extension = Convert.ToString(motifDict["Extension"]);
             
+            return result;
+        }
+
+        public static Motif Parse(Dictionary<string, string> motifDict)
+        {
+            Motif result = new Motif();
+            result.ID = Convert.ToInt32(motifDict["ContentID"]);
+            result.Type = Convert.ToString(motifDict["ContentType"]);
+            result.Position = Convert.ToInt32(motifDict["ContentPosition"]);
+            result.Extension = Convert.ToString(motifDict["ContentExtension"]);
+            result.LoaderName = Convert.ToString(motifDict["ContentLoaderName"]);
+            result.Text = Convert.ToString(motifDict["ContentText"]);
+
             return result;
         }
     }
