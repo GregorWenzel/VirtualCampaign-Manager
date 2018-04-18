@@ -18,6 +18,8 @@ namespace VirtualCampaign_Manager.Data
         public bool IsAvailable { get; set; } = false;
         public Job Job { get; set; }
 
+        public Motif() { }
+
         public Motif(int ID, string Type, int Position, string Extension, string LoaderName, string Text, Job job)
         {
             this.ID = ID;

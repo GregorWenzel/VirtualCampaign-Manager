@@ -30,13 +30,65 @@ namespace VirtualCampaign_Manager.Parsers
             return result;
         }
 
+        public static Job Parse(Dictionary<string, string> JobDict)
+        {
+            Job result = new Job();
+
+            result.ID = Convert.ToInt32(JobDict["JobID"]);
+            result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["JobErrorCode"])));
+            result.Position = Convert.ToInt32(JobDict["JobPosition"]);
+            result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
+            result.IsDicative = (Convert.ToInt32(JobDict["IsDicative"]) == 1);
+            result.InFrame = Convert.ToInt32(JobDict["InFrame"]);
+            result.OutFrame = Convert.ToInt32(JobDict["OutFrame"]);
+            result.PreviewFrame = Convert.ToInt32(JobDict["PreviewFrame"]);
+            result.AccountID = Convert.ToInt32(JobDict["AccountID"]);
+
+            if (result.IsDicative == false)
+            {
+                result.MasterProductID = Convert.ToInt32(JobDict["MasterProductID"]);
+                result.CanReformat = (Convert.ToInt32(JobDict["CanReformat"]) == 1);
+
+                //product preview clips do not receive motifs
+                if (result.IsPreview == false)
+                {
+                    JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["JobStatus"]));
+
+                    //Only accept new job status as such if it isn't currently being rendered and a render id has been saved before,
+                    //otherwise: set job to JS_GET_JOB_ID in order to read job id from deadline
+                    //and continue from there
+                    if (JobDict["RenderID"] != null && JobDict["RenderID"].Length > 0)
+                    {
+                        result.RenderID = Convert.ToString(JobDict["RenderID"]);
+                        if (currentStatus == JobStatus.JS_RENDER_JOB)
+                        {
+                            result.SetStatus(JobStatus.JS_GET_JOB_ID);
+                        }
+                        else
+                        {
+                            result.SetStatus(currentStatus);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                result.MasterProductID = -1;
+                result.SetStatus(JobStatus.JS_DONE);
+            }
+
+            result.MotifList = new List<Motif>();
+
+            return result;
+        }
+
         public static Job Parse(Production Production, Dictionary<string, string> JobDict)
         {
             Job result = new Job();
 
             result.Production = Production;
-            result.ID = Convert.ToInt32(JobDict["ID"]);
-            result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["ErrorCode"])));
+            result.ID = Convert.ToInt32(JobDict["JobID"]);
+            result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["JobErrorCode"])));
             result.Position = Convert.ToInt32(JobDict["Position"]);
             result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
             
@@ -70,7 +122,7 @@ namespace VirtualCampaign_Manager.Parsers
                 {
                     result.MotifList.Add(new Motif(Convert.ToInt32(JobDict["ContentID"]), Convert.ToString(JobDict["ContentType"]), Convert.ToInt32(JobDict["ContentPosition"]), Convert.ToString(JobDict["ContentExtension"]), Convert.ToString(JobDict["ContentLoaderName"]), Convert.ToString(JobDict["ContentText"]), result));
 
-                    JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["Status"]));
+                    JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["JobStatus"]));
                     
                     //Only accept new job status as such if it isn't currently being rendered and a render id has been saved before,
                     //otherwise: set job to JS_GET_JOB_ID in order to read job id from deadline
