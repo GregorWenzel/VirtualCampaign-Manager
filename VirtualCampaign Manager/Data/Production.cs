@@ -26,7 +26,8 @@ namespace VirtualCampaign_Manager.Data
         PES_INDICATIVE_MISSING = 8,
         PES_ABDICATIVE_MISSING = 9,
         PES_CREATE_MP4PREVIEWS = 10,
-        PES_CREATE_DIRECTORIES = 11
+        PES_CREATE_DIRECTORIES = 11,
+        PES_CREATE_ZIP = 12
     };
 
     public enum ProductionStatus
@@ -148,6 +149,14 @@ namespace VirtualCampaign_Manager.Data
                     return JobList[JobList.Count - 1].FrameCount;
                 else
                     return 0;
+            }
+        }
+
+        public bool Is4K
+        {
+            get
+            {
+                return Film.FilmOutputFormatList.Any(item => item.Name.Contains("K360"));
             }
         }
 

@@ -63,7 +63,7 @@ namespace VirtualCampaign_Manager.Helpers
         
         public static string GetLocalJobRenderOutputPathForZip(Job job)
         {
-            return Path.Combine(GetLocalJobDirectory(job), "output", "F" + job.OutputExtension);
+            return Path.Combine(ProductionPathHelper.GetLocalProductionHashDirectory(job.Production), job.Position.ToString());
         }
 
         public static string GetLocalJobRenderOutputMask(Job job)

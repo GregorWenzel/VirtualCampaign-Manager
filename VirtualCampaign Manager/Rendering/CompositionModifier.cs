@@ -100,9 +100,8 @@ namespace VirtualCampaign_Manager.Rendering
             if (ErrorStatus != JobErrorStatus.JES_NONE) return -1;
 
             string outputPath;
-            bool isZipProduction = job.Production.Film.FilmOutputFormatList.Any(item => item.Name.ToLower().Contains("zip"));
 
-            if (isZipProduction)
+            if (job.IsZip)
                 outputPath = JobPathHelper.GetLocalJobRenderOutputPathForZip(job);
             else
                 outputPath = JobPathHelper.GetLocalJobRenderOutputMask(job);
@@ -115,7 +114,7 @@ namespace VirtualCampaign_Manager.Rendering
             {
                 bool subResult = false;
 
-                if (isZipProduction)
+                if (job.IsZip)
                     subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath, true);
                 else
                     subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath, false);

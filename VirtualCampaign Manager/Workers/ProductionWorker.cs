@@ -51,8 +51,8 @@ namespace VirtualCampaign_Manager.Workers
                 case ProductionStatus.PS_MUX_AUDIO:
                     if (production.IsZipProduction)
                     {
-                        production.Status = ProductionStatus.PS_UPLOAD_FILMS;
-                        Work();
+                        EncodeZip();
+
                     }
                     else
                     {
@@ -78,17 +78,67 @@ namespace VirtualCampaign_Manager.Workers
 
         private void CreateDirectories()
         {
-            bool success = IOHelper.CreateDirectory(ProductionPathHelper.GetLocalProductionDirectory(production));
-            success = success && IOHelper.CreateDirectory(ProductionPathHelper.GetProductionMotifDirectory(production));
+            bool success = true;
+            List<string> directoryPaths = new List<string>();
 
-            if (success == false)
+            // main production folder (e.g. "render_temp\productions\virtualcampaign\12345")
+            directoryPaths.Add(ProductionPathHelper.GetLocalProductionDirectory(production));
+
+            //motif folder (e.g. "render_temp\productions\virtualcampaign\12345\motifs")
+            directoryPaths.Add(ProductionPathHelper.GetProductionMotifDirectory(production));
+
+            //hash output folder
+            directoryPaths.Add(ProductionPathHelper.GetLocalProductionHashDirectory(production));
+
+            //preview output folder
+            directoryPaths.Add(ProductionPathHelper.GetLocalProductionPreviewDirectory(production));
+
+            //folders for each clip
+            foreach (Job job in production.JobList)
             {
-                production.ErrorStatus = ProductionErrorStatus.PES_CREATE_DIRECTORIES;
-                return;
+                //main clip folder (e.g. "render_temp\productions\virtualcampaign\12345\54321")
+                directoryPaths.Add(JobPathHelper.GetLocalJobDirectory(job));              
+
+                if (job.IsZip)
+                {
+                    //subfolder for each zip production
+                    directoryPaths.Add(JobPathHelper.GetLocalJobRenderOutputPathForZip(job));
+                }
+                else
+                {
+                    //clip output folder (e.g. "render_temp\productions\virtualcampaign\12345\54321\output")
+                    directoryPaths.Add(JobPathHelper.GetLocalJobRenderOutputDirectory(job));
+                }
+            }
+
+            //create all folders
+            foreach (string directoryPath in directoryPaths)
+            {
+                success = success && IOHelper.CreateDirectory(directoryPath);
+                if (!success)
+                {
+                    production.ErrorStatus = ProductionErrorStatus.PES_CREATE_DIRECTORIES;
+                    return;
+                }
             }
 
             production.Status = ProductionStatus.PS_START_JOBS;
             Work();            
+        }
+
+        private void EncodeZip()
+        {
+            bool success = ZipFileCreator.Create(production);
+
+            if (success)
+            {
+                production.Status = ProductionStatus.PS_UPLOAD_FILMS;
+                Work();
+            }
+            else
+            {
+                production.ErrorStatus = ProductionErrorStatus.PES_CREATE_ZIP;
+            }
         }
 
         private void EncodeAudio()

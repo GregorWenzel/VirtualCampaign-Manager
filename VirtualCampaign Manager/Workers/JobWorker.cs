@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,11 +36,8 @@ namespace VirtualCampaign_Manager.Workers
             switch (job.Status)
             {
                 case JobStatus.JS_IDLE:
-                    job.Status = JobStatus.JS_CREATE_DIRECTORIES;
-                    goto case JobStatus.JS_CREATE_DIRECTORIES;
-                case JobStatus.JS_CREATE_DIRECTORIES:
-                    CreateDirectories();
-                    break;
+                    job.Status = JobStatus.JS_PREPARE_RESOURCES;
+                    goto case JobStatus.JS_PREPARE_RESOURCES;
                 case JobStatus.JS_PREPARE_RESOURCES:
                     DownloadMotifs();
                     break;
@@ -56,7 +54,7 @@ namespace VirtualCampaign_Manager.Workers
                     MonitorRenderStatus();
                     break;
                 case JobStatus.JS_SEND_ENCODE_JOB:
-                    EncodeJob();
+                    PrepareJobForZip();
                     break;
                 case JobStatus.JS_ENCODING_DONE:
                     CleanUp(reset: false);
@@ -151,27 +149,46 @@ namespace VirtualCampaign_Manager.Workers
         {
             (sender as RenderMonitor).FailureEvent -= OnRenderFailure;
             (sender as RenderMonitor).SuccessEvent -= OnRenderSuccess;
-            job.Status = JobStatus.JS_ENCODING_DONE;
+
+            if (job.IsZip)
+            {
+                job.Status = JobStatus.JS_ENCODE_JOB;
+            }
+            else
+            {
+                job.Status = JobStatus.JS_ENCODING_DONE;
+            }
             Work();
         }
 
-        private void EncodeJob()
+        //Pack Zip File
+        private void PrepareJobForZip()
         {
-            bool isZipProduction = job.Production.Film.FilmOutputFormatList.Any(item => item.Name.ToLower().Contains("zip"));
-            if (isZipProduction)
+            string sourceDirectory = JobPathHelper.GetLocalJobRenderOutputPathForZip(job);
+            if (!Directory.Exists(sourceDirectory)) return;
+
+            DirectoryInfo dirInfo = new DirectoryInfo(sourceDirectory);
+            FileInfo[] fileInfos = dirInfo.GetFiles();
+
+            foreach (FileInfo fileInfo in fileInfos)
             {
-                if (ZipFileCreator.Create(job) == false)
+                string sourceFullName = fileInfo.FullName;
+                string extension = Path.GetExtension(sourceFullName);
+                string dir = Path.GetDirectoryName(sourceFullName);
+                string sourceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFullName);
+                int len = sourceFileNameWithoutExtension.Length;
+                if (char.IsDigit(sourceFileNameWithoutExtension[len - 4]) && char.IsDigit(sourceFileNameWithoutExtension[len - 1]))
                 {
-                    job.ErrorStatus = JobErrorStatus.JES_CREATE_ZIP;
-                    return;
+                    string targetNameWithoutExtension = sourceFileNameWithoutExtension.Substring(0, len - 4);
+                    string targetName = Path.Combine(dir, targetNameWithoutExtension + extension);
+                    File.Move(sourceFullName, targetName);
                 }
             }
-
+ 
             job.Status = JobStatus.JS_ENCODING_DONE;
             Work();
         }
-
-
+        
         private void OnMotifTransferSuccess(object obj, EventArgs ea)
         {
             TransferPacket motifTransferPacket = obj as TransferPacket;

@@ -75,6 +75,14 @@ namespace VirtualCampaign_Manager.Data
         //older product clips do not fulfill this requirement
         public bool CanReformat { get; set; }
 
+        public bool IsZip
+        {
+            get
+            {
+                return Production.Film.FilmOutputFormatList[Position-1].Name.ToLower().Contains("zip");
+            }
+        }
+
         //This job's error status
         private JobErrorStatus errorStatus;
         public JobErrorStatus ErrorStatus

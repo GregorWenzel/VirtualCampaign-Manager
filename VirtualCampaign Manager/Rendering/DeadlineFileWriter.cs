@@ -17,20 +17,19 @@ namespace VirtualCampaign_Manager.Rendering
             StreamWriter jobFile = new StreamWriter(renderFilename);
 
             jobFile.WriteLine("Plugin=FusionCmd");
-            //jobFile.WriteLine("Frames=0-" + (job.Frames-1).ToString());
-            /*
-            if (job.FrameCount <= 1)
-                jobFile.WriteLine("Frames=0-0", job.InFrame, Convert.ToInt32(Math.Max(job.OutFrame, 0)));
-            else
-            {
-                
-            }
-            */
             jobFile.WriteLine("Frames={0}-{1}", job.InFrame, job.OutFrame);
             job.RenderStartTime = DateTime.Now.Ticks;
             jobFile.WriteLine(string.Format("Name={0} [{1}]", job.ID, job.RenderStartTime));
             jobFile.WriteLine("UserName=virtualcampaign");
-            jobFile.WriteLine("Group=vc");
+
+            if (job.Production.Is4K)
+            {
+                jobFile.WriteLine("Group=vc_360");
+            }
+            else
+            {
+                jobFile.WriteLine("Group=vc");
+            }
 
             jobFile.WriteLine("ArchiveOnComplete=false");
             jobFile.WriteLine("OnJobComplete=Nothing");

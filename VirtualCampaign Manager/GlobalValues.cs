@@ -80,7 +80,8 @@ namespace VirtualCampaign_Manager
             {ProductionErrorStatus.PES_INDICATIVE_MISSING, "Missing indicative file"},
             {ProductionErrorStatus.PES_ABDICATIVE_MISSING, "Missing abdicative file"},
             {ProductionErrorStatus.PES_CREATE_MP4PREVIEWS, "Create MP4 previews" },
-            {ProductionErrorStatus.PES_CREATE_DIRECTORIES, "Create directories" }
+            {ProductionErrorStatus.PES_CREATE_DIRECTORIES, "Create directories" },
+            {ProductionErrorStatus.PES_CREATE_DIRECTORIES, "Create Zip File" }
         };
 
         public static Dictionary<JobErrorStatus, string> JobErrorStatusString = new Dictionary<JobErrorStatus, string>()
@@ -101,8 +102,7 @@ namespace VirtualCampaign_Manager
             {JobErrorStatus.JES_OUTPUTFILE_COUNT_MISMATCH, "Output count mismatch"},
             {JobErrorStatus.JES_PREVIEWFRAME_MISSING, "Preview frame missing" },
             {JobErrorStatus.JES_COMP_MISSING, "Comp file missing" },
-            {JobErrorStatus.JES_MODIFY_MOTIF, "Modify motif" },
-            {JobErrorStatus.JES_CREATE_ZIP, "Create Zip file" }
+            {JobErrorStatus.JES_MODIFY_MOTIF, "Modify motif" }
         };
 
         public static Dictionary<int, FilmOutputFormat> CodecDict = new Dictionary<int, FilmOutputFormat>();
