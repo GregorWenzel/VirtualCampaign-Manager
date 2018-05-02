@@ -14,7 +14,7 @@ namespace VirtualCampaign_Manager.Encoding
         public static bool Create(Production production)
         {
             //All files for zip package have been rendered into the hash directory
-            string sourceDirectory = (ProductionPathHelper.GetLocalProductionHashDirectory(production);
+            string sourceDirectory = ProductionPathHelper.GetLocalProductionHashDirectory(production);
 
             string targetFile = Path.Combine(ProductionPathHelper.GetLocalProductionHashDirectory(production), "film_" + production.FilmID + "_" + production.Film.FilmOutputFormatList[0].ID + production.Film.FilmOutputFormatList[0].Extension);
 

@@ -9,6 +9,7 @@ using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Encoding;
 using VirtualCampaign_Manager.Helpers;
 using VirtualCampaign_Manager.Rendering;
+using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Transfers;
 
 namespace VirtualCampaign_Manager.Workers
@@ -57,9 +58,47 @@ namespace VirtualCampaign_Manager.Workers
                     PrepareJobForZip();
                     break;
                 case JobStatus.JS_ENCODING_DONE:
+                    WriteStatistics();
                     CleanUp(reset: false);
                     break;
             }
+        }
+
+        //create job statistics data and send to server
+        private void WriteStatistics()
+        {
+            if (job.FrameCount == 0) return;
+
+            float totalSeconds = 0;
+            int totalFrames = 0;
+            float totalProcessorFactor = 0;
+
+            foreach (RenderChunkStatus renderChunk in job.RenderChunkStatusList)
+            {
+                TimeSpan renderTimeSpan = renderChunk.RenderEndDate - renderChunk.RenderStartDate;
+                float seconds = (float)Math.Round(renderTimeSpan.TotalSeconds, 2);
+                totalSeconds += seconds;
+                int frames = (renderChunk.EndFrame - renderChunk.StartFrame + 1);
+                totalFrames += frames;
+
+                totalProcessorFactor += ((float)frames / (float)job.FrameCount) * renderChunk.Processors * renderChunk.ProcessorSpeed;
+            }
+
+            float totalStandardizedTime = (float)Math.Round(totalSeconds * totalProcessorFactor / (float)job.FrameCount, 2);
+
+            string filename = JobPathHelper.GetJobClipPath(job);
+            FileInfo fileInfo = new FileInfo(filename);
+
+            Dictionary<string, string> param = new Dictionary<string, string>
+            {   { "productID", job.ProductID.ToString() },
+                { "seconds", ((decimal)totalSeconds).ToString().Replace(",",".") },
+                { "processorFactor", ((decimal)totalProcessorFactor).ToString().Replace(",",".") },
+                { "standardizedComplexity",  ((decimal)totalStandardizedTime).ToString().Replace(",",".") },
+                { "filesize", fileInfo.Length.ToString() }
+            };
+
+            JobRepository.UpdateProductStatistics(param);
+
         }
 
         private void CreateDirectories()
@@ -164,6 +203,8 @@ namespace VirtualCampaign_Manager.Workers
         //Pack Zip File
         private void PrepareJobForZip()
         {
+            //Remove trailing digits from output pic (e.g. pic0000.jpg -> pic.jpg)
+            //CAVE! four trailing digits are expected!
             string sourceDirectory = JobPathHelper.GetLocalJobRenderOutputPathForZip(job);
             if (!Directory.Exists(sourceDirectory)) return;
 

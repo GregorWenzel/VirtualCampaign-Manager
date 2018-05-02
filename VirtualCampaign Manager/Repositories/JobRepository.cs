@@ -81,5 +81,11 @@ namespace VirtualCampaign_Manager.Repositories
 
             RemoteDataManager.UpdateJob(param);
         }
+
+        public static string UpdateProductStatistics(Dictionary<string, string> param)
+        {
+            string result = RemoteDataManager.ExecuteRequest("updateProductStatistics", param);
+            return result;
+        }
     }
 }

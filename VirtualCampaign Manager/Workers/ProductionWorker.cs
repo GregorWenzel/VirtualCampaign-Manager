@@ -52,7 +52,6 @@ namespace VirtualCampaign_Manager.Workers
                     if (production.IsZipProduction)
                     {
                         EncodeZip();
-
                     }
                     else
                     {

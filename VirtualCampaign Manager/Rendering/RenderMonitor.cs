@@ -66,23 +66,37 @@ namespace VirtualCampaign_Manager.Rendering
                     {
                         currentChunk = new RenderChunkStatus();
                         currentChunk.StartIndex = taskID;
-                        currentChunk.Job = job;
-                        string[] frameString = Convert.ToString(taskDoc["Frames"]).Split(new char[] { '-' });
-                        currentChunk.StartFrame = Convert.ToInt32(frameString[0]);
-                        if (frameString.Length > 1)
-                        {
-                            currentChunk.EndFrame = Convert.ToInt32(frameString[1]);
-                        }
-                        else
-                        {
-                            currentChunk.EndFrame = currentChunk.StartFrame;
-                        }
+                        currentChunk.Job = job;                       
                     }
                     else
                     {
                         currentChunk = job.RenderChunkStatusList.First(item => item.StartIndex == taskID);
                     }
 
+
+                    currentChunk.SlaveName = Convert.ToString(taskDoc["Slave"]);
+                    currentChunk.Status = Math.Max(currentChunk.Status, Convert.ToInt32(taskDoc["Stat"]));
+                    string[] frameString = Convert.ToString(taskDoc["Frames"]).Split(new char[] { '-' });
+                    currentChunk.StartFrame = Convert.ToInt32(frameString[0]);
+                    if (frameString.Length > 1)
+                    {
+                        currentChunk.EndFrame = Convert.ToInt32(frameString[1]);
+                    }
+                    else
+                    {
+                        currentChunk.EndFrame = currentChunk.StartFrame;
+                    }
+
+                    var slaveCollection = database.GetCollection<BsonDocument>("SlaveInfo");
+                    BsonDocument slaveInfo = slaveCollection.Find(Builders<BsonDocument>.Filter.AnyEq("_id", currentChunk.SlaveName.ToLower())).First();
+
+                    currentChunk.Processors = Convert.ToInt32(slaveInfo["Procs"]);
+                    currentChunk.ProcessorSpeed = Convert.ToInt32(slaveInfo["ProcSpd"]);
+
+                    Dictionary<string, object> taskVal = (Dictionary<string, object>)BsonTypeMapper.MapToDotNetValue(taskDoc);
+
+                    currentChunk.RenderStartDate = (DateTime)taskVal["StartRen"];
+                    currentChunk.RenderEndDate = (DateTime)taskVal["Comp"];
                     currentChunk.Status = Math.Max(currentChunk.Status, Convert.ToInt32(taskDoc["Stat"]));
 
                     if (createNewTasks)
