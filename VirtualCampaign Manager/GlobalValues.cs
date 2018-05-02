@@ -81,7 +81,7 @@ namespace VirtualCampaign_Manager
             {ProductionErrorStatus.PES_ABDICATIVE_MISSING, "Missing abdicative file"},
             {ProductionErrorStatus.PES_CREATE_MP4PREVIEWS, "Create MP4 previews" },
             {ProductionErrorStatus.PES_CREATE_DIRECTORIES, "Create directories" },
-            {ProductionErrorStatus.PES_CREATE_DIRECTORIES, "Create Zip File" }
+            {ProductionErrorStatus.PES_CREATE_ZIP, "Create Zip File" }
         };
 
         public static Dictionary<JobErrorStatus, string> JobErrorStatusString = new Dictionary<JobErrorStatus, string>()
