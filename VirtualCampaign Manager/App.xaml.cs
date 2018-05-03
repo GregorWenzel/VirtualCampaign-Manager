@@ -14,7 +14,7 @@ namespace VirtualCampaign_Manager
     /// </summary>
     public partial class App : Application
     {
-        SplashScreenWindow splash;
+        SplashScreenWindow splashScreen;
         MainHubWindow mainHub;
 
         public App()
@@ -39,8 +39,8 @@ namespace VirtualCampaign_Manager
         {
             Dispatcher.Invoke((Action)delegate
             {
-                if (splash != null)
-                    splash.Visibility = Visibility.Hidden;
+                if (splashScreen != null)
+                    splashScreen.Visibility = Visibility.Hidden;
 
                 mainHub = new MainHubWindow();
                 mainHub.ShowDialog();
