@@ -54,19 +54,16 @@ namespace VirtualCampaign_Manager
 
         //Ftp logins
         //ftp for upload of previews into user directories
-        public static LoginData FtpUserDirectoryLogin;
-        //ftp for download of audio clips
-        public static LoginData FtpAudioDirectoryLogin;
-        //ftp for upload of films into hash directory
-        public static LoginData FtpHashDirectoryLogin;
-        //ftp for upload of product preview clips (only from client admins)
-        public static LoginData FtpProductPreviewDirectoryLogin;
+        public static LoginData MasterLogin;
+        public static string FtpUserSubdirectory;
+        public static string FtpAudioSubdirectory;
+        public static string FtpHashSubdirectory;
+        public static string FtpProductPreviewSubdirectory;
+
         //email server for messages to users upon production completion
         public static LoginData EmailServerLogin;
-
         //Email sender address
         public static string EmailSender;
-
         //SALTED string
         public static string SALTED;
 
@@ -97,28 +94,15 @@ namespace VirtualCampaign_Manager
             ServicesUrl = IniFileHelper.ReadValue("ExternalPaths", "ServicesUrl", iniFilePath);
             FilmUrl = IniFileHelper.ReadValue("ExternalPaths", "FilmUrl", iniFilePath);
             
-            FtpUserDirectoryLogin = new LoginData(
-                Url: IniFileHelper.ReadValue("Ftp", "UserFtpURL", iniFilePath),
-                Username: IniFileHelper.ReadValue("Ftp", "UserFtpLogin", iniFilePath),
-                Password: IniFileHelper.ReadValue("Ftp", "UserFtpPassword", iniFilePath));
+            MasterLogin = new LoginData(
+                Url: IniFileHelper.ReadValue("Ftp", "MasterFtpURL", iniFilePath),
+                Username: IniFileHelper.ReadValue("Ftp", "MasterFtpLogin", iniFilePath),
+                Password: IniFileHelper.ReadValue("Ftp", "MasterFtpPassword", iniFilePath));
 
-            FtpAudioDirectoryLogin = new LoginData(
-                Url: IniFileHelper.ReadValue("Ftp", "AudioFtpURL", iniFilePath),
-                Username: IniFileHelper.ReadValue("Ftp", "AudioFtpLogin", iniFilePath),
-                Password: IniFileHelper.ReadValue("Ftp", "AudioFtpPassword", iniFilePath),
-                SubdirectoryPath: IniFileHelper.ReadValue("Ftp", "AudioFtpSubdirectory", iniFilePath));
-
-            FtpHashDirectoryLogin = new LoginData(
-                Url: IniFileHelper.ReadValue("Ftp", "HashFtpURL", iniFilePath),
-                Username: IniFileHelper.ReadValue("Ftp", "HashFtpLogin", iniFilePath),
-                Password: IniFileHelper.ReadValue("Ftp", "HashFtpPassword", iniFilePath),
-                SubdirectoryPath: IniFileHelper.ReadValue("Ftp", "HashFtpSubdirectory", iniFilePath));
-
-            FtpProductPreviewDirectoryLogin = new LoginData(
-                Url: IniFileHelper.ReadValue("Ftp", "ProductPreviewFtpURL", iniFilePath),
-                Username: IniFileHelper.ReadValue("Ftp", "ProductPreviewFtpLogin", iniFilePath),
-                Password: IniFileHelper.ReadValue("Ftp", "ProductPreviewFtpPassword", iniFilePath),
-                SubdirectoryPath: IniFileHelper.ReadValue("Ftp", "ProductPreviewFtpSubdirectory", iniFilePath));
+            FtpUserSubdirectory = IniFileHelper.ReadValue("Ftp", "UserFtpSubdirectory", iniFilePath);
+            FtpAudioSubdirectory = IniFileHelper.ReadValue("Ftp", "AudioFtpSubdirectory", iniFilePath);
+            FtpHashSubdirectory = IniFileHelper.ReadValue("Ftp", "HashFtpSubdirectory", iniFilePath);
+            FtpProductPreviewSubdirectory = IniFileHelper.ReadValue("Ftp", "ProductPreviewFtpSubdirectory", iniFilePath);
 
             EmailServerLogin = new LoginData(
                 Url: IniFileHelper.ReadValue("Email", "EmailHost", iniFilePath),

@@ -205,10 +205,10 @@ namespace VirtualCampaign_Manager.Transfers
         {
             ItemID = motif.ID;
             Parent = motif;
-            SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + job.AccountID + "/motifs/" + motif.DownloadName;
+            SourcePath = Settings.FtpUserSubdirectory + "/" + job.AccountID + "/motifs/" + motif.DownloadName;
             TargetPath = JobPathHelper.GetLocalJobMotifPath(job, motif);
             Type = TransferType.DownloadMotif;
-            LoginData = Settings.FtpUserDirectoryLogin;
+            LoginData = Settings.MasterLogin;
         }
 
         //uploads a preview pricture for an animated motif from local filesystem to remote user account
@@ -217,9 +217,9 @@ namespace VirtualCampaign_Manager.Transfers
             ItemID = motif.ID;
             Parent = accountID;
             SourcePath = "";
-            TargetPath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + accountID + "/motifs/" + motif.DownloadName;
+            TargetPath = Settings.FtpUserSubdirectory + "/" + accountID + "/motifs/" + motif.DownloadName;
             Type = TransferType.UploadMotifPreview;
-            LoginData = Settings.FtpUserDirectoryLogin;
+            LoginData = Settings.MasterLogin;
         }
 
         //transfers an animated motif from remote to local file system
@@ -227,10 +227,10 @@ namespace VirtualCampaign_Manager.Transfers
         {
             ItemID = motif.ID;
             Parent = motif;
-            SourcePath = Settings.FtpUserDirectoryLogin.SubdirectoryPath + "/" + motif.AccountID + "/motifs/" + motif.ID + motif.Extension;
+            SourcePath = Settings.FtpUserSubdirectory + "/" + motif.AccountID + "/motifs/" + motif.ID + motif.Extension;
             TargetPath = Path.Combine(Settings.LocalProductionPath, motif.ID.ToString());
             Type = TransferType.DownloadAnimatedMotif;
-            LoginData = Settings.FtpUserDirectoryLogin;
+            LoginData = Settings.MasterLogin;
         }
 
         //transfers a film from local file system to remote user account
@@ -243,18 +243,18 @@ namespace VirtualCampaign_Manager.Transfers
             {
                 case TransferType.UploadFilmDirectory:
                     SourcePath = ProductionPathHelper.GetLocalProductionHashDirectory(production);
-                    TargetPath = Settings.FtpHashDirectoryLogin.SubdirectoryPath;
-                    LoginData = Settings.FtpHashDirectoryLogin;
+                    TargetPath = Settings.FtpHashSubdirectory;
+                    LoginData = Settings.MasterLogin;
                     break;
                 case TransferType.UploadFilmPreviewDirectory:
                     SourcePath = ProductionPathHelper.GetLocalProductionPreviewDirectory(production);
                     TargetPath = ExternalPathHelper.GetProductionPreviewDirectory(production);
-                    LoginData = Settings.FtpUserDirectoryLogin;
+                    LoginData = Settings.MasterLogin;
                     break;
                 case TransferType.UploadProductPreviewDirectory:
                     SourcePath = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production.JobList[0].OriginalProductID);
-                    TargetPath = Settings.FtpProductPreviewDirectoryLogin.SubdirectoryPath;
-                    LoginData = Settings.FtpProductPreviewDirectoryLogin;
+                    TargetPath = Settings.FtpProductPreviewSubdirectory;
+                    LoginData = Settings.MasterLogin;
                     break;
             }
 
@@ -267,9 +267,9 @@ namespace VirtualCampaign_Manager.Transfers
             ItemID = audioData.ID;
             Parent = production;
             SourcePath = audioData.Filename;
-            TargetPath = audioData.AudioPath;
+            TargetPath = Settings.FtpAudioSubdirectory + "/" + audioData.AudioPath;
             Type = TransferType.DownloadAudio;
-            LoginData = Settings.FtpAudioDirectoryLogin;
+            LoginData = Settings.MasterLogin;
         }
 
         public void RaiseSuccessEvent()

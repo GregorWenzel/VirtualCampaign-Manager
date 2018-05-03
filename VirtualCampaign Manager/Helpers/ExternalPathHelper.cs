@@ -16,7 +16,7 @@ namespace VirtualCampaign_Manager.Helpers
 
         public static string GetAccountFtpUrl()
         {
-            return Uri.Combine(Settings.FtpUserDirectoryLogin.Url, Settings.FtpUserDirectoryLogin.SubdirectoryPath);
+            return Uri.Combine(Settings.MasterLogin.Url, Settings.FtpUserSubdirectory);
         }
 
         public static string GetMotifFtpUrl()

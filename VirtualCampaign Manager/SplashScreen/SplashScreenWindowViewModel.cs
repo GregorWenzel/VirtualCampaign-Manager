@@ -47,10 +47,6 @@ namespace VirtualCampaign_Manager.SplashScreen
             { "Server url", Settings.ServerUrl },
             { "Services url", Settings.ServicesUrl },
             { "Film url", Settings.ServerUrl },
-            { "Remote user directory", "Settings.FtpUserDirectoryLogin" },
-            { "Remote audio directory", "Settings.FtpAudioDirectoryLogin" },
-            { "Remote HASH directory", "Settings.FtpHashDirectoryLogin" },
-            { "Remote product preview directory", "Settings.FtpProductPreviewDirectoryLogin" },
             { "SALTED string", Settings.SALTED },
             { "Email server settings", "Settings.EmailServerLogin" },
             { "Ghostscript installation", "" },
@@ -144,18 +140,6 @@ namespace VirtualCampaign_Manager.SplashScreen
                 case "Services url": //Settings.ServicesUrl
                 case "Film url": // Settings.ServerUrl
                     url = settingValue;
-                    break;
-                case "Remote user directory":// "Settings.FtpUserDirectoryLogin"
-                    loginData = Settings.FtpUserDirectoryLogin;
-                    break;
-                case "Remote audio directory"://"Settings.FtpAudioDirectoryLogin"
-                    loginData = Settings.FtpAudioDirectoryLogin;
-                    break;
-                case "Remote HASH directory"://"Settings.FtpHashDirectoryLogin"
-                    loginData = Settings.FtpHashDirectoryLogin;
-                    break;
-                case "Remote product preview directory":// Settings.FtpProductPreviewDirectoryLogin
-                    loginData = Settings.FtpProductPreviewDirectoryLogin;
                     break;
                 case "SALTED string": //Settings.SALTED
                     if (settingValue.Length == 0)
