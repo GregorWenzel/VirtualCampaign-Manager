@@ -54,7 +54,7 @@ namespace VirtualCampaign_Manager.Workers
                 case JobStatus.JS_RENDER_JOB:
                     MonitorRenderStatus();
                     break;
-                case JobStatus.JS_SEND_ENCODE_JOB:
+                case JobStatus.JS_ENCODE_JOB:
                     PrepareJobForZip();
                     break;
                 case JobStatus.JS_ENCODING_DONE:
@@ -67,7 +67,7 @@ namespace VirtualCampaign_Manager.Workers
         //create job statistics data and send to server
         private void WriteStatistics()
         {
-            if (job.FrameCount == 0) return;
+            if (job.FrameCount < 2) return;
 
             float totalSeconds = 0;
             int totalFrames = 0;
@@ -89,12 +89,18 @@ namespace VirtualCampaign_Manager.Workers
             string filename = JobPathHelper.GetJobClipPath(job);
             FileInfo fileInfo = new FileInfo(filename);
 
+            long fileSize = fileInfo.Length;
+            if (job.Production.IsZipProduction)
+            {
+                fileSize /= job.Production.JobList.Count;
+            }
+
             Dictionary<string, string> param = new Dictionary<string, string>
             {   { "productID", job.ProductID.ToString() },
                 { "seconds", ((decimal)totalSeconds).ToString().Replace(",",".") },
                 { "processorFactor", ((decimal)totalProcessorFactor).ToString().Replace(",",".") },
                 { "standardizedComplexity",  ((decimal)totalStandardizedTime).ToString().Replace(",",".") },
-                { "filesize", fileInfo.Length.ToString() }
+                { "filesize", fileSize.ToString() }
             };
 
             JobRepository.UpdateProductStatistics(param);
@@ -178,18 +184,25 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnRenderFailure(object sender, EventArgs ea)
         {
-            (sender as RenderMonitor).FailureEvent -= OnRenderFailure;
-            (sender as RenderMonitor).SuccessEvent -= OnRenderSuccess;
+            RenderMonitor monitor = sender as RenderMonitor;
+            monitor.FailureEvent -= OnRenderFailure;
+            monitor.SuccessEvent -= OnRenderSuccess;
+            monitor.Stop();
+            monitor = null;
+
             job.ErrorStatus = JobErrorStatus.JES_DEADLINE_RENDER_JOB;
             FireFailureEvent();
         }
 
         private void OnRenderSuccess(object sender, EventArgs ea)
         {
-            (sender as RenderMonitor).FailureEvent -= OnRenderFailure;
-            (sender as RenderMonitor).SuccessEvent -= OnRenderSuccess;
+            RenderMonitor monitor = sender as RenderMonitor;
+            monitor.FailureEvent -= OnRenderFailure;
+            monitor.SuccessEvent -= OnRenderSuccess;
+            monitor.Stop();
+            monitor = null;
 
-            if (job.IsZip)
+            if (job.Production.IsZipProduction)
             {
                 job.Status = JobStatus.JS_ENCODE_JOB;
             }

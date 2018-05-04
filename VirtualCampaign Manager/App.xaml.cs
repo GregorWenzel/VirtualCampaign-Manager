@@ -42,7 +42,7 @@ namespace VirtualCampaign_Manager
                 if (splashScreen != null)
                     splashScreen.Visibility = Visibility.Hidden;
 
-                mainHub = new MainHubWindow();
+                mainHub = new MainHubWindow();                
                 mainHub.ShowDialog();
             });
         }

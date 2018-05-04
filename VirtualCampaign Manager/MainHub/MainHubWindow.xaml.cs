@@ -23,10 +23,10 @@ namespace VirtualCampaign_Manager.MainHub
         public MainHubWindow()
         {
             InitializeComponent();
-            this.Initialized += MainHubWindow_Initialized; 
+            this.Loaded += MainHubWindow_Loaded;
         }
 
-        private void MainHubWindow_Initialized(object sender, EventArgs e)
+        private void MainHubWindow_Loaded(object sender, RoutedEventArgs e)
         {
             this.ParentOfType<Window>().ShowInTaskbar = true;
         }

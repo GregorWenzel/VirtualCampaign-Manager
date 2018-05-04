@@ -21,16 +21,13 @@ namespace VirtualCampaign_Manager.Transfers
         {
             production.UploadCounter = 0;
 
-            if (production.Film.FilmOutputFormatList.Any(item => item.ID == 12) == false)
+            if (production.IsPreview == false)
             {
-                if (production.IsPreview == false)
-                {
-                    UploadPreviewDirectoryStandard();
-                }
-                else
-                {
-                    UploadPreviewDirectoryProduct();
-                }
+                UploadPreviewDirectoryStandard();
+            }
+            else
+            {
+                UploadPreviewDirectoryProduct();
             }
         }
 
@@ -39,7 +36,7 @@ namespace VirtualCampaign_Manager.Transfers
             TransferPacket transferPacket = new TransferPacket(production, TransferType.UploadFilmDirectory);
             transferPacket.SuccessEvent += OnFilmUploadSuccess;
             transferPacket.FailureEvent += OnFilmUploadFailure;
-            OldTransferManager.Instance.AddTransferPacket(transferPacket);
+            TransferManager.Instance.AddTransferPacket(transferPacket);
         }
 
         private void UploadPreviewDirectoryStandard()
@@ -47,7 +44,7 @@ namespace VirtualCampaign_Manager.Transfers
             TransferPacket transferPacket = new TransferPacket(production, TransferType.UploadFilmPreviewDirectory);
             transferPacket.SuccessEvent += OnFilmUploadSuccess;
             transferPacket.FailureEvent += OnFilmUploadFailure;
-            OldTransferManager.Instance.AddTransferPacket(transferPacket);
+            TransferManager.Instance.AddTransferPacket(transferPacket);
         }
 
         private void UploadPreviewDirectoryProduct()
@@ -55,7 +52,7 @@ namespace VirtualCampaign_Manager.Transfers
             TransferPacket transferPacket = new TransferPacket(production, TransferType.UploadProductPreviewDirectory);
             transferPacket.SuccessEvent += OnFilmUploadSuccess;
             transferPacket.FailureEvent += OnFilmUploadFailure;
-            OldTransferManager.Instance.AddTransferPacket(transferPacket);
+            TransferManager.Instance.AddTransferPacket(transferPacket);
         }
 
         private void OnFilmUploadSuccess(object sender, EventArgs ea)

@@ -77,6 +77,8 @@ namespace VirtualCampaign_Manager.Encoding
 
         private static bool CheckOutputs(Job job)
         {
+            if (job.Production.IsZipProduction) return true;
+
             int outputCount = Directory.GetFiles(JobPathHelper.GetLocalJobRenderOutputDirectory(job), "*" + job.OutputExtension).Length;
             return (outputCount > 1 && outputCount == job.FrameCount);
         }
@@ -97,7 +99,7 @@ namespace VirtualCampaign_Manager.Encoding
 
         private static bool SavePreviewImage(Job job)
         {
-            if (!job.IsFirstRealClip) return true;
+            if (job.IsDicative) return true;
 
             string directoryName;
 
@@ -109,17 +111,17 @@ namespace VirtualCampaign_Manager.Encoding
             {
                 directoryName = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(job.OriginalProductID);
             }
-
-            IOHelper.CreateDirectory(directoryName);
+           
+            string fileName;
 
             if (job.Production.IsZipProduction == false)
             {
                 job.PreviewFrame = 20;
+                fileName = Path.Combine(new string[] { JobPathHelper.GetLocalJobRenderOutputDirectory(job), "F" + String.Format("{0:D4}", (job.PreviewFrame + job.InFrame)) + job.OutputExtension });
             }
             else
             {
-                //
-                job.PreviewFrame = 0;
+                fileName = Directory.GetFiles(JobPathHelper.GetLocalJobRenderOutputPathForZip(job))[0];
             }
 
             Dictionary<string, string> previewPicDict = new Dictionary<string, string>
@@ -128,8 +130,7 @@ namespace VirtualCampaign_Manager.Encoding
                 { "mdpi.jpg", "320:180" },
                 { "ldpi.jpg", "160:90" }
             };
-
-            string fileName = Path.Combine(new string[] { JobPathHelper.GetLocalJobRenderOutputDirectory(job), "F" + String.Format("{0:D4}", (job.PreviewFrame + job.InFrame)) + job.OutputExtension });
+ 
             string cmd = " -y -i " + fileName;
 
             foreach (KeyValuePair<string, string> kv in previewPicDict)

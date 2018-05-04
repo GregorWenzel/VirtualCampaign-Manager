@@ -22,7 +22,14 @@ namespace VirtualCampaign_Manager.Helpers
 
         public static string GetJobClipPath(Job Job)
         {
-            return Path.Combine(GetLocalJobDirectory(Job), "clip_" + Job.Position + ".mp4");
+            if (Job.Production.IsZipProduction == false)
+            {
+                return Path.Combine(GetLocalJobDirectory(Job), "clip_" + Job.Position + ".mp4");
+            }
+            else
+            {
+                return GetLocalJobRenderOutputPathForZip(Job);
+            }
         }
 
         public static string GetJobCompPath(Job job)
@@ -63,7 +70,7 @@ namespace VirtualCampaign_Manager.Helpers
         
         public static string GetLocalJobRenderOutputPathForZip(Job job)
         {
-            return Path.Combine(ProductionPathHelper.GetLocalProductionHashDirectory(job.Production), job.Position.ToString());
+            return Path.Combine(ProductionPathHelper.GetLocalProductionHashDirectory(job.Production), "zipOutput", job.Position.ToString());
         }
 
         public static string GetLocalJobRenderOutputMask(Job job)

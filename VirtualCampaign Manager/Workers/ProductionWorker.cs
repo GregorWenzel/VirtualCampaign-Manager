@@ -90,23 +90,26 @@ namespace VirtualCampaign_Manager.Workers
             directoryPaths.Add(ProductionPathHelper.GetLocalProductionHashDirectory(production));
 
             //preview output folder
-            directoryPaths.Add(ProductionPathHelper.GetLocalProductionPreviewDirectory(production));
+            if (production.IsPreview == false)
+            {
+                directoryPaths.Add(ProductionPathHelper.GetLocalProductionPreviewDirectory(production));
+            }
+            else
+            {
+                directoryPaths.Add(ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production.JobList[0].OriginalProductID));
+            }
 
             //folders for each clip
             foreach (Job job in production.JobList)
             {
                 //main clip folder (e.g. "render_temp\productions\virtualcampaign\12345\54321")
-                directoryPaths.Add(JobPathHelper.GetLocalJobDirectory(job));              
+                directoryPaths.Add(JobPathHelper.GetLocalJobDirectory(job));
+                directoryPaths.Add(JobPathHelper.GetLocalJobRenderOutputDirectory(job));
 
                 if (job.IsZip)
                 {
                     //subfolder for each zip production
                     directoryPaths.Add(JobPathHelper.GetLocalJobRenderOutputPathForZip(job));
-                }
-                else
-                {
-                    //clip output folder (e.g. "render_temp\productions\virtualcampaign\12345\54321\output")
-                    directoryPaths.Add(JobPathHelper.GetLocalJobRenderOutputDirectory(job));
                 }
             }
 
@@ -222,8 +225,8 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnFilmUploaderFailure(object sender, ResultEventArgs ea)
         {
-            (sender as FilmEncoder).SuccessEvent -= OnFilmUploaderSuccess;
-            (sender as FilmEncoder).FailureEvent -= OnFilmUploaderFailure;
+            (sender as FilmUploader).SuccessEvent -= OnFilmUploaderSuccess;
+            (sender as FilmUploader).FailureEvent -= OnFilmUploaderFailure;
             production.ErrorStatus = (ProductionErrorStatus)ea.Result;
             FireFailureEvent();
         }

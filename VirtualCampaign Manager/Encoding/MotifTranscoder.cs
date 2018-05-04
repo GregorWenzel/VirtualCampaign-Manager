@@ -78,7 +78,7 @@ namespace VirtualCampaign_Manager.Encoding
             process.Execute();
             process.WaitForExit();
 
-            motif.Frames = Directory.GetFiles(Path.Combine(JobPathHelper.GetLocalJobAnimatedMotifDiretory(job.Production, motif), "*.tga")).Length;
+            motif.Frames = Directory.GetFiles(JobPathHelper.GetLocalJobAnimatedMotifDiretory(job.Production, motif), "*.tga").Length;
             motif.Extension = ".tga";
 
             return motif.Frames > 0;

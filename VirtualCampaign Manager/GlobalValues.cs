@@ -61,6 +61,7 @@ namespace VirtualCampaign_Manager
             {JobStatus.JS_GET_JOB_ID, "Getting Render ID"},
             {JobStatus.JS_RENDER_JOB, "Rendering"},
             {JobStatus.JS_SEND_ENCODE_JOB, "Encoding MPEG"},
+            {JobStatus.JS_ENCODE_JOB, "Preparing Zip Clip" },
             {JobStatus.JS_ENCODING_DONE, "Cleaning up"},
             {JobStatus.JS_DONE, "DONE"},
             {JobStatus.JS_RENDER_DONE, "Render done"},

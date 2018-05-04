@@ -39,17 +39,6 @@ namespace VirtualCampaign_Manager.Repositories
                         
             result = new List<Job>(result.OrderBy(item => item.Position));
 
-            //find first clip to be rendered
-            foreach (Job job in result)
-            {
-                job.Production = production;
-                if (!job.IsDicative)
-                {
-                    job.IsFirstRealClip = true;
-                    break;
-                }
-            }
-
             return result;
         }
 

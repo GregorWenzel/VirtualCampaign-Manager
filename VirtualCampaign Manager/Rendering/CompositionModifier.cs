@@ -139,7 +139,7 @@ namespace VirtualCampaign_Manager.Rendering
 
                 if (motif.Type == "motif" || motif.Type == "film")
                 {
-                    if (!motif.IsMovie)
+                    if (motif.Type == "motif")
                     {
                         string targetFileName = ProductionPathHelper.GetProductionMotifPath(job.Production, motif);
 

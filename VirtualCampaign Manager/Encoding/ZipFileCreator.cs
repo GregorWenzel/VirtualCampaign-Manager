@@ -14,7 +14,7 @@ namespace VirtualCampaign_Manager.Encoding
         public static bool Create(Production production)
         {
             //All files for zip package have been rendered into the hash directory
-            string sourceDirectory = ProductionPathHelper.GetLocalProductionHashDirectory(production);
+            string sourceDirectory = Path.Combine(ProductionPathHelper.GetLocalProductionHashDirectory(production), "zipOutput");
 
             string targetFile = Path.Combine(ProductionPathHelper.GetLocalProductionHashDirectory(production), "film_" + production.FilmID + "_" + production.Film.FilmOutputFormatList[0].ID + production.Film.FilmOutputFormatList[0].Extension);
 
@@ -23,7 +23,15 @@ namespace VirtualCampaign_Manager.Encoding
 
             System.IO.Compression.ZipFile.CreateFromDirectory(sourceDirectory, targetFile);
 
-            return (File.Exists(targetFile));
+            if (File.Exists(targetFile))
+            {
+                Directory.Delete(sourceDirectory, true);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }        
     }
 }

@@ -30,6 +30,12 @@ namespace VirtualCampaign_Manager.Rendering
             timer.Start();
         }
 
+        public void Stop()
+        {
+            timer.Elapsed -= Timer_Elapsed;
+            timer.Stop();
+        }
+
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             timer.Stop();
@@ -152,6 +158,7 @@ namespace VirtualCampaign_Manager.Rendering
         private RenderChunkStatus GetLargestChunkRendered(Job job)
         {
             RenderChunkStatus result = null;
+
             List<RenderChunkStatus> renderedChunkList = job.RenderChunkStatusList.Where(item => item.Status == 5).ToList();
             int lastIndex;
 

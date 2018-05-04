@@ -79,7 +79,7 @@ namespace VirtualCampaign_Manager.Data
         {
             get
             {
-                return Production.Film.FilmOutputFormatList[Position-1].Name.ToLower().Contains("zip");
+                return Production.Film.FilmOutputFormatList.Any(item => item.Name.ToLower().Contains("zip"));
             }
         }
 
@@ -122,9 +122,6 @@ namespace VirtualCampaign_Manager.Data
 
         //is the product associated with this clip an indicative or abdicative?
         public bool IsDicative { get; set; }
-
-        //is the job in the list the first clip to be rendered (as opposed to an indicative?)
-        public bool IsFirstRealClip { get; set; }
 
         //is this job rendering a product clip preview (i.e. without any motifs)
         public bool IsPreview { get; set; }
