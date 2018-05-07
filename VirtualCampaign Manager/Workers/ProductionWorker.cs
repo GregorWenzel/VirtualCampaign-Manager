@@ -55,7 +55,15 @@ namespace VirtualCampaign_Manager.Workers
                     }
                     else
                     {
-                        EncodeAudio();
+                        if (production.IsPreview == false)
+                        {
+                            EncodeAudio();
+                        }
+                        else
+                        {
+                            production.Status = ProductionStatus.PS_JOIN_CLIPS;
+                            goto case ProductionStatus.PS_JOIN_CLIPS;
+                        }
                     }
                     break;
                 case ProductionStatus.PS_JOIN_CLIPS:

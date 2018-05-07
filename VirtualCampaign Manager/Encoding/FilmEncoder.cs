@@ -20,26 +20,16 @@ namespace VirtualCampaign_Manager.Encoding
         }
 
         public void Encode()
-        {
-            CreateDirectories();
-           
+        {          
             if (EncodeFilms() == false) return;
 
             EncodeMp4Previews();
         }
 
-        private void CreateDirectories()
-        {
-            string directoryName = ProductionPathHelper.GetLocalProductionHashDirectory(production);
-
-            if (!Directory.Exists(directoryName))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-        }
-
         private bool EncodeFilms()
         {
+            if (production.IsPreview) return true;
+
             bool result = true;
 
             VCProcess process = new VCProcess(production);

@@ -42,8 +42,8 @@ namespace VirtualCampaign_Manager.Encoding
             string directoryName = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production.JobList[0].OriginalProductID);
             IOHelper.CreateDirectory(directoryName);
 
-            //find first output format that does not indicate KRPANO
-            string sourcePath = production.Film.FilmOutputFormatList.First(item => item.ID != 20).FullFilePath;
+            //full sized mp4 for product ID
+            string sourcePath = ProductionPathHelper.GetProductMp4Path(production.JobList[0].OriginalProductID);
 
             foreach (string[] mp4PreviewDefinition in mp4PreviewDefinitionList)
             {

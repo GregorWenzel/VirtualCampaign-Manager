@@ -20,9 +20,25 @@ namespace VirtualCampaign_Manager.Encoding
 
         public void Join()
         {
+            if (production.IsPreview)
+            {
+                RenameToProduct();
+                return;
+            }
+
             CreateCliplistFile();
             if (JoinClips() == false) return;
             CheckJoining();
+        }
+
+        private void RenameToProduct()
+        {
+            string sourceFile = JobPathHelper.GetJobClipPath(production.JobList[0]);
+            string targetFile = ProductionPathHelper.GetProductMp4Path(production.JobList[0].ProductID);
+
+            System.IO.File.Copy(sourceFile, targetFile, true);
+
+            FireSuccessEvent();
         }
 
         private void CreateCliplistFile()

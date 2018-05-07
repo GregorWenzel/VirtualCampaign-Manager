@@ -345,7 +345,13 @@ namespace VirtualCampaign_Manager.Data
 
         private bool isPreview;
 
-        public bool IsPreview { get; set; }
+        public bool IsPreview
+        {
+            get
+            {
+                return JobList.Any(item => item.IsPreview);
+            }
+        }
 
         private Logging.Logger logger;
 

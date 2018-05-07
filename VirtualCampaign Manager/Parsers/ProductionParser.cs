@@ -72,7 +72,6 @@ namespace VirtualCampaign_Manager.Parsers
             }
 
             result.HasSpecialIntroMusic = Convert.ToString(productionDict["SpecialIntroMusic"]) == "1";
-            result.IsPreview = Convert.ToInt32(productionDict["IsPreview"]) == 1;
             result.ID = Convert.ToInt32(productionDict["ProductionID"]);
             result.Priority = Convert.ToInt32(productionDict["Priority"]);
             result.Email = Convert.ToString(productionDict["Email"]);

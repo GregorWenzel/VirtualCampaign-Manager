@@ -127,6 +127,13 @@ namespace VirtualCampaign_Manager.Workers
 
         private void DownloadMotifs()
         {
+            if (job.IsPreview)
+            {
+                job.Status = JobStatus.JS_CREATE_RENDERFILES;
+                Work();
+                return;
+            }
+
             MotifTransferCounter = 0;
 
             foreach (Motif motif in job.MotifList)

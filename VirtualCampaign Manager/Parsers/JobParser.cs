@@ -39,6 +39,7 @@ namespace VirtualCampaign_Manager.Parsers
             result.Position = Convert.ToInt32(JobDict["JobPosition"]);
             result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
             result.IsDicative = (Convert.ToInt32(JobDict["IsDicative"]) == 1);
+            result.IsPreview = (Convert.ToInt32(JobDict["IsPreview"]) == 1);
             result.InFrame = Convert.ToInt32(JobDict["InFrame"]);
             result.OutFrame = Convert.ToInt32(JobDict["OutFrame"]);
             result.PreviewFrame = Convert.ToInt32(JobDict["PreviewFrame"]);

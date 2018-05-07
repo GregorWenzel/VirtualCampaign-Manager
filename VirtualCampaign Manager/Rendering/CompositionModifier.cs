@@ -61,7 +61,7 @@ namespace VirtualCampaign_Manager.Rendering
                 ModifyResizeTool();
             }
 
-            if (motifCounter < job.MotifList.Count)
+            if (!job.IsPreview && motifCounter < job.MotifList.Count)
             {
                 ErrorStatus = JobErrorStatus.JES_COMP_MOD_MOTIF_LOADERS;
                 return;
