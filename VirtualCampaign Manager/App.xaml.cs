@@ -31,7 +31,11 @@ namespace VirtualCampaign_Manager
             //(splash.DataContext as SplashScreenWindowViewModel).SuccessEvent += OnSplashSucccess;
             //splash.ShowDialog();
 
-            OnSplashSucccess(this, null);
+            //OnSplashSucccess(this, null);
+
+            mainHub = new MainHubWindow();
+            mainHub.ShowDialog();
+
             base.OnStartup(e);
         }      
 

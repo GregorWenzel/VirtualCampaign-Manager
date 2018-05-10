@@ -252,7 +252,7 @@ namespace VirtualCampaign_Manager.Transfers
                     LoginData = Settings.MasterLogin;
                     break;
                 case TransferType.UploadProductPreviewDirectory:
-                    SourcePath = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production.JobList[0].OriginalProductID);
+                    SourcePath = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production);
                     TargetPath = Settings.FtpProductPreviewSubdirectory;
                     LoginData = Settings.MasterLogin;
                     break;

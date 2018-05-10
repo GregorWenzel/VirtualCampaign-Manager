@@ -106,25 +106,6 @@ namespace VirtualCampaign_Manager.Workers
             JobRepository.UpdateProductStatistics(param);
 
         }
-
-        private void CreateDirectories()
-        {
-            job.LogText("Create directory " + JobPathHelper.GetLocalJobDirectory(job));
-            job.LogText("Create directory " + JobPathHelper.GetLocalJobRenderOutputDirectory(job));
-
-            bool success = IOHelper.CreateDirectory(JobPathHelper.GetLocalJobDirectory(job));
-            success = success && IOHelper.CreateDirectory(JobPathHelper.GetLocalJobRenderOutputDirectory(job));
-
-            if (success == false)
-            {
-                job.ErrorStatus = JobErrorStatus.JES_CREATE_DIRECTORIES;
-                return;
-            }
-
-            job.Status = JobStatus.JS_PREPARE_RESOURCES;
-            Work();
-        }
-
         private void DownloadMotifs()
         {
             if (job.IsPreview)

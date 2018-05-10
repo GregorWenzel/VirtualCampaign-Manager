@@ -36,6 +36,7 @@ namespace VirtualCampaign_Manager.Encoding
             string sourceFile = JobPathHelper.GetJobClipPath(production.JobList[0]);
             string targetFile = ProductionPathHelper.GetProductMp4Path(production.JobList[0].ProductID);
 
+            IOHelper.CreateDirectory(Path.GetDirectoryName(targetFile));
             System.IO.File.Copy(sourceFile, targetFile, true);
 
             FireSuccessEvent();

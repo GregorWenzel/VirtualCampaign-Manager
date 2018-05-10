@@ -49,7 +49,13 @@ namespace VirtualCampaign_Manager.Rendering
             try
             {
                 string jobName = string.Format("{0} [{1}]", job.ID, job.RenderStartTime);
-                jobDoc = jobCollection.Find(Builders<BsonDocument>.Filter.AnyEq("Props.Name", jobName)).SortByDescending(bson => bson["LastWriteTime"]).First();
+                List<BsonDocument> jobList = jobCollection.Find(Builders<BsonDocument>.Filter.AnyEq("Props.Name", jobName)).SortByDescending(bson => bson["LastWriteTime"]).ToList();
+                if (jobList.Count == 0)
+                {
+                    timer.Start();
+                    return;
+                }
+                jobDoc = jobList[0];
 
                 int status = Convert.ToInt32(jobDoc["Stat"]);
                 double tasks = Convert.ToDouble(jobDoc["Props"]["Tasks"]);
@@ -94,10 +100,13 @@ namespace VirtualCampaign_Manager.Rendering
                     }
 
                     var slaveCollection = database.GetCollection<BsonDocument>("SlaveInfo");
-                    BsonDocument slaveInfo = slaveCollection.Find(Builders<BsonDocument>.Filter.AnyEq("_id", currentChunk.SlaveName.ToLower())).First();
-
-                    currentChunk.Processors = Convert.ToInt32(slaveInfo["Procs"]);
-                    currentChunk.ProcessorSpeed = Convert.ToInt32(slaveInfo["ProcSpd"]);
+                    List<BsonDocument> slaveList = slaveCollection.Find(Builders<BsonDocument>.Filter.AnyEq("_id", currentChunk.SlaveName.ToLower())).ToList();
+                    if (slaveList.Count > 0)
+                    {
+                        BsonDocument slaveInfo = slaveList[0];
+                        currentChunk.Processors = Convert.ToInt32(slaveInfo["Procs"]);
+                        currentChunk.ProcessorSpeed = Convert.ToInt32(slaveInfo["ProcSpd"]);
+                    }
 
                     Dictionary<string, object> taskVal = (Dictionary<string, object>)BsonTypeMapper.MapToDotNetValue(taskDoc);
 

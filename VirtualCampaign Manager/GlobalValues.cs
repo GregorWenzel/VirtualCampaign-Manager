@@ -49,6 +49,7 @@ namespace VirtualCampaign_Manager
             {ProductionStatus.PS_UPLOAD_FILMS, "Uploading Films"},
             {ProductionStatus.PS_UPDATE_HISTORY, "Writing Statistic Data"},
             {ProductionStatus.PS_DONE, "DONE"},
+            {ProductionStatus.PS_CLEANUP, "Cleaning Up" }
         };
 
         public static Dictionary<JobStatus, string> JobStatusString = new Dictionary<JobStatus, string>()

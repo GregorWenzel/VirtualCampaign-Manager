@@ -96,7 +96,7 @@ namespace VirtualCampaign_Manager.Helpers
 
         public static string GetProductCompositionPath(Job job)
         {
-            string formattedIndex = String.Format("{0:D4}", job.ProductID);
+            string formattedIndex = String.Format("{0:D4}", job.CompositionProductID);
             return Path.Combine(Settings.LocalProductPath, formattedIndex, formattedIndex+".comp");
         }
     }

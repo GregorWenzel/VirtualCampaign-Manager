@@ -42,19 +42,19 @@ namespace VirtualCampaign_Manager.Data
 
     public enum JobStatus
     {
-        JS_IDLE,
-        JS_CREATE_DIRECTORIES,
-        JS_PREPARE_RESOURCES,
-        JS_CREATE_RENDERFILES,
-        JS_SEND_RENDER_JOB,
-        JS_GET_JOB_ID,
-        JS_RENDER_JOB,
-        JS_SEND_ENCODE_JOB,
-        JS_ENCODE_JOB,
-        JS_ENCODING_DONE,
-        JS_DONE,
-        JS_RENDER_DONE,
-        JS_HAS_ERRORS,
+        JS_IDLE = 0,
+        JS_CREATE_DIRECTORIES = 1,
+        JS_PREPARE_RESOURCES = 2,
+        JS_CREATE_RENDERFILES = 3,
+        JS_SEND_RENDER_JOB = 4,
+        JS_GET_JOB_ID = 5,
+        JS_RENDER_JOB = 6,
+        JS_SEND_ENCODE_JOB = 7,
+        JS_ENCODE_JOB = 9,
+        JS_ENCODING_DONE = 10,
+        JS_DONE = 8,
+        JS_RENDER_DONE = 11,
+        JS_HAS_ERRORS = 12,
     };
 
     public class Job : VCObject, INotifyPropertyChanged
@@ -126,9 +126,6 @@ namespace VirtualCampaign_Manager.Data
         //is this job rendering a product clip preview (i.e. without any motifs)
         public bool IsPreview { get; set; }
 
-        //if this is a subclip, MasterProductID is >=0, otherwise -1
-        public int MasterProductID { get; set; }
-
         //List of motifs associated with this job
         public List<Motif> MotifList = new List<Motif>();
 
@@ -163,34 +160,19 @@ namespace VirtualCampaign_Manager.Data
         public int PreviewFrame { get; set; }
 
         //ID of the product for this job
-        private int productID;
-        public int ProductID
+        public int ProductID { get; set; }
+
+        //if this is a subclip, MasterProductID is >=0, otherwise -1
+        public int MasterProductID { get; set; }
+
+        public int CompositionProductID
         {
-            //if this job's product is a subclip (master id >=0), return its' master ID
-            //otherwise, return this job's product id
             get
             {
-                if (this.MasterProductID < 0)
-                {
-                    return productID;
-                }
+                if (MasterProductID < 0)
+                    return ProductID;
                 else
-                {
                     return MasterProductID;
-                }
-            }
-            set
-            {
-                productID = value;
-            }
-        }
-             
-        //ID of the product id irrespective of subclip status
-        public int OriginalProductID
-        {
-            get
-            {
-                return productID;
             }
         }
 
@@ -411,6 +393,8 @@ namespace VirtualCampaign_Manager.Data
 
             Progress = 0;
             ProductionProgress = 0;
+            Status = JobStatus.JS_IDLE;
+            ErrorStatus = JobErrorStatus.JES_NONE;
 
             if (worker != null)
             {

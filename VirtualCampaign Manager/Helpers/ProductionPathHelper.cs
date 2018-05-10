@@ -88,10 +88,10 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetProductDirectory(ProductID), formattedIndex + ".mp4");
         }
 
-        public static string GetLocalProductPreviewProductionDirectory(int ProductID)
+        public static string GetLocalProductPreviewProductionDirectory(Production production)
         {
-            string formattedIndex = String.Format("{0:D4}", ProductID);
-            return Path.Combine(Settings.LocalProductionPath, formattedIndex);
+            string formattedIndex = String.Format("{0:D4}", production.JobList[0].ProductID);
+            return Path.Combine(GetLocalProductionDirectory(production), formattedIndex);
         }
 
         public static string GetLocalProductionPreviewPath(Production production, string suffix)
@@ -99,10 +99,10 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalProductionPreviewDirectory(production), "film_"+production.FilmID + string.Format("_{0}.mp4", suffix));
         }
 
-        public static string GetLocalProductPreviewProductionPath(int ProductID, string suffix)
+        public static string GetLocalProductPreviewProductionPath(Production production, string suffix)
         {
-            string formattedIndex = String.Format("{0:D4}", ProductID);
-            return Path.Combine(GetLocalProductPreviewProductionDirectory(ProductID), formattedIndex + string.Format("_{0}.mp4", suffix));
+            string formattedIndex = String.Format("{0:D4}", production.JobList[0].ProductID);
+            return Path.Combine(GetLocalProductPreviewProductionDirectory(production), formattedIndex + string.Format("_{0}.mp4", suffix));
         }
 
         public static string GetLocalProductionPreviewDirectory(Production production)

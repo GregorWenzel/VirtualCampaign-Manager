@@ -93,14 +93,15 @@ namespace VirtualCampaign_Manager.Repositories
             request.ContentLength = byteArray.Length;
             request.KeepAlive = false;
 
-            Stream dataStream = request.GetRequestStream();
-            dataStream.Write(byteArray, 0, byteArray.Length);
-            dataStream.Close();
             HttpWebResponse response = null;
             StreamReader reader = null;
 
             try
             {
+                Stream dataStream = request.GetRequestStream();
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                dataStream.Close();
+                
                 response = (HttpWebResponse) request.GetResponse();
 
                 string responseContent;

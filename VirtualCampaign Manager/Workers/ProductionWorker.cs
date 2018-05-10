@@ -78,6 +78,9 @@ namespace VirtualCampaign_Manager.Workers
                 case ProductionStatus.PS_UPDATE_HISTORY:
                     UpdateHistoryTable();
                     break;
+                case ProductionStatus.PS_CLEANUP:
+                    CleanUp();
+                    break;
                 case ProductionStatus.PS_DONE:
                     break;
             }
@@ -92,19 +95,21 @@ namespace VirtualCampaign_Manager.Workers
             directoryPaths.Add(ProductionPathHelper.GetLocalProductionDirectory(production));
 
             //motif folder (e.g. "render_temp\productions\virtualcampaign\12345\motifs")
-            directoryPaths.Add(ProductionPathHelper.GetProductionMotifDirectory(production));
-
-            //hash output folder
-            directoryPaths.Add(ProductionPathHelper.GetLocalProductionHashDirectory(production));
+            directoryPaths.Add(ProductionPathHelper.GetProductionMotifDirectory(production));            
 
             //preview output folder
             if (production.IsPreview == false)
             {
+                //hash output folder
+                directoryPaths.Add(ProductionPathHelper.GetLocalProductionHashDirectory(production));
+
+                //production preview directory
                 directoryPaths.Add(ProductionPathHelper.GetLocalProductionPreviewDirectory(production));
             }
             else
             {
-                directoryPaths.Add(ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production.JobList[0].OriginalProductID));
+                //product preview directory
+                directoryPaths.Add(ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production));
             }
 
             //folders for each clip
@@ -248,10 +253,19 @@ namespace VirtualCampaign_Manager.Workers
         }
 
         private void UpdateHistoryTable()
-        {           
+        {
+            FilmRepository.UpdateFilmDuration(production);
             FilmRepository.UpdateHistoryTable(production);
-            production.Status = ProductionStatus.PS_DONE;
+            production.Status = ProductionStatus.PS_CLEANUP;
+            Work();
+        }
 
+        private void CleanUp()
+        {
+            string directoryName = ProductionPathHelper.GetLocalProductionDirectory(production);
+            IOHelper.DeleteDirectory(directoryName);
+
+            production.Status = ProductionStatus.PS_DONE;
             FireSuccessEvent();
         }
 
@@ -272,7 +286,7 @@ namespace VirtualCampaign_Manager.Workers
 
             if (IsFinished == true) return false;
 
-            if (!IsActive || production.Status == ProductionStatus.PS_DONE || production.ErrorStatus != ProductionErrorStatus.PES_NONE)
+            if (!IsActive || production.Status == ProductionStatus.PS_DONE || production.ErrorStatus != ProductionErrorStatus.PES_NONE || production.JobList.Any(item => item.ErrorStatus != JobErrorStatus.JES_NONE))
                 return false;
 
             int jobsDoneCount = 0;

@@ -39,17 +39,17 @@ namespace VirtualCampaign_Manager.Encoding
 
         private void EncodePreviewForProduct()
         {
-            string directoryName = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production.JobList[0].OriginalProductID);
+            string directoryName = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(production);
             IOHelper.CreateDirectory(directoryName);
 
             //full sized mp4 for product ID
-            string sourcePath = ProductionPathHelper.GetProductMp4Path(production.JobList[0].OriginalProductID);
+            string sourcePath = ProductionPathHelper.GetProductMp4Path(production.JobList[0].ProductID);
 
             foreach (string[] mp4PreviewDefinition in mp4PreviewDefinitionList)
             {
                 string sizeStr = mp4PreviewDefinition[0];
                 string fileSuffix = mp4PreviewDefinition[1];
-                string targetPath = ProductionPathHelper.GetLocalProductPreviewProductionPath(production.JobList[0].OriginalProductID, fileSuffix);
+                string targetPath = ProductionPathHelper.GetLocalProductPreviewProductionPath(production, fileSuffix);
                 string cmd = "-y -loglevel panic -i " + sourcePath + " ";
 
                 cmd += string.Format("-s {0} -threads 8 -c:v libx264 -pix_fmt yuv420p -preset medium -an {1}", sizeStr, targetPath);

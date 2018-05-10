@@ -41,7 +41,8 @@ namespace VirtualCampaign_Manager.Data
         PS_ENCODE_FILMS = 6,
         PS_UPLOAD_FILMS = 7,
         PS_UPDATE_HISTORY = 9,
-        PS_DONE = 10,
+        PS_DONE = 8,
+        PS_CLEANUP = 10,
     };
 
     public class Production : VCObject, INotifyPropertyChanged

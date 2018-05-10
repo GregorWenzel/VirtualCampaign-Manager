@@ -109,7 +109,7 @@ namespace VirtualCampaign_Manager.Encoding
             }
             else
             {
-                directoryName = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(job.OriginalProductID);
+                directoryName = ProductionPathHelper.GetLocalProductPreviewProductionDirectory(job.Production);
             }
            
             string fileName;
@@ -141,7 +141,7 @@ namespace VirtualCampaign_Manager.Encoding
                 }
                 else
                 {
-                    cmd += string.Format(" -vf scale={0} {1}", kv.Value, Path.Combine(directoryName, string.Format("{0:0000}_{1}", job.OriginalProductID, kv.Key)));
+                    cmd += string.Format(" -vf scale={0} {1}", kv.Value, Path.Combine(directoryName, string.Format("{0:0000}_{1}", job.ProductID, kv.Key)));
                 }
             }
 
