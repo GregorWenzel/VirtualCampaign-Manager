@@ -23,9 +23,39 @@ namespace VirtualCampaign_Manager.MainHub
             get { return animatedMotifList; }
             set { animatedMotifList = value; }
         }
-        
+
+        private DateTime currentTime = DateTime.Now;
+        public DateTime CurrentTime
+        {
+            get
+            {
+                return currentTime;
+            }
+            set
+            {
+                currentTime = value;
+                RaisePropertyChangedEvent("CurrentTime");
+            }
+        }
+
+        private DateTime lastUpdateTime;
+
+        public DateTime LastUpdateTime
+        {
+            get { return lastUpdateTime; }
+            set {
+                lastUpdateTime = value;
+                RaisePropertyChangedEvent("LastUpdateTime");
+            }
+        }
+
         public MainHubViewModel()
-        { 
+        {
+            Timer clockTimer = new Timer();
+            clockTimer.Interval = 1000;
+            clockTimer.Elapsed += ClockTimer_Elapsed;
+            clockTimer.Start();
+
             productionsTimer = new Timer();
             productionsTimer.Interval = Settings.MainUpdateInterval;
             productionsTimer.Elapsed += Timer_Elapsed;
@@ -35,9 +65,13 @@ namespace VirtualCampaign_Manager.MainHub
             animatedMotifsTimer.Elapsed += AnimatedMotifsTimer_Elapsed;
         }
 
+        private void ClockTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            CurrentTime = DateTime.Now;
+        }
+
         public void Start()
         {
-            productionsTimer.Elapsed += Timer_Elapsed;
             productionsTimer.Start();
         }
 
@@ -72,6 +106,8 @@ namespace VirtualCampaign_Manager.MainHub
                 }
                 newProduction.StartWorker();
             }
+
+            LastUpdateTime = DateTime.Now;
             productionsTimer.Start();
         }
 

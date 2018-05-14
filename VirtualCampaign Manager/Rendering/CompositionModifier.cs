@@ -131,60 +131,55 @@ namespace VirtualCampaign_Manager.Rendering
 
         private int ModifyMotifs()
         {
+            if (job.IsPreview) return job.MotifList.Count;
+
             int result = 0;
 
             for (int i = 0; i < job.MotifList.Count; i++)
             {
                 Motif motif = job.MotifList[i];
 
-                if (motif.Type == "motif" || motif.Type == "film")
+                if (motif.IsMovie)
                 {
-                    if (motif.Type == "motif")
-                    {
-                        string targetFileName = ProductionPathHelper.GetProductionMotifPath(job.Production, motif);
+                    bool success = false;
+                    success = SetNumericValueInTool(motif.LoaderName, "Length ", motif.Frames.ToString());
 
-                        SetValueInTool(motif.LoaderName, "Filename", targetFileName);
-                        switch (motif.Extension)
-                        {
-                            case ".jpg":
-                                if (SetValueInTool(motif.LoaderName, "FormatID", "JpegFormat"))
-                                    result++;
-                                break;
-                            case ".png":
-                                if (SetValueInTool(motif.LoaderName, "FormatID", "PNGFormat"))
-                                    result++;
-                                break;
-                        }
-                    }
+                    if (!success)
+                        success = SetNumericValueInTool(motif.LoaderName, "StartFrame", "1,\r\nLength = " + motif.Frames.ToString());
                     else
+                        success = success && SetNumericValueInTool(motif.LoaderName, "StartFrame", "1");
+
+                    string motifPath = ProductionPathHelper.GetProductionAnimatedMotifPath(job.Production, motif);
+
+                    success = success && SetValueInTool(motif.LoaderName, "Filename", motifPath)
+                        && SetValueInTool(motif.LoaderName, "FormatID", "TargaFormat")
+                        && SetNumericValueInTool(motif.LoaderName, "TrimIn", "0")
+                        && SetNumericValueInTool(motif.LoaderName, "TrimOut", (motif.Frames - 1).ToString())
+                        && SetNumericValueInTool(motif.LoaderName, "GlobalStart", "0")
+                        && SetNumericValueInTool(motif.LoaderName, "GlobalEnd", (motif.Frames - 1).ToString());
+
+                    if (success)
+                        result++;
+                }
+                else
+                {
+                    string targetFileName = ProductionPathHelper.GetProductionMotifPath(job.Production, motif);
+
+                    SetValueInTool(motif.LoaderName, "Filename", targetFileName);
+                    switch (motif.Extension)
                     {
-                        bool success = false;
-                        success = SetNumericValueInTool(motif.LoaderName, "Length ", motif.Frames.ToString());
-
-                        if (!success)
-                            success = SetNumericValueInTool(motif.LoaderName, "StartFrame", "1,\r\nLength = " + motif.Frames.ToString());
-                        else
-                            success = success && SetNumericValueInTool(motif.LoaderName, "StartFrame", "1");
-
-                        string motifPath = ProductionPathHelper.GetProductionAnimatedMotifPath(job.Production, motif);
-
-                        success = success && SetValueInTool(motif.LoaderName, "Filename", motifPath)
-                            && SetValueInTool(motif.LoaderName, "FormatID", "TargaFormat")
-                            && SetNumericValueInTool(motif.LoaderName, "TrimIn", "0")
-                            && SetNumericValueInTool(motif.LoaderName, "TrimOut", (motif.Frames - 1).ToString())
-                            && SetNumericValueInTool(motif.LoaderName, "GlobalStart", "0")
-                            && SetNumericValueInTool(motif.LoaderName, "GlobalEnd", (motif.Frames - 1).ToString());
-
-                        if (success)
-                            result++;
+                        case ".jpg":
+                            if (SetValueInTool(motif.LoaderName, "FormatID", "JpegFormat"))
+                                result++;
+                            break;
+                        case ".png":
+                            if (SetValueInTool(motif.LoaderName, "FormatID", "PNGFormat"))
+                                result++;
+                            break;
                     }
                 }
-                else if (motif.Type == "text")
-                {
-                    if (SetMotifText(motif))
-                        result++;
 
-                }
+                //TO DO: Text motifs
             }
             return result;
         }
