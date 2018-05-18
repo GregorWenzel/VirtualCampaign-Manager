@@ -6,8 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows.Input;
+using Telerik.Windows.Controls;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Repositories;
+using VirtualCampaign_Manager.Views.History;
 
 namespace VirtualCampaign_Manager.MainHub
 {
@@ -15,6 +18,11 @@ namespace VirtualCampaign_Manager.MainHub
     {
         private Timer productionsTimer;
         private Timer animatedMotifsTimer;
+
+        private HistoryWindow historyWindow;
+        private HistoryWindowViewModel historyWindowViewModel;
+
+        public ICommand ShowHistoryCommand { get; set; }
 
         private ObservableCollection<AnimatedMotif> animatedMotifList;
 
@@ -63,6 +71,20 @@ namespace VirtualCampaign_Manager.MainHub
             animatedMotifsTimer = new Timer();
             animatedMotifsTimer.Interval = Settings.MotifUpdateInterval;
             animatedMotifsTimer.Elapsed += AnimatedMotifsTimer_Elapsed;
+
+            ShowHistoryCommand = new DelegateCommand(OnShowHistory);
+        }
+
+        private void OnShowHistory(object obj)
+        {
+            if (historyWindow == null)
+            {
+                historyWindow = new HistoryWindow();
+                historyWindowViewModel = new HistoryWindowViewModel();
+                historyWindow.DataContext = historyWindowViewModel;
+            }
+
+            historyWindow.Show();
         }
 
         private void ClockTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -102,7 +124,10 @@ namespace VirtualCampaign_Manager.MainHub
                 newProduction.SuccessEvent += OnProductionSuccess;
                 foreach (Job newJob in newProduction.JobList)
                 {
-                    GlobalValues.JobList.Add(newJob);
+                    if (GlobalValues.JobList.Any(item => item.ID == newJob.ID) == false)
+                    {
+                        GlobalValues.JobList.Add(newJob);
+                    }
                 }
                 newProduction.StartWorker();
             }
@@ -117,6 +142,7 @@ namespace VirtualCampaign_Manager.MainHub
             production.SuccessEvent -= OnProductionSuccess;
             if (GlobalValues.ProductionList.Any(item => item.ID == production.ID))
             {
+                GlobalValues.ProductionHistoryList.Add(production);
                 GlobalValues.ProductionList.Remove(production);
 
                 foreach (Job job in production.JobList)

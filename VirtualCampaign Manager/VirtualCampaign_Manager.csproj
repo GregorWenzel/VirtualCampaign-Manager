@@ -214,6 +214,10 @@
     <Compile Include="Repositories\ProductionRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Views\History\HistoryWindow.xaml.cs">
+      <DependentUpon>HistoryWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\History\HistoryWindowViewModel.cs" />
     <Compile Include="Views\Jobs\JobViewModel.cs" />
     <Compile Include="Views\Jobs\JobView.xaml.cs">
       <DependentUpon>JobView.xaml</DependentUpon>
@@ -257,6 +261,10 @@
     <Page Include="Transfers\TransferManagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\History\HistoryWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Jobs\JobView.xaml">
       <SubType>Designer</SubType>

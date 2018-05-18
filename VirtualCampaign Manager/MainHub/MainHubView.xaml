@@ -23,7 +23,8 @@
             <TextBlock Text="Last Update:" FontWeight="Bold"/>
             <TextBlock Text ="{Binding LastUpdateTime, StringFormat={}{0:dd.MM.yyyy HH:mm:ss}}" Margin="5,0,10,0"/>
             <TextBlock Text="Finished productions:" FontWeight="Bold"/>
-            <!--<TextBlock Text ="{Binding Source={x:Static global:GlobalValues}, Mode=OneWay}" Margin="5,0,10,0"/>-->
+            <TextBlock Text ="{Binding FinishedProductionsCount}" Margin="5,0,10,0"/>
+            <Button Content="History" Command="{Binding ShowHistoryCommand}"/>
         </StackPanel>
         <jobs:JobView Grid.Row="1" Margin="10"/>
     </Grid>

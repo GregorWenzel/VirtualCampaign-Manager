@@ -15,6 +15,9 @@ namespace VirtualCampaign_Manager
 {
     public static class GlobalValues
     {
+        //Event called after a production has finished
+        public static EventHandler<EventArgs> ProductionFinishedEvent;
+
         public static LogWindow LogWindow = new LogWindow();
 
         private static ObservableCollection<Production> productionList = new ObservableCollection<Production>();
@@ -28,6 +31,18 @@ namespace VirtualCampaign_Manager
                 productionList = value;
             }
         }
+
+        private static ObservableCollection<Production> productionHistoryList = new ObservableCollection<Production>();
+
+        public static ObservableCollection<Production> ProductionHistoryList
+        {
+            get { return productionHistoryList; }
+            set
+            {
+                productionHistoryList = value;
+            }
+        }
+
 
         private static ObservableCollection<Job> jobList = new ObservableCollection<Job>();
 
@@ -133,7 +148,6 @@ namespace VirtualCampaign_Manager
 
             return RenderQueueCount;
         }
-
 
     }
 }
