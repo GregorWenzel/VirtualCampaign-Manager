@@ -192,13 +192,8 @@
       <DependentUpon>SplashScreenWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="SplashScreen\SplashScreenWindowViewModel.cs" />
-    <Compile Include="Transfers\OldTransferManager.cs" />
     <Compile Include="Transfers\FilmUploader.cs" />
     <Compile Include="Transfers\TransferManager.cs" />
-    <Compile Include="Transfers\TransferManagerView.xaml.cs">
-      <DependentUpon>TransferManagerView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Transfers\TransferManagerViewModel.cs" />
     <Compile Include="Transfers\TransferPacket.cs" />
     <Compile Include="MainHub\MainHubViewModel.cs" />
     <Compile Include="MainHub\MainHubView.xaml.cs">
@@ -255,10 +250,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="SplashScreen\SplashScreenWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Transfers\TransferManagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

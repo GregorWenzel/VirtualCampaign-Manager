@@ -16,6 +16,7 @@ namespace VirtualCampaign_Manager.Data
         public string Text { get; set; }
         public int Frames { get; set; }
         public bool IsAvailable { get; set; } = false;
+        public bool IsInTransit { get; set; } = false;
         public Job Job { get; set; }
 
         public Motif() { }

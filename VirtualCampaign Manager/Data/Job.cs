@@ -450,6 +450,14 @@ namespace VirtualCampaign_Manager.Data
             DeleteProductionCommand = new DelegateCommand(OnDeleteProduction);
         }
 
+        public void SetMotifAvailable(Motif motif)
+        {
+            if (this.worker != null)
+            {
+                worker.SetMotifAvailable(motif);
+            }
+        }
+
         private void OnResetProduction(object obj)
         {
             if (Production != null)

@@ -34,32 +34,37 @@ namespace VirtualCampaign_Manager.Transfers
         private void UploadHashDirectory()
         {
             TransferPacket transferPacket = new TransferPacket(production, TransferType.UploadFilmDirectory);
-            transferPacket.SuccessEvent += OnFilmUploadSuccess;
-            transferPacket.FailureEvent += OnFilmUploadFailure;
-            TransferManager.Instance.AddTransferPacket(transferPacket);
+            TransferManager transferManager = new TransferManager(transferPacket);
+            transferManager.SuccessEvent += OnFilmUploadSuccess;
+            transferManager.FailureEvent += OnFilmUploadFailure;
+            transferManager.Transfer();
         }
 
         private void UploadPreviewDirectoryStandard()
         {
             TransferPacket transferPacket = new TransferPacket(production, TransferType.UploadFilmPreviewDirectory);
-            transferPacket.SuccessEvent += OnFilmUploadSuccess;
-            transferPacket.FailureEvent += OnFilmUploadFailure;
-            TransferManager.Instance.AddTransferPacket(transferPacket);
+            TransferManager transferManager = new TransferManager(transferPacket);
+            transferManager.SuccessEvent += OnFilmUploadSuccess;
+            transferManager.FailureEvent += OnFilmUploadFailure;
+            transferManager.Transfer();
         }
 
         private void UploadPreviewDirectoryProduct()
         {
             TransferPacket transferPacket = new TransferPacket(production, TransferType.UploadProductPreviewDirectory);
-            transferPacket.SuccessEvent += OnFilmUploadSuccess;
-            transferPacket.FailureEvent += OnFilmUploadFailure;
-            TransferManager.Instance.AddTransferPacket(transferPacket);
+            TransferManager transferManager = new TransferManager(transferPacket);
+            transferManager.SuccessEvent += OnFilmUploadSuccess;
+            transferManager.FailureEvent += OnFilmUploadFailure;
+            transferManager.Transfer();
         }
 
         private void OnFilmUploadSuccess(object sender, EventArgs ea)
         {
-            TransferPacket transferPacket = sender as TransferPacket;
-            transferPacket.SuccessEvent -= OnFilmUploadSuccess;
-            transferPacket.FailureEvent -= OnFilmUploadFailure;
+            TransferManager transferManager = sender as TransferManager;
+            TransferPacket transferPacket = transferManager.Packet;
+            transferManager.SuccessEvent -= OnFilmUploadSuccess;
+            transferManager.FailureEvent -= OnFilmUploadFailure;
+            transferManager = null;
 
             if (transferPacket.Type == TransferType.UploadFilmPreviewDirectory)
             {
@@ -73,9 +78,12 @@ namespace VirtualCampaign_Manager.Transfers
 
         private void OnFilmUploadFailure(object sender, EventArgs ea)
         {
-            TransferPacket transferPacket = sender as TransferPacket;
-            transferPacket.SuccessEvent -= OnFilmUploadSuccess;
-            transferPacket.FailureEvent -= OnFilmUploadFailure;
+            TransferManager transferManager = sender as TransferManager;
+            TransferPacket transferPacket = transferManager.Packet;
+            transferManager.SuccessEvent -= OnFilmUploadSuccess;
+            transferManager.FailureEvent -= OnFilmUploadFailure;
+            transferManager = null;
+
             FireFailureEvent(ProductionErrorStatus.PES_UPLOAD);
         }
     }

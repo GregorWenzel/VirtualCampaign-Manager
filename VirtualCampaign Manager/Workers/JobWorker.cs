@@ -118,24 +118,19 @@ namespace VirtualCampaign_Manager.Workers
             MotifTransferCounter = 0;
 
             foreach (Motif motif in job.MotifList)
-            { 
+            {
+                //check if the same transfer is already in progress (first job with the same motif id)
+                if (job.MotifList.First(item => item.ID == motif.ID).IsInTransit) continue;
+
+                motif.IsInTransit = true;
+
                 TransferPacket motifTransferPacket = new TransferPacket(job, motif);
 
-                //check if the same transfer is already in progress (other job with the same motif id)
-                TransferPacket inTransitPacket = TransferManager.Instance.GetTransferPacket(motifTransferPacket.ItemID);
+                TransferManager transferManager = new TransferManager(motifTransferPacket);
 
-                //if transfer already in proggress just subscribe to finished/failure events of that transfer
-                if (inTransitPacket != null)
-                {
-                    inTransitPacket.FailureEvent += OnMotifTransferFailure;
-                    inTransitPacket.SuccessEvent += OnMotifTransferSuccess;
-                }
-                else
-                {
-                    motifTransferPacket.FailureEvent += OnMotifTransferFailure;
-                    motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
-                    TransferManager.Instance.AddTransferPacket(motifTransferPacket);
-                }
+                transferManager.FailureEvent += OnMotifTransferFailure;
+                transferManager.SuccessEvent += OnMotifTransferSuccess;
+                transferManager.Transfer();
             }
         }
 
@@ -233,9 +228,12 @@ namespace VirtualCampaign_Manager.Workers
         
         private void OnMotifTransferSuccess(object obj, EventArgs ea)
         {
-            TransferPacket motifTransferPacket = obj as TransferPacket;
-            motifTransferPacket.FailureEvent -= OnMotifTransferFailure;
-            motifTransferPacket.SuccessEvent -= OnMotifTransferSuccess;
+            TransferManager transferManager = obj as TransferManager;
+            TransferPacket motifTransferPacket = transferManager.Packet;
+
+            transferManager.FailureEvent -= OnMotifTransferFailure;
+            transferManager.SuccessEvent -= OnMotifTransferSuccess;
+            transferManager = null;
 
             Motif motif = motifTransferPacket.Parent as Motif;
             if (motif != null)
@@ -255,8 +253,27 @@ namespace VirtualCampaign_Manager.Workers
                 }
             }
 
-            MotifTransferCounter += 1;
-            if (MotifTransferCounter == job.MotifList.Count)
+            job.Production.SetMotifAvailable(motif);
+        }
+
+        public void SetMotifAvailable(Motif motif)
+        {
+            int motifsReadyCount = 0;
+
+            foreach (Motif thisMotif in job.MotifList)
+            {
+                if (thisMotif.ID == motif.ID)
+                {
+                    thisMotif.IsAvailable = true;
+                }
+
+                if (thisMotif.IsAvailable)
+                {
+                    motifsReadyCount++;
+                }
+            }
+
+            if (motifsReadyCount == job.MotifList.Count)
             {
                 job.Status = JobStatus.JS_CREATE_RENDERFILES;
                 Work();
@@ -265,9 +282,12 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnMotifTransferFailure(object obj, EventArgs ea)
         {
-            TransferPacket motifTransferPacket = obj as TransferPacket;
-            motifTransferPacket.FailureEvent -= OnMotifTransferFailure;
-            motifTransferPacket.SuccessEvent -= OnMotifTransferSuccess;
+            TransferManager transferManager = obj as TransferManager;
+            TransferPacket motifTransferPacket = transferManager.Packet;
+
+            transferManager.FailureEvent -= OnMotifTransferFailure;
+            transferManager.SuccessEvent -= OnMotifTransferSuccess;
+            transferManager = null;
 
             job.ErrorStatus = JobErrorStatus.JES_DOWNLOAD_MOTIFS;
             FireFailureEvent();

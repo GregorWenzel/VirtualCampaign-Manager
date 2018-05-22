@@ -398,6 +398,14 @@ namespace VirtualCampaign_Manager.Data
                 Status = ProductionStatus.PS_MUX_AUDIO;
         }
 
+        public void SetMotifAvailable(Motif motif)
+        {
+            foreach (Job job in JobList)
+            {
+                job.SetMotifAvailable(motif);
+            }
+        }
+
         public void SetStatus(ProductionStatus Satus)
         {
             status = Status;
