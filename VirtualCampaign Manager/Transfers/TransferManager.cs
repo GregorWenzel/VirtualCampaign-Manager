@@ -11,30 +11,9 @@ namespace VirtualCampaign_Manager.Transfers
 {
     public sealed class TransferManager
     {
-        private Timer timer;
-        private List<TransferPacket> transferList = new List<TransferPacket>();
+        private Sftp client;
 
-        private int activePacketCount
-        {
-            get
-            {
-                return transferList.Count(item => item.IsInTransit);
-            }
-        }
-
-        public TransferPacket GetTransferPacket(object itemID)
-        {
-            if (transferList.Any(item => (string)item.ItemID == (string)itemID))
-            {
-                return transferList.First(item => (string)item.ItemID == (string)itemID);
-            }
-            else
-            {
-                return null;
-            }
-        }
-            
-        public void AddTransferPacket(TransferPacket packet)
+        public void Transfer(TransferPacket packet)
         {
             packet.IsInTransit = false;
 
@@ -212,28 +191,5 @@ namespace VirtualCampaign_Manager.Transfers
             ProcessQueue();
             timer.Start();
         }
-
-        private static volatile TransferManager instance;
-        private static object syncRoot = new object();
-
-        public static TransferManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null)
-                        {
-                            instance = new TransferManager();
-                        }
-                    }
-                }
-
-                return instance;
-            }
-        }
-
     }
 }
