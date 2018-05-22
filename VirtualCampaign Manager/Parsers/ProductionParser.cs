@@ -40,13 +40,21 @@ namespace VirtualCampaign_Manager.Parsers
                     thisJob = thisProduction.JobList.First(item => item.ID == newJobID);
                 }
 
-                int newMotifID = Convert.ToInt32(production["ContentID"]);
-                int newMotifPosition = Convert.ToInt32(production["ContentPosition"]);
-                if (thisJob.MotifList.Any(item => item.ID == newMotifID && item.Position == newMotifPosition) == false)
+                if (thisJob.IsDicative == false)
                 {
-                    Motif newMotif = MotifParser.Parse(production);
-                    thisJob.MotifList.Add(newMotif);
+                    int newMotifID = Convert.ToInt32(production["ContentID"]);
+                    int newMotifPosition = Convert.ToInt32(production["ContentPosition"]);
+                    if (thisJob.MotifList.Any(item => item.ID == newMotifID && item.Position == newMotifPosition) == false)
+                    {
+                        Motif newMotif = MotifParser.Parse(production);
+                        thisJob.MotifList.Add(newMotif);
+                    }
                 }
+            }
+
+            foreach (Production production in GlobalValues.ProductionList)
+            {
+                production.JobList = production.JobList.OrderBy(item => item.Position).ToList();
             }
         }
 

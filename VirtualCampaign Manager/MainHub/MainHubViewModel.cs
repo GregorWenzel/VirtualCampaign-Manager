@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Telerik.Windows.Controls;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Repositories;
@@ -142,7 +143,11 @@ namespace VirtualCampaign_Manager.MainHub
             production.SuccessEvent -= OnProductionSuccess;
             if (GlobalValues.ProductionList.Any(item => item.ID == production.ID))
             {
-                GlobalValues.ProductionHistoryList.Add(production);
+                App.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    GlobalValues.ProductionHistoryList.Add(production);
+                });
+
                 GlobalValues.ProductionList.Remove(production);
 
                 foreach (Job job in production.JobList)

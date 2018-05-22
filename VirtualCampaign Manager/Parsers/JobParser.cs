@@ -35,25 +35,26 @@ namespace VirtualCampaign_Manager.Parsers
             Job result = new Job();
 
             result.ID = Convert.ToInt32(JobDict["JobID"]);
-            result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["JobErrorCode"])));
-            result.Position = Convert.ToInt32(JobDict["JobPosition"]);
-            result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
             result.IsDicative = (Convert.ToInt32(JobDict["IsDicative"]) == 1);
-            result.IsPreview = (Convert.ToInt32(JobDict["IsPreview"]) == 1);
+            result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
+            
             result.InFrame = Convert.ToInt32(JobDict["InFrame"]);
             result.OutFrame = Convert.ToInt32(JobDict["OutFrame"]);
-            result.PreviewFrame = Convert.ToInt32(JobDict["PreviewFrame"]);
             result.AccountID = Convert.ToInt32(JobDict["AccountID"]);
 
             if (result.IsDicative == false)
             {
                 result.MasterProductID = Convert.ToInt32(JobDict["MasterProductID"]);
                 result.CanReformat = (Convert.ToInt32(JobDict["CanReformat"]) == 1);
+                result.IsPreview = (Convert.ToInt32(JobDict["IsPreview"]) == 1);
+                result.Position = Convert.ToInt32(JobDict["JobPosition"]);
+                result.PreviewFrame = Convert.ToInt32(JobDict["PreviewFrame"]);
 
                 //product preview clips do not receive motifs
                 if (result.IsPreview == false)
                 {
-                    JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["JobStatus"]));
+                        result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["JobErrorCode"])));
+                        JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["JobStatus"]));
 
                     //Only accept new job status as such if it isn't currently being rendered and a render id has been saved before,
                     //otherwise: set job to JS_GET_JOB_ID in order to read job id from deadline
@@ -76,6 +77,9 @@ namespace VirtualCampaign_Manager.Parsers
             {
                 result.MasterProductID = -1;
                 result.SetStatus(JobStatus.JS_DONE);
+                result.SetErrorStatus(JobErrorStatus.JES_NONE);
+                result.Position = Convert.ToInt32(JobDict["Position"]);
+
             }
 
             result.MotifList = new List<Motif>();

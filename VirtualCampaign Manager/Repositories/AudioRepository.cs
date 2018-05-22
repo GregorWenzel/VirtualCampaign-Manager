@@ -22,7 +22,8 @@ namespace VirtualCampaign_Manager.Repositories
             if (audioDictString.Count == 0)
                 return null;
             else
-                return audioDictString[1];
+                //DEBUG: Check indexing
+                return audioDictString[audioDictString.Count - 1];
         }
     }
 }

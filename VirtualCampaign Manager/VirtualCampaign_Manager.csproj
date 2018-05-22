@@ -301,6 +301,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libraries\ComponentPro.Common.dll" />
+    <Content Include="Libraries\MongoDB.Bson.dll" />
+    <Content Include="Libraries\MongoDB.Driver.Core.dll" />
+    <Content Include="Libraries\MongoDB.Driver.dll" />
+    <Content Include="Libraries\MongoDB.Driver.GridFS.dll" />
+    <Content Include="Libraries\MongoDB.Driver.Legacy.dll" />
     <Resource Include="Refractoring Brain Storm.txt" />
     <Resource Include="Libraries\ComponentPro.Common.xml" />
     <Content Include="Libraries\ComponentPro.FileSystem.dll" />
@@ -314,21 +319,6 @@
     <Content Include="Libraries\Magick.NET-Q16-HDRI-x64.dll" />
     <Content Include="Libraries\Magick.NET-Q16-HDRI-x64.Native.dll" />
     <Resource Include="Libraries\Magick.NET-Q16-HDRI-x64.xml" />
-    <Content Include="Libraries\MongoDB.Bson.dll" />
-    <Content Include="Libraries\MongoDB.Bson.pdb" />
-    <Resource Include="Libraries\MongoDB.Bson.xml" />
-    <Content Include="Libraries\MongoDB.Driver.Core.dll" />
-    <Content Include="Libraries\MongoDB.Driver.Core.pdb" />
-    <Resource Include="Libraries\MongoDB.Driver.Core.xml" />
-    <Content Include="Libraries\MongoDB.Driver.dll" />
-    <Content Include="Libraries\MongoDB.Driver.GridFS.dll" />
-    <Content Include="Libraries\MongoDB.Driver.GridFS.pdb" />
-    <Resource Include="Libraries\MongoDB.Driver.GridFS.xml" />
-    <Content Include="Libraries\MongoDB.Driver.Legacy.dll" />
-    <Content Include="Libraries\MongoDB.Driver.Legacy.pdb" />
-    <Resource Include="Libraries\MongoDB.Driver.Legacy.xml" />
-    <Content Include="Libraries\MongoDB.Driver.pdb" />
-    <Resource Include="Libraries\MongoDB.Driver.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HelperFunctions\HelperFunctions.csproj">

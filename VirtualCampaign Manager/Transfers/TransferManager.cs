@@ -63,17 +63,14 @@ namespace VirtualCampaign_Manager.Transfers
             }
         }
 
-        private void InitiateTransfer(TransferPacket packet)
+        private void AddEventHandlers(TransferPacket packet)
         {
-            packet.IsInTransit = true;
-
             switch (packet.Type)
             {
                 case TransferType.DownloadAnimatedMotif:
                 case TransferType.DownloadAudio:
                 case TransferType.DownloadMotif:
                     packet.Client.DownloadFileCompleted += Client_DownloadFileCompleted;
-                    packet.Client.DownloadFileAsync(packet.SourcePath, packet.TargetPath, packet);
                     break;
                 case TransferType.UploadFilmDirectory:
                 case TransferType.UploadFilmPreviewDirectory:
@@ -81,10 +78,32 @@ namespace VirtualCampaign_Manager.Transfers
                 case TransferType.UploadProductPreviewDirectory:
                     packet.Client.UploadFileCompleted += Client_UploadFileCompleted;
                     packet.Client.UploadDirectoryCompleted += Client_UploadDirectoryCompleted;
-                    packet.Client.UploadDirectoryAsync(packet.SourcePath, packet.TargetPath, packet);
                     break;
                 case TransferType.UploadMotifPreview:
                     packet.Client.UploadFileCompleted += Client_UploadFileCompleted;
+                    break;
+            }
+        }
+
+        private void InitiateTransfer(TransferPacket packet)
+        {
+            AddEventHandlers(packet);
+            packet.IsInTransit = true;
+
+            switch (packet.Type)
+            {
+                case TransferType.DownloadAnimatedMotif:
+                case TransferType.DownloadAudio:
+                case TransferType.DownloadMotif:
+                    packet.Client.DownloadFileAsync(packet.SourcePath, packet.TargetPath, packet);
+                    break;
+                case TransferType.UploadFilmDirectory:
+                case TransferType.UploadFilmPreviewDirectory:
+                case TransferType.UploadProductDirectory:
+                case TransferType.UploadProductPreviewDirectory:
+                    packet.Client.UploadDirectoryAsync(packet.SourcePath, packet.TargetPath, packet);
+                    break;
+                case TransferType.UploadMotifPreview:
                     packet.Client.UploadFileAsync(packet.SourcePath, packet.TargetPath, packet);
                     break;
             }
@@ -121,15 +140,25 @@ namespace VirtualCampaign_Manager.Transfers
         { 
             if (packet != null)
             {
-                transferList.Remove(packet);
                 packet.IsInTransit = false;
+
                 if (error == null)
                 {
+                    transferList.Remove(packet);
                     packet.RaiseSuccessEvent();
                 }
                 else
                 {
-                    packet.RaiseFailureEvent();
+                    packet.TransferErrorCounter += 1;
+                    if (packet.TransferErrorCounter > Settings.MaxTransferErrorCount)
+                    {
+                        transferList.Remove(packet);
+                        packet.RaiseFailureEvent();
+                    }
+                    else
+                    {
+
+                    }
                 }
             }
 

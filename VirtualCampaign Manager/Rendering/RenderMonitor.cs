@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -40,8 +41,10 @@ namespace VirtualCampaign_Manager.Rendering
         {
             timer.Stop();
 
-            client = new MongoClient(@"mongodb://SERVER-A:27080");
-            database = client.GetDatabase("deadline8db");
+            client = new MongoClient(@"mongodb://SERVER-A:27100");
+            database = client.GetDatabase("deadline10db");
+
+            database = client.GetDatabase("deadline10db");
             var jobCollection = database.GetCollection<BsonDocument>("Jobs");
             var taskCollection = database.GetCollection<BsonDocument>("JobTasks");
             BsonDocument jobDoc = null;
