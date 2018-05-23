@@ -10,6 +10,25 @@ namespace VirtualCampaign_Manager.Repositories
 {
     public static class ProductionRepository
     {
+        public static string ManageHeartbeat()
+        {
+            Dictionary<string, string> param = new Dictionary<string, string>
+            {
+                { "MachineName", GlobalValues.MachineName },
+                { "CurrentTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
+                { "Message", "none" },
+                { "IsActive", GlobalValues.IsActive.ToString() }
+
+            };
+
+            string heartBeatString = RemoteDataManager.ExecuteRequest("sendHeartbeat", param);
+            List<Dictionary<string, string>> heartbeatDict = JsonDeserializer.Deserialize(heartBeatString);
+
+            Dictionary<string, string> activeMachine = heartbeatDict.OrderBy(item => item["priority"]).First();
+
+            return activeMachine["machinename"];
+        }
+
         public static List<AnimatedMotif> ReadAnimatedMotifs()
         {
             List<AnimatedMotif> result = new List<AnimatedMotif>();

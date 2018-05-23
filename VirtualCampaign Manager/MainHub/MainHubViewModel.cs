@@ -116,6 +116,12 @@ namespace VirtualCampaign_Manager.MainHub
         {
             productionsTimer.Stop();
 
+            string activeMachineName = ProductionRepository.ManageHeartbeat();
+
+            if (activeMachineName != GlobalValues.MachineName) return;
+
+            GlobalValues.IsActive = 1;
+
             ProductionRepository.ReadProductions();
 
             foreach (Production newProduction in GlobalValues.ProductionList)

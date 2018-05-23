@@ -18,6 +18,10 @@ namespace VirtualCampaign_Manager
         //Event called after a production has finished
         public static EventHandler<EventArgs> ProductionFinishedEvent;
 
+        public static string MachineName;
+
+        public static int IsActive = 0;
+
         public static LogWindow LogWindow = new LogWindow();
 
         private static ObservableCollection<Production> productionList = new ObservableCollection<Production>();
@@ -147,6 +151,11 @@ namespace VirtualCampaign_Manager
                 RenderQueueCount = 99;
 
             return RenderQueueCount;
+        }
+
+        static GlobalValues()
+        {
+            MachineName = System.Environment.MachineName;
         }
 
     }
