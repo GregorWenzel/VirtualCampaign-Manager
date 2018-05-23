@@ -23,8 +23,16 @@ namespace VirtualCampaign_Manager.Repositories
 
             string heartBeatString = RemoteDataManager.ExecuteRequest("sendHeartbeat", param);
             List<Dictionary<string, string>> heartbeatDict = JsonDeserializer.Deserialize(heartBeatString);
+            Dictionary<string, string> activeMachine;
 
-            Dictionary<string, string> activeMachine = heartbeatDict.OrderBy(item => item["priority"]).First();
+            if (heartbeatDict.Any(item => item["force_active"] == "1"))
+            {
+                activeMachine = heartbeatDict.Where(item => item["force_active"] == "1").OrderBy(item => item["priority"]).First();
+            }
+            else
+            {
+                activeMachine = heartbeatDict.OrderBy(item => item["priority"]).First();
+            }
 
             return activeMachine["machinename"];
         }
