@@ -6,7 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Telerik.Windows.Controls;
 using VirtualCampaign_Manager.Data;
@@ -24,6 +26,37 @@ namespace VirtualCampaign_Manager.MainHub
         private HistoryWindowViewModel historyWindowViewModel;
 
         public ICommand ShowHistoryCommand { get; set; }
+
+        public string LocalMachineName
+        {
+            get
+            {
+                return GlobalValues.LocalMachineName;
+            }
+        }
+
+        public string ActiveMachineName
+        {
+            get
+            {
+                return GlobalValues.ActiveMachineName;
+            }
+        }
+
+        public SolidColorBrush MachineNameColor
+        {
+            get
+            {
+                if (GlobalValues.IsActive == 1)
+                {
+                    return Brushes.Green;
+                }
+                else
+                {
+                    return Brushes.Black;
+                }
+            }
+        }
 
         private ObservableCollection<AnimatedMotif> animatedMotifList;
 
@@ -116,30 +149,38 @@ namespace VirtualCampaign_Manager.MainHub
         {
             productionsTimer.Stop();
 
-            string activeMachineName = ProductionRepository.ManageHeartbeat();
+            GlobalValues.ActiveMachineName = ProductionRepository.ManageHeartbeat();
+            RaisePropertyChangedEvent("ActiveMachineName");
+            RaisePropertyChangedEvent("MachineNameColor");
 
-            if (activeMachineName != GlobalValues.MachineName) return;
-
-            GlobalValues.IsActive = 1;
-
-            ProductionRepository.ReadProductions();
-
-            foreach (Production newProduction in GlobalValues.ProductionList)
+            if (GlobalValues.ActiveMachineName == GlobalValues.LocalMachineName)
             {
-                if (newProduction.HasStarted) continue;
+                GlobalValues.IsActive = 1;
 
-                newProduction.SuccessEvent += OnProductionSuccess;
-                foreach (Job newJob in newProduction.JobList)
+                ProductionRepository.ReadProductions();
+
+                foreach (Production newProduction in GlobalValues.ProductionList)
                 {
-                    if (GlobalValues.JobList.Any(item => item.ID == newJob.ID) == false)
+                    if (newProduction.HasStarted) continue;
+
+                    newProduction.SuccessEvent += OnProductionSuccess;
+                    foreach (Job newJob in newProduction.JobList)
                     {
-                        GlobalValues.JobList.Add(newJob);
+                        if (GlobalValues.JobList.Any(item => item.ID == newJob.ID) == false)
+                        {
+                            GlobalValues.JobList.Add(newJob);
+                        }
                     }
+                    newProduction.StartWorker();
                 }
-                newProduction.StartWorker();
+
+                LastUpdateTime = DateTime.Now;
+            }
+            else
+            {
+                GlobalValues.IsActive = 0;
             }
 
-            LastUpdateTime = DateTime.Now;
             productionsTimer.Start();
         }
 

@@ -28,8 +28,7 @@ namespace VirtualCampaign_Manager.MainHub
 
         private void MainHubWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            this.ParentOfType<Window>().ShowInTaskbar = true;
-            this.Header = Settings.ServerUrl + " (" + GlobalValues.MachineName + ")";
+            this.ParentOfType<Window>().ShowInTaskbar = true;           
         }
     }
 }

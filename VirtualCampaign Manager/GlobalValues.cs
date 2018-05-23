@@ -18,7 +18,9 @@ namespace VirtualCampaign_Manager
         //Event called after a production has finished
         public static EventHandler<EventArgs> ProductionFinishedEvent;
 
-        public static string MachineName;
+        public static string LocalMachineName;
+
+        public static string ActiveMachineName = "unknown";
 
         public static int IsActive = 0;
 
@@ -155,7 +157,7 @@ namespace VirtualCampaign_Manager
 
         static GlobalValues()
         {
-            MachineName = System.Environment.MachineName;
+            LocalMachineName = System.Environment.MachineName;
         }
 
     }

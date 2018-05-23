@@ -14,7 +14,7 @@ namespace VirtualCampaign_Manager.Repositories
         {
             Dictionary<string, string> param = new Dictionary<string, string>
             {
-                { "MachineName", GlobalValues.MachineName },
+                { "MachineName", GlobalValues.LocalMachineName },
                 { "CurrentTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
                 { "Message", "none" },
                 { "IsActive", GlobalValues.IsActive.ToString() }
