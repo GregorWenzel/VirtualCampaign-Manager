@@ -21,12 +21,12 @@ namespace VirtualCampaign_Manager
         public EventHandler<EventArgs> SuccessEvent;
         public EventHandler<ResultEventArgs> FailureEvent;
 
-        protected void FireSuccessEvent()
+        public void FireSuccessEvent()
         {
             SuccessEvent?.Invoke(this, new EventArgs());
         }
 
-        protected void FireFailureEvent(object ResultObject = null)
+        public void FireFailureEvent(object ResultObject = null)
         {
             FailureEvent?.Invoke(this, new ResultEventArgs(ResultObject));
         }

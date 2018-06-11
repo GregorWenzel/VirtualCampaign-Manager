@@ -16,6 +16,7 @@ namespace VirtualCampaign_Manager.Parsers
             {
                 int newProductionID = Convert.ToInt32(production["ProductionID"]);
                 Production thisProduction;
+
                 if (GlobalValues.ProductionList.Any(item => item.ID == newProductionID) == false)
                 {
                     thisProduction = Parse(production);
@@ -30,8 +31,7 @@ namespace VirtualCampaign_Manager.Parsers
                 Job thisJob;
                 if (thisProduction.JobList.Any(item => item.ID == newJobID) == false)
                 {
-                    thisJob = JobParser.Parse(production);
-                    thisJob.Production = thisProduction;
+                    thisJob = JobParser.Parse(production, thisProduction);
                     thisProduction.JobList.Add(thisJob);
                     GlobalValues.JobList.Add(thisJob);
                 }
@@ -50,6 +50,8 @@ namespace VirtualCampaign_Manager.Parsers
                         thisJob.MotifList.Add(newMotif);
                     }
                 }
+
+                thisProduction.JobList[0].RaisePropertyChangedEvent("ProductionProgress");
             }
 
             foreach (Production production in GlobalValues.ProductionList)

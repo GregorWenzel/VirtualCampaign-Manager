@@ -38,9 +38,9 @@ namespace VirtualCampaign_Manager
             }
         }
 
-        private static ObservableCollection<Production> productionHistoryList = new ObservableCollection<Production>();
+        private static ObservableCollection<ProductionHistoryItem> productionHistoryList = new ObservableCollection<ProductionHistoryItem>();
 
-        public static ObservableCollection<Production> ProductionHistoryList
+        public static ObservableCollection<ProductionHistoryItem> ProductionHistoryList
         {
             get { return productionHistoryList; }
             set

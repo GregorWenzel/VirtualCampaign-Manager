@@ -154,7 +154,7 @@ namespace VirtualCampaign_Manager.MainHub
             RaisePropertyChangedEvent("MachineNameColor");
 
             if (GlobalValues.ActiveMachineName == GlobalValues.LocalMachineName)
-            {
+            {              
                 GlobalValues.IsActive = 1;
 
                 ProductionRepository.ReadProductions();
@@ -179,6 +179,10 @@ namespace VirtualCampaign_Manager.MainHub
             else
             {
                 GlobalValues.IsActive = 0;
+
+                //clear productions after turning off the current manager 
+                GlobalValues.ProductionList.Clear();
+                
             }
 
             productionsTimer.Start();
@@ -188,22 +192,27 @@ namespace VirtualCampaign_Manager.MainHub
         {
             Production production = sender as Production;
             production.SuccessEvent -= OnProductionSuccess;
+
             if (GlobalValues.ProductionList.Any(item => item.ID == production.ID))
             {
                 App.Current.Dispatcher.Invoke((Action)delegate
                 {
-                    GlobalValues.ProductionHistoryList.Add(production);
+                    GlobalValues.ProductionHistoryList.Add(new ProductionHistoryItem(production));
                 });
 
                 GlobalValues.ProductionList.Remove(production);
 
-                foreach (Job job in production.JobList)
+                for (int i=0; i<production.JobList.Count; i++)
                 {
+                    Job job = production.JobList[i];
                     if (GlobalValues.JobList.Any(item => item.ID == job.ID))
                     {
                         GlobalValues.JobList.Remove(job);
+                        job = null;
                     }
                 }
+
+                production = null;
             }
         }
 

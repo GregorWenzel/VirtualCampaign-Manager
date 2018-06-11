@@ -298,7 +298,17 @@ namespace VirtualCampaign_Manager.Data
 
         public float Progress
         {
-            get { return progress; }
+            get
+            {
+                if (IsDicative == false)
+                {
+                    return progress;
+                }
+                else
+                {
+                    return 100;
+                }
+            }
             set
             {
                 if (value == progress) return;
@@ -436,7 +446,16 @@ namespace VirtualCampaign_Manager.Data
 
         private void OnWorkerSuccess(object sender, EventArgs ea)
         {
-            worker.SuccessEvent -= OnWorkerSuccess;
+            if (worker != null)
+            {
+                worker.SuccessEvent -= OnWorkerSuccess;
+
+                if (workerThread != null)
+                {
+                    workerThread.Abort();
+                }
+            }
+            logger.ClearLog();
 
             FireSuccessEvent();
         }

@@ -119,18 +119,17 @@ namespace VirtualCampaign_Manager.Workers
 
             foreach (Motif motif in job.MotifList)
             {
-                //check if the same transfer is already in progress (first job with the same motif id)
-                if (job.MotifList.First(item => item.ID == motif.ID).IsInTransit) continue;
+                //check if the same transfer is already in progress (any job with the same motif id)
+                if (job.Production.IsMotifInTransit(motif)) continue;
 
                 motif.IsInTransit = true;
+                motif.Job = job;
 
                 TransferPacket motifTransferPacket = new TransferPacket(job, motif);
+                motifTransferPacket.FailureEvent += OnMotifTransferFailure;
+                motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
 
-                TransferManager transferManager = new TransferManager(motifTransferPacket);
-
-                transferManager.FailureEvent += OnMotifTransferFailure;
-                transferManager.SuccessEvent += OnMotifTransferSuccess;
-                transferManager.Transfer();
+                TransferQueueManager.Instance.AddTransferPacket(motifTransferPacket);
             }
         }
 
@@ -142,6 +141,7 @@ namespace VirtualCampaign_Manager.Workers
                 job.Status = JobStatus.JS_SEND_RENDER_JOB;
                 Work();
             }
+            renderFilePreparer = null;
         }
 
         private void RenderJob()
@@ -228,16 +228,14 @@ namespace VirtualCampaign_Manager.Workers
         
         private void OnMotifTransferSuccess(object obj, EventArgs ea)
         {
-            TransferManager transferManager = obj as TransferManager;
-            TransferPacket motifTransferPacket = transferManager.Packet;
-
-            transferManager.FailureEvent -= OnMotifTransferFailure;
-            transferManager.SuccessEvent -= OnMotifTransferSuccess;
-            transferManager = null;
+            TransferPacket motifTransferPacket = obj as TransferPacket;
+            motifTransferPacket.FailureEvent -= OnMotifTransferFailure;
+            motifTransferPacket.SuccessEvent -= OnMotifTransferSuccess;
 
             Motif motif = motifTransferPacket.Parent as Motif;
             if (motif != null)
             {
+                motif.IsInTransit = false;
                 if (motif.IsMovie)
                 {
                     if (MotifTranscoder.Extract(job, motif) != true)
@@ -258,22 +256,12 @@ namespace VirtualCampaign_Manager.Workers
 
         public void SetMotifAvailable(Motif motif)
         {
-            int motifsReadyCount = 0;
+            job.MotifList.Where(item => item.ID == motif.ID).ToList().ForEach(item => item.IsAvailable = true);
+            job.MotifList.Where(item => item.ID == motif.ID).ToList().ForEach(item => item.Frames = motif.Frames);
 
-            foreach (Motif thisMotif in job.MotifList)
-            {
-                if (thisMotif.ID == motif.ID)
-                {
-                    thisMotif.IsAvailable = true;
-                }
+            int motifsReadyCount = job.MotifList.Where(item => item.IsAvailable == true).Count();
 
-                if (thisMotif.IsAvailable)
-                {
-                    motifsReadyCount++;
-                }
-            }
-
-            if (motifsReadyCount == job.MotifList.Count)
+            if (motifsReadyCount == job.MotifList.Count && job.Status == JobStatus.JS_PREPARE_RESOURCES)
             {
                 job.Status = JobStatus.JS_CREATE_RENDERFILES;
                 Work();
@@ -282,12 +270,15 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnMotifTransferFailure(object obj, EventArgs ea)
         {
-            TransferManager transferManager = obj as TransferManager;
-            TransferPacket motifTransferPacket = transferManager.Packet;
+            TransferPacket motifTransferPacket = obj as TransferPacket;
+            motifTransferPacket.FailureEvent -= OnMotifTransferFailure;
+            motifTransferPacket.SuccessEvent -= OnMotifTransferSuccess;
+            Motif motif = motifTransferPacket.Parent as Motif;
 
-            transferManager.FailureEvent -= OnMotifTransferFailure;
-            transferManager.SuccessEvent -= OnMotifTransferSuccess;
-            transferManager = null;
+            if (motif != null)
+            {
+                motif.IsInTransit = false;
+            }
 
             job.ErrorStatus = JobErrorStatus.JES_DOWNLOAD_MOTIFS;
             FireFailureEvent();

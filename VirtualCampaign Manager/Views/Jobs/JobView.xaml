@@ -19,6 +19,10 @@
             <telerik:RadGridView.GroupDescriptors>
                 <telerik:GroupDescriptor Member="ProductionID" SortDirection="Descending" />
             </telerik:RadGridView.GroupDescriptors>
+            <telerik:RadGridView.SortDescriptors>
+                <telerik:SortDescriptor Member="ProductionID" SortDirection="Ascending" />
+                <telerik:SortDescriptor Member="Position" SortDirection="Ascending" />
+            </telerik:RadGridView.SortDescriptors>
             <telerik:RadGridView.GroupHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

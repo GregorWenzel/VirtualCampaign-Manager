@@ -20,7 +20,7 @@ namespace VirtualCampaign_Manager
         //max number of parallel download threads
         public static int MaxDownloadThreads = 3;
         //max number of failed transfers before giving up
-        public static int MaxTransferErrorCount = 3;
+        public static int MaxTransferErrorCount = 10;
 
         //Paths to local file system     
         //Base path to local files (data, tools, ressources)

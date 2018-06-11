@@ -9,31 +9,42 @@ using VirtualCampaign_Manager.Helpers;
 
 namespace VirtualCampaign_Manager.Transfers
 {
-    public sealed class TransferManager : EventFireBase
+    public sealed class _TransferManager : EventFireBase
     {
         private Sftp client;
         public TransferPacket Packet;
+        private int connectionAttempts = 0;
 
-        public TransferManager(TransferPacket packet)
+        public _TransferManager(TransferPacket packet)
         {
             this.Packet = packet;
         }
 
-        public void Transfer()
+        public void Transfer(bool addEventHandlers = true)
         {
-            bool connected = Connectclient();
-
-            if (connected)
+            while (connectionAttempts <= Settings.MaxTransferErrorCount)
             {
-                AddEventHandlers();
-                InitiateTransfer();
-            }
-            else
-            {
+                Exception clientException = Connectclient();
 
+                if (clientException == null)
+                {
+                    if (addEventHandlers)
+                    {
+                        AddEventHandlers();
+                    }
+                    InitiateTransfer();
+                    break;
+                }
+                
+                Console.WriteLine("Connection to " + Packet.LoginData.Url + " failed: " + clientException.Message);
+
+                connectionAttempts += 1;
+
+                Console.WriteLine("Retry attempt no. " + connectionAttempts);
+                
             }
         }
-        
+
         private void AddEventHandlers()
         {
             switch (Packet.Type)
@@ -103,54 +114,46 @@ namespace VirtualCampaign_Manager.Transfers
 
         private void Client_UploadDirectoryCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<ComponentPro.IO.FileSystemTransferStatistics> e)
         {
-            client.UploadDirectoryCompleted -= Client_UploadDirectoryCompleted;
             client.Disconnect();
-
             HandleFinishedTransfer(e.Error);
         }
 
         private void Client_UploadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
         {
-            Sftp client = sender as Sftp;
-            client.UploadFileCompleted -= Client_UploadFileCompleted;
             client.Disconnect();
-
             HandleFinishedTransfer(e.Error);
         }
 
         private void Client_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
         {
-            Sftp client = sender as Sftp;
-            client.DownloadFileCompleted -= Client_DownloadFileCompleted;
             client.Disconnect();
-
             HandleFinishedTransfer(e.Error);
         }
 
         private void HandleFinishedTransfer(Exception error)
-        { 
-            if (Packet != null)
-            {
-                Packet.IsInTransit = false;
+        {
+            Packet.IsInTransit = false;
 
-                if (error == null)
+            if (error == null)
+            {
+                RemoveEventHandlers();
+                FireSuccessEvent();
+            }
+            else
+            {
+                Console.WriteLine("Transfer Error: " + error.Message + " for packet " + Packet.SourcePath + " -> " + Packet.TargetPath);
+                Packet.TransferErrorCounter += 1;
+                if (Packet.TransferErrorCounter > Settings.MaxTransferErrorCount)
                 {
                     RemoveEventHandlers();
-                    FireSuccessEvent();
+                    FireFailureEvent();
+                    return;
                 }
-                else
-                {
-                    Packet.TransferErrorCounter += 1;
-                    if (Packet.TransferErrorCounter > Settings.MaxTransferErrorCount)
-                    {
-                        RemoveEventHandlers();
-                        FireFailureEvent();
-                    }
-                }
+                Transfer(false);
             }
         }
 
-        private bool Connectclient()
+        private Exception Connectclient()
         {
             //initialize new Sftp connection
             client = new Sftp();
@@ -164,7 +167,8 @@ namespace VirtualCampaign_Manager.Transfers
             }
             catch (Exception ex)
             {
-                return false;
+                client.Disconnect();
+                return ex;
             }
 
             //authenticate user
@@ -174,10 +178,11 @@ namespace VirtualCampaign_Manager.Transfers
             }
             catch (Exception ex)
             {
-                return false;
+                client.Disconnect();
+                return ex;
             }
 
-            return true;
+            return null;
         }
     }
 }

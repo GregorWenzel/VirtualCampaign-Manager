@@ -22,6 +22,8 @@ namespace VirtualCampaign_Manager.Repositories
             };
 
             string heartBeatString = RemoteDataManager.ExecuteRequest("sendHeartbeat", param);
+            if (heartBeatString.Length == 0) return GlobalValues.ActiveMachineName;
+            
             List<Dictionary<string, string>> heartbeatDict = JsonDeserializer.Deserialize(heartBeatString);
             Dictionary<string, string> activeMachine;
 

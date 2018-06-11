@@ -35,6 +35,7 @@ namespace VirtualCampaign_Manager.Data
 
         public void Reset()
         {
+            IsInTransit = false;
             if (OriginalExtension != null && OriginalExtension.Length > 0)
             {
                 Extension = OriginalExtension;

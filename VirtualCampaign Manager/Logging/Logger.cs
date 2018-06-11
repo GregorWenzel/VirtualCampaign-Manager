@@ -32,6 +32,11 @@ namespace VirtualCampaign_Manager.Logging
             this.job = job;
         }
 
+        public void ClearLog()
+        {
+            logLines.Clear();
+        }
+
         //log text to visual log, console and log file
         public void LogText(string text)
         {

@@ -30,10 +30,10 @@ namespace VirtualCampaign_Manager.Parsers
             return result;
         }
 
-        public static Job Parse(Dictionary<string, string> JobDict)
+        public static Job Parse(Dictionary<string, string> JobDict, Production CurrentProduction)
         {
             Job result = new Job();
-
+            result.Production = CurrentProduction;
             result.ID = Convert.ToInt32(JobDict["JobID"]);
             result.IsDicative = (Convert.ToInt32(JobDict["IsDicative"]) == 1);
             result.ProductID = Convert.ToInt32(JobDict["ProductID"]);
@@ -53,8 +53,8 @@ namespace VirtualCampaign_Manager.Parsers
                 //product preview clips do not receive motifs
                 if (result.IsPreview == false)
                 {
-                        result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["JobErrorCode"])));
-                        JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["JobStatus"]));
+                    result.SetErrorStatus((JobErrorStatus)Enum.ToObject(typeof(JobErrorStatus), Convert.ToInt32(JobDict["JobErrorCode"])));
+                    JobStatus currentStatus = (JobStatus)Enum.ToObject(typeof(JobStatus), Convert.ToInt32(JobDict["JobStatus"]));
 
                     //Only accept new job status as such if it isn't currently being rendered and a render id has been saved before,
                     //otherwise: set job to JS_GET_JOB_ID in order to read job id from deadline
@@ -76,10 +76,10 @@ namespace VirtualCampaign_Manager.Parsers
             else
             {
                 result.MasterProductID = -1;
+                result.Position = Convert.ToInt32(JobDict["Position"]);
                 result.SetStatus(JobStatus.JS_DONE);
                 result.SetErrorStatus(JobErrorStatus.JES_NONE);
-                result.Position = Convert.ToInt32(JobDict["Position"]);
-
+                result.Progress = 100;
             }
 
             result.MotifList = new List<Motif>();

@@ -12,9 +12,9 @@ namespace VirtualCampaign_Manager.Views.History
     public class HistoryWindowViewModel : INotifyPropertyChanged
     {
 
-        private ObservableCollection<Production> productionHistoryList = new ObservableCollection<Production>();
+        private ObservableCollection<ProductionHistoryItem> productionHistoryList = new ObservableCollection<ProductionHistoryItem>();
 
-        public ObservableCollection<Production> ProductionHistoryList
+        public ObservableCollection<ProductionHistoryItem> ProductionHistoryList
         {
             get { return GlobalValues.ProductionHistoryList; }
             set

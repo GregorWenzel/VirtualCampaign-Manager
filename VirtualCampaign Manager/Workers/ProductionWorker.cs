@@ -166,16 +166,22 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnAudioEncoderSuccess(object sender, EventArgs ea)
         {
-            (sender as AudioEncoder).SuccessEvent -= OnAudioEncoderSuccess;
-            (sender as AudioEncoder).FailureEvent -= OnAudioEncoderFailure;
+            AudioEncoder audioEncoder = (sender as AudioEncoder);
+            audioEncoder.SuccessEvent -= OnAudioEncoderSuccess;
+            audioEncoder.FailureEvent -= OnAudioEncoderFailure;
+            audioEncoder = null;
+
             production.Status = ProductionStatus.PS_JOIN_CLIPS;
             Work();
         }
 
         private void OnAudioEncoderFailure(object sender, ResultEventArgs ea)
         {
-            (sender as AudioEncoder).SuccessEvent -= OnAudioEncoderSuccess;
-            (sender as AudioEncoder).FailureEvent -= OnAudioEncoderFailure;
+            AudioEncoder audioEncoder = (sender as AudioEncoder);
+            audioEncoder.SuccessEvent -= OnAudioEncoderSuccess;
+            audioEncoder.FailureEvent -= OnAudioEncoderFailure;
+            audioEncoder = null;
+
             production.ErrorStatus = (ProductionErrorStatus)ea.Result;
             FireFailureEvent();
         }
@@ -190,16 +196,22 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnClipJoinerSuccess(object sender, EventArgs ea)
         {
-            (sender as ClipJoiner).SuccessEvent -= OnClipJoinerSuccess;
-            (sender as ClipJoiner).FailureEvent -= OnClipJoinerFailure;
+            ClipJoiner clipJoiner = (sender as ClipJoiner);
+            clipJoiner.SuccessEvent -= OnClipJoinerSuccess;
+            clipJoiner.FailureEvent -= OnClipJoinerFailure;
+            clipJoiner = null;
+
             production.Status = ProductionStatus.PS_ENCODE_FILMS;
             Work();
         }
 
         private void OnClipJoinerFailure(object sender, ResultEventArgs ea)
         {
-            (sender as ClipJoiner).SuccessEvent -= OnClipJoinerSuccess;
-            (sender as ClipJoiner).FailureEvent -= OnClipJoinerFailure;
+            ClipJoiner clipJoiner = (sender as ClipJoiner);
+            clipJoiner.SuccessEvent -= OnClipJoinerSuccess;
+            clipJoiner.FailureEvent -= OnClipJoinerFailure;
+            clipJoiner = null;
+
             production.ErrorStatus = (ProductionErrorStatus)ea.Result;
             FireFailureEvent();
         }
@@ -214,16 +226,22 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnFilmEncoderFailure(object sender, ResultEventArgs ea)
         {
-            (sender as FilmEncoder).SuccessEvent -= OnFilmEncoderSuccess;
-            (sender as FilmEncoder).FailureEvent -= OnFilmEncoderFailure;
+            FilmEncoder filmEncoder = (sender as FilmEncoder);
+            filmEncoder.SuccessEvent -= OnFilmEncoderSuccess;
+            filmEncoder.FailureEvent -= OnFilmEncoderFailure;
+            filmEncoder = null;
+
             production.ErrorStatus = (ProductionErrorStatus)ea.Result;
             FireFailureEvent();
         }
 
         private void OnFilmEncoderSuccess(object sender, EventArgs ea)
         {
-            (sender as FilmEncoder).SuccessEvent -= OnFilmEncoderSuccess;
-            (sender as FilmEncoder).FailureEvent -= OnFilmEncoderFailure;
+            FilmEncoder filmEncoder = (sender as FilmEncoder);
+            filmEncoder.SuccessEvent -= OnFilmEncoderSuccess;
+            filmEncoder.FailureEvent -= OnFilmEncoderFailure;
+            filmEncoder = null;
+
             production.Status = ProductionStatus.PS_UPLOAD_FILMS;
             Work();
         }
@@ -238,16 +256,22 @@ namespace VirtualCampaign_Manager.Workers
 
         private void OnFilmUploaderFailure(object sender, ResultEventArgs ea)
         {
-            (sender as FilmUploader).SuccessEvent -= OnFilmUploaderSuccess;
-            (sender as FilmUploader).FailureEvent -= OnFilmUploaderFailure;
+            FilmUploader filmUploader = (sender as FilmUploader);
+            filmUploader.SuccessEvent -= OnFilmUploaderSuccess;
+            filmUploader.FailureEvent -= OnFilmUploaderFailure;
+            filmUploader = null;
+
             production.ErrorStatus = (ProductionErrorStatus)ea.Result;
             FireFailureEvent();
         }
 
         private void OnFilmUploaderSuccess(object sender, EventArgs ea)
         {
-            (sender as FilmUploader).SuccessEvent -= OnFilmUploaderSuccess;
-            (sender as FilmUploader).FailureEvent -= OnFilmUploaderFailure;
+            FilmUploader filmUploader = (sender as FilmUploader);
+            filmUploader.SuccessEvent -= OnFilmUploaderSuccess;
+            filmUploader.FailureEvent -= OnFilmUploaderFailure;
+            filmUploader = null;
+
             production.Status = ProductionStatus.PS_UPDATE_HISTORY;
             Work();
         }

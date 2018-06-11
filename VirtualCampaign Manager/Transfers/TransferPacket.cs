@@ -1,4 +1,5 @@
-﻿using ComponentPro.Net;
+﻿using ComponentPro.IO;
+using ComponentPro.Net;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,7 +25,7 @@ namespace VirtualCampaign_Manager.Transfers
         UploadSubPacket
     }
 
-    public class TransferPacket : INotifyPropertyChanged
+    public class TransferPacket : EventFireBase, INotifyPropertyChanged
     {
         public Object Parent { get; set; }
         private string itemID;
@@ -60,8 +61,8 @@ namespace VirtualCampaign_Manager.Transfers
         public LoginData LoginData { get; set; }
         public Exception TransferExcetpion { get; set; }
         public int TransferErrorCounter { get; set; } = 0;
-        public long TaskToken { get; set; }
-
+        public ProgressFileItem FileItem { get; set; }
+        
         public string Filename
         {
             get
@@ -167,7 +168,22 @@ namespace VirtualCampaign_Manager.Transfers
             Type = TransferType.UploadSubPacket;
             LoginData = parentPacket.LoginData;
         }
-        
+
+        //creates a copy from given transferpacket with that packet as parent
+        public TransferPacket(TransferPacket parentPacket, string filename)
+        {
+            ItemID = "packet_" + parentPacket.ItemID + "_" + parentPacket.RemainingSubPackets;
+            parentPacket.RemainingSubPackets += 1;
+            Parent = parentPacket;
+            SourcePath = Path.Combine(parentPacket.sourcePath, Path.GetFileName(filename));
+
+            string targeDirectory = parentPacket.sourcePath.Split(new char[] { Path.DirectorySeparatorChar }).Last();
+
+            TargetPath = parentPacket.TargetPath + "/" + targeDirectory + "/" + Path.GetFileName(filename);
+            Type = TransferType.UploadSubPacket;
+            LoginData = parentPacket.LoginData;
+        }
+
         //transfers a motif from remote user account to local filesystem
         public TransferPacket(Job job, Motif motif)
         {

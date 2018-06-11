@@ -48,26 +48,24 @@ namespace VirtualCampaign_Manager.Encoding
         private void DownloadAudio()
         {
             TransferPacket audioTransferPacket = new TransferPacket(production, audioData);
-            TransferManager transferManager = new TransferManager(audioTransferPacket);
-            transferManager.FailureEvent += OnAudioTransferFailure;
-            transferManager.SuccessEvent += OnAudioTransferSuccess;
-            transferManager.Transfer();
-
+            audioTransferPacket.FailureEvent += OnAudioTransferFailure;
+            audioTransferPacket.SuccessEvent += OnAudioTransferSuccess;
+            TransferQueueManager.Instance.AddTransferPacket(audioTransferPacket);
         }
 
         private void OnAudioTransferFailure(Object obj, EventArgs ea)
         {
-            TransferManager transferManager = obj as TransferManager;
-            transferManager.FailureEvent -= OnAudioTransferFailure;
-            transferManager.SuccessEvent -= OnAudioTransferSuccess;
+            TransferPacket packet = obj as TransferPacket;
+            packet.FailureEvent -= OnAudioTransferFailure;
+            packet.SuccessEvent -= OnAudioTransferSuccess;
             FireFailureEvent(ProductionErrorStatus.PES_READ_AUDIOFILE);
         }
 
         private void OnAudioTransferSuccess(Object obj, EventArgs ea)
         {
-            TransferManager transferManager = obj as TransferManager;
-            transferManager.FailureEvent -= OnAudioTransferFailure;
-            transferManager.SuccessEvent -= OnAudioTransferSuccess;
+            TransferPacket packet = obj as TransferPacket;
+            packet.FailureEvent -= OnAudioTransferFailure;
+            packet.SuccessEvent -= OnAudioTransferSuccess;
             MuxAudio();
         }
 

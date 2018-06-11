@@ -16,6 +16,25 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <PublishUrl>\\IBT-DATA\web\vc\manager\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://ibt-studios.dyndns.org/vc/manager/</InstallUrl>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>publish.htm</WebPage>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -29,7 +48,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -40,6 +59,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>VirtualCampaign_Manager.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>48D3E7D86347AE4FD563136E5A0CB4D047F1228D</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>VirtualCampaign_Manager_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ComponentPro.Common, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
@@ -148,6 +179,7 @@
     <Compile Include="Data\LoginData.cs" />
     <Compile Include="Data\Motif.cs" />
     <Compile Include="Data\Production.cs" />
+    <Compile Include="Data\ProductionHistoryItem.cs" />
     <Compile Include="Data\RenderChunkStatus.cs" />
     <Compile Include="Data\VCObject.cs" />
     <Compile Include="Encoding\AnimatedMotifDecoder.cs" />
@@ -209,6 +241,7 @@
     <Compile Include="Repositories\ProductionRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Transfers\TransferQueueManager.cs" />
     <Compile Include="Views\History\HistoryWindow.xaml.cs">
       <DependentUpon>HistoryWindow.xaml</DependentUpon>
     </Compile>
@@ -289,6 +322,7 @@
     <None Include="Settings.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="VirtualCampaign_Manager_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libraries\ComponentPro.Common.dll" />
@@ -316,6 +350,13 @@
       <Project>{a5839af3-b6bf-4a8a-afa1-aa22463ae5e2}</Project>
       <Name>HelperFunctions</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

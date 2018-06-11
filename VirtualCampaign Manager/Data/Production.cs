@@ -385,6 +385,19 @@ namespace VirtualCampaign_Manager.Data
                 Priority = GlobalValues.GetNextRenderQueueSlot();
         }
 
+        public bool IsMotifInTransit(Motif motif)
+        {
+            foreach (Job job in JobList)
+            {
+                if (job.MotifList.Any(item => item.ID == motif.ID && item.IsInTransit))
+                {
+                    return true;
+                }                
+            }
+
+            return false;
+        }
+
         public void CheckStatus()
         {
             if (JobList == null) return;
@@ -402,7 +415,10 @@ namespace VirtualCampaign_Manager.Data
         {
             foreach (Job job in JobList)
             {
-                job.SetMotifAvailable(motif);
+                if (job.Status == JobStatus.JS_PREPARE_RESOURCES)
+                {
+                    job.SetMotifAvailable(motif);
+                }
             }
         }
 
@@ -432,9 +448,6 @@ namespace VirtualCampaign_Manager.Data
 
         private void OnProductionSuccess(object sender, EventArgs ea)
         {
-            worker.SuccessEvent -= OnProductionSuccess;
-            workerThread.Abort();
-            workerThread = null;
             CleanUp();
             FireSuccessEvent();
         }
@@ -449,8 +462,7 @@ namespace VirtualCampaign_Manager.Data
                     workerThread.Abort();
                 }
             }
-
-            IOHelper.DeleteDirectory(ProductionPathHelper.GetLocalProductionDirectory(this));
+            logger.ClearLog();
         }
 
         public void Delete()
