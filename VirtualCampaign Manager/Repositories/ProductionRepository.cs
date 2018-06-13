@@ -10,11 +10,11 @@ namespace VirtualCampaign_Manager.Repositories
 {
     public static class ProductionRepository
     {
-        public static string ManageHeartbeat()
+        public static void ManageHeartbeat()
         {
             Dictionary<string, string> param = new Dictionary<string, string>
             {
-                { "MachineName", GlobalValues.LocalMachineName },
+                { "MachineName", GlobalValues.LocalRenderMachine.Name },
                 { "CurrentTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
                 { "Message", "none" },
                 { "IsActive", GlobalValues.IsActive.ToString() }
@@ -22,21 +22,32 @@ namespace VirtualCampaign_Manager.Repositories
             };
 
             string heartBeatString = RemoteDataManager.ExecuteRequest("sendHeartbeat", param);
-            if (heartBeatString.Length == 0) return GlobalValues.ActiveMachineName;
-            
-            List<Dictionary<string, string>> heartbeatDict = JsonDeserializer.Deserialize(heartBeatString);
-            Dictionary<string, string> activeMachine;
+            if (heartBeatString.Length == 0)
+            {
+                GlobalValues.ActiveRenderMachine.Name = GlobalValues.LocalRenderMachine.Name;
+                GlobalValues.ActiveRenderMachine.Id = GlobalValues.LocalRenderMachine.Id;
+            }
 
+            List<Dictionary<string, string>> heartbeatDict = JsonDeserializer.Deserialize(heartBeatString);
+
+            //set local machine data
+            if (heartbeatDict.Any(item => item["machinename"] == GlobalValues.LocalRenderMachine.Name))
+            {
+                GlobalValues.LocalRenderMachine.Id = Convert.ToInt32(heartbeatDict.First(item => item["machinename"] == GlobalValues.LocalRenderMachine.Name)["id"]);
+            }
+
+            Dictionary<string, string> activeMachineDict;
             if (heartbeatDict.Any(item => item["force_active"] == "1"))
             {
-                activeMachine = heartbeatDict.Where(item => item["force_active"] == "1").OrderBy(item => item["priority"]).First();
+                activeMachineDict = heartbeatDict.Where(item => item["force_active"] == "1").OrderBy(item => item["priority"]).First();
             }
             else
             {
-                activeMachine = heartbeatDict.OrderBy(item => item["priority"]).First();
+                activeMachineDict = heartbeatDict.OrderBy(item => item["priority"]).First();
             }
 
-            return activeMachine["machinename"];
+            GlobalValues.ActiveRenderMachine.Name = activeMachineDict["machinename"];
+            GlobalValues.ActiveRenderMachine.Id = Convert.ToInt32(activeMachineDict["id"]);
         }
 
         public static List<AnimatedMotif> ReadAnimatedMotifs()
@@ -83,7 +94,8 @@ namespace VirtualCampaign_Manager.Repositories
 
             Dictionary<string, string> param = new Dictionary<string, string>
             {   { "productionID", production.ID.ToString() },
-                { "updateTime", Convert.ToInt64(span.TotalSeconds).ToString() }
+                { "updateTime", Convert.ToInt64(span.TotalSeconds).ToString() },
+                { "rendermachine_id", GlobalValues.LocalRenderMachine.Id.ToString() }
             };
 
             switch (type)

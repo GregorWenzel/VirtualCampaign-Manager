@@ -73,10 +73,20 @@ namespace VirtualCampaign_Manager
         //Idle Counter for attempts to get render status
         public static int MaxRenderIdleCount;
 
+        //MongoDB
+        public static string MongoServerURL;
+        public static string MongoPort;
+
         static Settings()
         {
-            string localAppPath = AppDomain.CurrentDomain.BaseDirectory;
-            string iniFilePath = Path.Combine(localAppPath, "Settings.ini");
+            string defaultIniFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.ini");
+            string iniFilePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "VC Render Manager", "Settings.ini");
+
+            if (!File.Exists(iniFilePath))
+            {
+                Directory.CreateDirectory(Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "VC Render Manager"));
+                File.Copy(defaultIniFilePath, iniFilePath);
+            }
 
             RenderChunkSize = Convert.ToInt32(IniFileHelper.ReadValue("Constants", "RenderChunkSize", iniFilePath));
             MaxRenderIdleCount = Convert.ToInt32(IniFileHelper.ReadValue("Constants", "MaxRenderIdleCount", iniFilePath));
@@ -112,6 +122,9 @@ namespace VirtualCampaign_Manager
             EmailSender = IniFileHelper.ReadValue("Email", "EmailAddress", iniFilePath);
 
             SALTED = IniFileHelper.ReadValue("RemoteService", "SALTED", iniFilePath);
+
+            MongoServerURL = IniFileHelper.ReadValue("MongoDB", "MongoServer", iniFilePath);
+            MongoPort = IniFileHelper.ReadValue("MongoDB", "MongoPort", iniFilePath);
         }
     }
 }

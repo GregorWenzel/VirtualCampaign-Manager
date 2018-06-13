@@ -15,12 +15,13 @@ namespace VirtualCampaign_Manager
 {
     public static class GlobalValues
     {
+        public static string Version = "3.103";
+
         //Event called after a production has finished
         public static EventHandler<EventArgs> ProductionFinishedEvent;
 
-        public static string LocalMachineName;
-
-        public static string ActiveMachineName = "unknown";
+        public static RenderMachineData LocalRenderMachine;
+        public static RenderMachineData ActiveRenderMachine;
 
         public static int IsActive = 0;
 
@@ -157,7 +158,13 @@ namespace VirtualCampaign_Manager
 
         static GlobalValues()
         {
-            LocalMachineName = System.Environment.MachineName;
+            ActiveRenderMachine = new RenderMachineData();
+            ActiveRenderMachine.Name = "unknown";
+            ActiveRenderMachine.Id = -1;
+
+            LocalRenderMachine = new RenderMachineData();
+            LocalRenderMachine.Name = System.Environment.MachineName;
+            LocalRenderMachine.Id = -1;
         }
 
     }

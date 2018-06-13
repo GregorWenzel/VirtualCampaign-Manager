@@ -20,6 +20,7 @@ namespace VirtualCampaign_Manager
         public App()
         {
             this.InitializeComponent();
+            Application.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
         }
 
         protected override void OnStartup(StartupEventArgs e)

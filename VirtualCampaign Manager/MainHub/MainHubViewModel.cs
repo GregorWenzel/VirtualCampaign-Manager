@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Telerik.Windows.Controls;
 using VirtualCampaign_Manager.Data;
+using VirtualCampaign_Manager.Parsers;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Views.History;
 
@@ -31,7 +32,7 @@ namespace VirtualCampaign_Manager.MainHub
         {
             get
             {
-                return GlobalValues.LocalMachineName;
+                return GlobalValues.LocalRenderMachine.Name;
             }
         }
 
@@ -39,7 +40,7 @@ namespace VirtualCampaign_Manager.MainHub
         {
             get
             {
-                return GlobalValues.ActiveMachineName;
+                return GlobalValues.ActiveRenderMachine.Name;
             }
         }
 
@@ -149,11 +150,12 @@ namespace VirtualCampaign_Manager.MainHub
         {
             productionsTimer.Stop();
 
-            GlobalValues.ActiveMachineName = ProductionRepository.ManageHeartbeat();
-            RaisePropertyChangedEvent("ActiveMachineName");
-            RaisePropertyChangedEvent("MachineNameColor");
+            ProductionRepository.ManageHeartbeat();
 
-            if (GlobalValues.ActiveMachineName == GlobalValues.LocalMachineName)
+            RenderMachineData local = GlobalValues.LocalRenderMachine;
+            RenderMachineData active = GlobalValues.ActiveRenderMachine;
+
+            if (GlobalValues.ActiveRenderMachine.Id == GlobalValues.LocalRenderMachine.Id)
             {              
                 GlobalValues.IsActive = 1;
 
@@ -161,11 +163,26 @@ namespace VirtualCampaign_Manager.MainHub
 
                 foreach (Production newProduction in GlobalValues.ProductionList)
                 {
+                    bool mustTakeOverProduction = newProduction.RenderMachineId != GlobalValues.LocalRenderMachine.Id;
+                    if (mustTakeOverProduction)
+                    {
+                        newProduction.RenderMachineId = GlobalValues.LocalRenderMachine.Id;
+                        newProduction.Status = ProductionStatus.PS_READY;
+                        newProduction.ErrorStatus = ProductionErrorStatus.PES_NONE;
+                        newProduction.HasStarted = false;
+                    }
+
                     if (newProduction.HasStarted) continue;
 
                     newProduction.SuccessEvent += OnProductionSuccess;
                     foreach (Job newJob in newProduction.JobList)
                     {
+                        if (mustTakeOverProduction)
+                        {
+                            newJob.Status = JobStatus.JS_IDLE;
+                            newJob.ErrorStatus = JobErrorStatus.JES_NONE;
+                        }
+
                         if (GlobalValues.JobList.Any(item => item.ID == newJob.ID) == false)
                         {
                             GlobalValues.JobList.Add(newJob);
@@ -184,6 +201,9 @@ namespace VirtualCampaign_Manager.MainHub
                 GlobalValues.ProductionList.Clear();
                 
             }
+
+            RaisePropertyChangedEvent("ActiveMachineName");
+            RaisePropertyChangedEvent("MachineNameColor");
 
             productionsTimer.Start();
         }

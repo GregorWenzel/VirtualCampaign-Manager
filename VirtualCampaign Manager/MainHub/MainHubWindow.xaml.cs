@@ -24,7 +24,11 @@ namespace VirtualCampaign_Manager.MainHub
         {
             InitializeComponent();
             this.Loaded += MainHubWindow_Loaded;
+            this.Closed += MainHubWindow_Closed;
+            this.Header = string.Format("Render Manager for {0}, Version {1}", Settings.ServerUrl, GlobalValues.Version);
         }
+
+        private void MainHubWindow_Closed(object sender, WindowClosedEventArgs e) => Environment.Exit(0);
 
         private void MainHubWindow_Loaded(object sender, RoutedEventArgs e)
         {

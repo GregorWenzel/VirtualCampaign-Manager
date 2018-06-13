@@ -82,6 +82,8 @@ namespace VirtualCampaign_Manager.Data
 
         public string timestamp = "";
 
+        public int RenderMachineId = 0;
+
         private String sizeString;
 
         public String VisibleDateTime
@@ -170,6 +172,7 @@ namespace VirtualCampaign_Manager.Data
                 this.UpdateDate = DateTime.Now;
 
                 if ((int) (status) == (int) (value)) return;
+                this.RenderMachineId = GlobalValues.LocalRenderMachine.Id;
 
                 Console.WriteLine("Old Status = " + status + ", new status = " + value);
 

@@ -41,7 +41,7 @@ namespace VirtualCampaign_Manager.Rendering
         {
             timer.Stop();
 
-            client = new MongoClient(@"mongodb://SERVER-A:27100");
+            client = new MongoClient(string.Format(@"mongodb://{0}:{1}", Settings.MongoServerURL, Settings.MongoPort));
             database = client.GetDatabase("deadline10db");
 
             database = client.GetDatabase("deadline10db");

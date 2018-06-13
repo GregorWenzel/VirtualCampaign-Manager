@@ -181,6 +181,7 @@
     <Compile Include="Data\Production.cs" />
     <Compile Include="Data\ProductionHistoryItem.cs" />
     <Compile Include="Data\RenderChunkStatus.cs" />
+    <Compile Include="Data\RenderMachineData.cs" />
     <Compile Include="Data\VCObject.cs" />
     <Compile Include="Encoding\AnimatedMotifDecoder.cs" />
     <Compile Include="Encoding\AudioEncoder.cs" />
