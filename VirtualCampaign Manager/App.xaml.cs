@@ -35,7 +35,14 @@ namespace VirtualCampaign_Manager
             //OnSplashSucccess(this, null);
 
             mainHub = new MainHubWindow();
-            mainHub.ShowDialog();
+            try
+            {
+                mainHub.ShowDialog();
+            }
+            catch (System.ArgumentOutOfRangeException ex)
+            {
+                //TO DO: generic log file
+            }
 
             base.OnStartup(e);
         }      

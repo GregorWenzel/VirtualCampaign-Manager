@@ -11,6 +11,7 @@ using System.Windows.Media;
 using Telerik.Windows.Controls;
 using VirtualCampaign_Manager.Logging;
 using VirtualCampaign_Manager.Managers;
+using VirtualCampaign_Manager.Rendering;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Workers;
 
@@ -57,7 +58,7 @@ namespace VirtualCampaign_Manager.Data
         JS_HAS_ERRORS = 12,
     };
 
-    public class Job : VCObject, INotifyPropertyChanged
+    public class Job : VCObject
     {
         public ICommand DeleteProductionCommand { get; set; }
         public ICommand ResetJobCommand { get; set; }
@@ -104,8 +105,11 @@ namespace VirtualCampaign_Manager.Data
                 RaisePropertyChangedEvent("StatusString");
                 RaisePropertyChangedEvent("StatusColor");
 
-                JobRepository.UpdateJob(this, UpdateType.ErrorCode);
-                //EmailManager.SendErrorMail(this);
+                if (worker != null)
+                {
+                    JobRepository.UpdateJob(this, UpdateType.ErrorCode);
+                    EmailManager.SendErrorMail(this);
+                }
             }
         }
 
@@ -394,6 +398,16 @@ namespace VirtualCampaign_Manager.Data
         //--------------
         //PRIVATE fields
 
+        public void Delete()
+        {
+            if (worker != null)
+            {
+                workerThread.Abort();
+            }
+
+            DeadlineRenderer.DeleteJob(this);
+        }
+
         public void Reset()
         {
             foreach (Motif motif in MotifList)
@@ -415,25 +429,14 @@ namespace VirtualCampaign_Manager.Data
                     workerThread.Abort();
                 }
             }
+
+            DeadlineRenderer.DeleteJob(this);
+
         }
 
-        private Logger logger;
-
-        public string Log
-        {
-            get
-            {
-                return logger.Log;
-            }
-        }
+        
 
         private Thread workerThread;
-
-        public void LogText(string text)
-        {
-            logger.LogText(text);
-            RaisePropertyChangedEvent("Log");
-        }
 
         public void StartWorker()
         {
@@ -455,15 +458,14 @@ namespace VirtualCampaign_Manager.Data
                     workerThread.Abort();
                 }
             }
-            logger.ClearLog();
+
+            ClearLog();
 
             FireSuccessEvent();
         }
 
         public Job()
         {
-            logger = new Logger(this);
-
             ResetProductionCommand = new DelegateCommand(OnResetProduction);
             ResetJobCommand = new DelegateCommand(OnResetJob);
             DeleteProductionCommand = new DelegateCommand(OnDeleteProduction);
@@ -498,15 +500,7 @@ namespace VirtualCampaign_Manager.Data
 
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void RaisePropertyChangedEvent(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChangedEventArgs e = new PropertyChangedEventArgs(propertyName);
-                PropertyChanged(this, e);
-            }
-        }
+
 
         private void FireSuccessEvent()
         {

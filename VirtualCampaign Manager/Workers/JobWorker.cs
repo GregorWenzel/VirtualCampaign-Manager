@@ -22,6 +22,7 @@ namespace VirtualCampaign_Manager.Workers
         private Job job;
 
         private JobRenderProgressMonitor renderProgressMonitor;
+        private TransferManager transferManager;
 
         public JobWorker(Job Job)
         {
@@ -129,7 +130,8 @@ namespace VirtualCampaign_Manager.Workers
                 motifTransferPacket.FailureEvent += OnMotifTransferFailure;
                 motifTransferPacket.SuccessEvent += OnMotifTransferSuccess;
 
-                TransferQueueManager.Instance.AddTransferPacket(motifTransferPacket);
+                TransferManager transferManager = new TransferManager();
+                transferManager.Transfer(motifTransferPacket);
             }
         }
 
@@ -260,6 +262,8 @@ namespace VirtualCampaign_Manager.Workers
             job.MotifList.Where(item => item.ID == motif.ID).ToList().ForEach(item => item.Frames = motif.Frames);
 
             int motifsReadyCount = job.MotifList.Where(item => item.IsAvailable == true).Count();
+
+            job.LogText("Motifs ready: " + motifsReadyCount + "/" + job.MotifList.Count);
 
             if (motifsReadyCount == job.MotifList.Count && job.Status == JobStatus.JS_PREPARE_RESOURCES)
             {

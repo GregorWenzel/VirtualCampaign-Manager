@@ -28,6 +28,19 @@ namespace VirtualCampaign_Manager.MainHub
 
         public ICommand ShowHistoryCommand { get; set; }
 
+        private bool isGridEnabled = false;
+        public bool IsGridEnabled
+        {
+            get
+            {
+                return isGridEnabled;
+            }
+            set
+            {
+                isGridEnabled = value;
+                RaisePropertyChangedEvent("IsGridEnabled");
+            }
+        }
         public string LocalMachineName
         {
             get
@@ -36,11 +49,26 @@ namespace VirtualCampaign_Manager.MainHub
             }
         }
 
-        public string ActiveMachineName
+        public string ErrorMessage
         {
             get
             {
-                return GlobalValues.ActiveRenderMachine.Name;
+                if (GlobalValues.HasLicense == null)
+                {
+                    return "Checking license...";
+                }
+                else
+                {
+                    if (GlobalValues.HasLicense == false)
+                    {
+                        return "Invalid license!";
+                    }
+
+                    else
+                    {
+                        return "License valid";
+                    }
+                }
             }
         }
 
@@ -48,13 +76,20 @@ namespace VirtualCampaign_Manager.MainHub
         {
             get
             {
-                if (GlobalValues.IsActive == 1)
+                if (GlobalValues.HasLicense != null && GlobalValues.HasLicense == true)
                 {
-                    return Brushes.Green;
+                    if (GlobalValues.IsActive == 1)
+                    {
+                        return Brushes.Green;
+                    }
+                    else
+                    {
+                        return Brushes.Black;
+                    }
                 }
                 else
                 {
-                    return Brushes.Black;
+                    return Brushes.Red;
                 }
             }
         }
@@ -108,6 +143,7 @@ namespace VirtualCampaign_Manager.MainHub
             animatedMotifsTimer.Elapsed += AnimatedMotifsTimer_Elapsed;
 
             ShowHistoryCommand = new DelegateCommand(OnShowHistory);
+            IsGridEnabled = false;
         }
 
         private void OnShowHistory(object obj)
@@ -150,48 +186,63 @@ namespace VirtualCampaign_Manager.MainHub
         {
             productionsTimer.Stop();
 
-            ProductionRepository.ManageHeartbeat();
+            try
+            {
+                ProductionRepository.ManageHeartbeat();
+            }
+            catch
+            {
+                productionsTimer.Start();
+                return;
+            }
 
             RenderMachineData local = GlobalValues.LocalRenderMachine;
             RenderMachineData active = GlobalValues.ActiveRenderMachine;
 
-            if (GlobalValues.ActiveRenderMachine.Id == GlobalValues.LocalRenderMachine.Id)
+            if (GlobalValues.HasLicense == true && GlobalValues.ActiveRenderMachine.Id == GlobalValues.LocalRenderMachine.Id)
             {              
                 GlobalValues.IsActive = 1;
 
-                ProductionRepository.ReadProductions();
-
-                foreach (Production newProduction in GlobalValues.ProductionList)
+                try
                 {
-                    bool mustTakeOverProduction = newProduction.RenderMachineId != GlobalValues.LocalRenderMachine.Id;
-                    if (mustTakeOverProduction)
-                    {
-                        newProduction.RenderMachineId = GlobalValues.LocalRenderMachine.Id;
-                        newProduction.Status = ProductionStatus.PS_READY;
-                        newProduction.ErrorStatus = ProductionErrorStatus.PES_NONE;
-                        newProduction.HasStarted = false;
-                    }
+                    ProductionRepository.ReadProductions();
 
-                    if (newProduction.HasStarted) continue;
-
-                    newProduction.SuccessEvent += OnProductionSuccess;
-                    foreach (Job newJob in newProduction.JobList)
+                    foreach (Production newProduction in GlobalValues.ProductionList)
                     {
+                        bool mustTakeOverProduction = newProduction.Status == ProductionStatus.PS_READY || (newProduction.RenderMachineId != GlobalValues.LocalRenderMachine.Id);
                         if (mustTakeOverProduction)
                         {
-                            newJob.Status = JobStatus.JS_IDLE;
-                            newJob.ErrorStatus = JobErrorStatus.JES_NONE;
+                            newProduction.RenderMachineId = GlobalValues.LocalRenderMachine.Id;
+                            newProduction.Status = ProductionStatus.PS_READY;
+                            newProduction.ErrorStatus = ProductionErrorStatus.PES_NONE;
+                            newProduction.HasStarted = false;
                         }
 
-                        if (GlobalValues.JobList.Any(item => item.ID == newJob.ID) == false)
+                        if (newProduction.HasStarted) continue;
+
+                        newProduction.SuccessEvent += OnProductionSuccess;
+                        foreach (Job newJob in newProduction.JobList)
                         {
-                            GlobalValues.JobList.Add(newJob);
-                        }
-                    }
-                    newProduction.StartWorker();
-                }
+                            if (mustTakeOverProduction)
+                            {
+                                newJob.Status = JobStatus.JS_IDLE;
+                                newJob.ErrorStatus = JobErrorStatus.JES_NONE;
+                            }
 
-                LastUpdateTime = DateTime.Now;
+                            if (GlobalValues.JobList.Any(item => item.ID == newJob.ID) == false)
+                            {
+                                GlobalValues.JobList.Add(newJob);
+                            }
+                        }
+                        newProduction.StartWorker();
+                    }
+
+                    LastUpdateTime = DateTime.Now;
+                }
+                catch (Exception ex)
+                {
+                    productionsTimer.Start();
+                }
             }
             else
             {
@@ -199,11 +250,18 @@ namespace VirtualCampaign_Manager.MainHub
 
                 //clear productions after turning off the current manager 
                 GlobalValues.ProductionList.Clear();
-                
+                foreach (Job job in GlobalValues.JobList)
+                {
+                    job.Delete();
+                }
+
+                GlobalValues.JobList.Clear();                
             }
 
-            RaisePropertyChangedEvent("ActiveMachineName");
+            RaisePropertyChangedEvent("ErrorMessage");
             RaisePropertyChangedEvent("MachineNameColor");
+
+            IsGridEnabled = GlobalValues.IsActive == 1;
 
             productionsTimer.Start();
         }

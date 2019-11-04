@@ -139,6 +139,12 @@ namespace VirtualCampaign_Manager.Rendering
             {
                 Motif motif = job.MotifList[i];
 
+                if (string.IsNullOrEmpty(motif.LoaderName))
+                {
+                    result++;
+                    continue;
+                }
+
                 if (motif.IsMovie)
                 {
                     bool success = false;
@@ -165,17 +171,30 @@ namespace VirtualCampaign_Manager.Rendering
                 {
                     string targetFileName = ProductionPathHelper.GetProductionMotifPath(job.Production, motif);
 
+                    if (motif.Extension == ".pdf")
+                        targetFileName = targetFileName.Replace(".pdf", ".jpg");
+
                     SetValueInTool(motif.LoaderName, "Filename", targetFileName);
                     switch (motif.Extension)
                     {
                         case ".jpg":
+                        case ".jpeg":
                             if (SetValueInTool(motif.LoaderName, "FormatID", "JpegFormat"))
+                                result++;
+                            break;
+                        case ".tga":
+                            if (SetValueInTool(motif.LoaderName, "FormatID", "TargaFormat"))
                                 result++;
                             break;
                         case ".png":
                             if (SetValueInTool(motif.LoaderName, "FormatID", "PNGFormat"))
                                 result++;
                             break;
+                        case ".pdf":
+                            if (SetValueInTool(motif.LoaderName, "FormatID", "JpegFormat"))
+                                result++;
+                            break;
+
                     }
                 }
 
@@ -310,6 +329,10 @@ namespace VirtualCampaign_Manager.Rendering
 
             int start = result.LastIndexOf('=');
             int end = result.LastIndexOf(',');
+            if (end < 0)
+            {
+                end = result.Length;
+            }
 
             result = result.Remove(start + 1, end - start - 1);
             result = result.Insert(start + 1, value);

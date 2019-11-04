@@ -7,12 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using System.Timers;
+using System.IO;
+using System.Threading;
 
 namespace VirtualCampaign_Manager.Transfers
 {
-    public sealed class TransferQueueManager
+    public sealed class _TransferQueueManager
     {
-        private static volatile TransferQueueManager instance;
+        private static volatile _TransferQueueManager instance;
         private static object syncRoot = new Object();
 
         private List<TransferPacket> transferPacketList;
@@ -22,9 +24,7 @@ namespace VirtualCampaign_Manager.Transfers
         private TransferQueue queue;
         private LoginData loginData;
 
-        private Timer reconnectTimer;
-
-        private TransferQueueManager()
+        private _TransferQueueManager()
         {
             transferPacketList = new List<TransferPacket>();
 
@@ -32,46 +32,43 @@ namespace VirtualCampaign_Manager.Transfers
 
             //initialize new Sftp connection
             client = new Sftp();
-            client.Timeout = -1;
-            client.ReconnectionMaxRetries = 10;
-
-            //initialize reconnect timer in event of persistent connection failure
-            reconnectTimer = new Timer();
-            reconnectTimer.Interval = 1000 * 60 * 5;
-            reconnectTimer.Elapsed += ReconnectTimer_Elapsed;
-
-            Reconnect();
-
+            client.Timeout = -1;            
+            client.ReconnectionMaxRetries = Settings.MaxTransferErrorCount;
+            client.ReconnectionFailureDelay = 5000;
+            
             queue = new TransferQueue(3);
+            queue.ReuseRemoteConnection = true;
             queue.ItemProcessed += Queue_ItemProcessed;
             queue.Start();
-        }
-
-        private void ReconnectTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            reconnectTimer.Stop();
-
         }
 
         private bool Reconnect()
         {
             connectionAttempts = 0;
-            while (connectionAttempts <= Settings.MaxTransferErrorCount)
+            while (connectionAttempts <= Settings.MaxTransferErrorCount && client.IsConnected == false)
             {
                 Exception clientException = Connectclient();
 
+                bool connected;
+                int nativeErrorCode;
+                client.GetConnectionState(out connected, out nativeErrorCode);
+
+                string logString = queue.Statistics.FileList.Count.ToString() + " files already in queue.";
+                logString += connected ? "Connection still alive" : "Connection closed. Error code: " + nativeErrorCode;
+
+                Log(logString);
+                
                 if (clientException == null)
-                {
+                {                    
                     return true;
                 }
 
-                Console.WriteLine("Connection to " + loginData.Url + " failed: " + clientException.Message);
+                Log("Connection to " + loginData.Url + " failed: " + clientException.Message);
                 connectionAttempts += 1;
-                Console.WriteLine("Retry attempt no. " + connectionAttempts);
+                Log("Retry attempt no. " + connectionAttempts);
             }
 
-            Console.WriteLine("Connection to " + loginData.Url + " not possible at this moment. Waiting for 5 minutes to try again...");
-            return false;
+            return client.IsConnected;
         }
 
         private Exception Connectclient()
@@ -97,9 +94,6 @@ namespace VirtualCampaign_Manager.Transfers
                 client.Disconnect();
                 return ex;
             }
-
-            client.ReconnectionMaxRetries = Settings.MaxTransferErrorCount;
-            client.ReconnectionFailureDelay = 5000;
 
             return null;
         }
@@ -141,10 +135,19 @@ namespace VirtualCampaign_Manager.Transfers
 
         public void AddTransferPacket(TransferPacket Packet)
         {
+            Log("Adding file transfer: " + Packet.SourcePath + " -> " + Packet.TargetPath);
             if (client.IsConnected == false)
             {
-                bool success = Reconnect();
-
+                int connectCounter = 0;
+                bool success = Reconnect(); 
+                while (success == false && connectCounter < Settings.MaxTransferErrorCount)
+                {
+                    Log("Connection to " + loginData.Url + " not possible at this moment. Waiting for " + Settings.MinutesToSleepBeforeRetry + " minutes to try again...");
+                    connectCounter += 1;
+                    Thread.Sleep(Convert.ToInt32(Math.Ceiling(1000 * 60 * Settings.MinutesToSleepBeforeRetry)));
+                    success = Reconnect();
+                }
+                
                 if (success == false)
                 {
                     if (Packet.Parent is Production)
@@ -243,7 +246,13 @@ namespace VirtualCampaign_Manager.Transfers
             transferPacketList.Add(packet);
         }
 
-        public static TransferQueueManager Instance
+        private void Log(string text)
+        {
+            string logFilePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "VC Render Manager", "transfers.log");
+            File.AppendAllText(logFilePath, string.Format("[{0}-{1}]: {2}\r\n", DateTime.Now.ToLongDateString(), DateTime.Now.ToLongTimeString(), text));
+        }
+
+        public static _TransferQueueManager Instance
         {
             get
             {
@@ -251,7 +260,7 @@ namespace VirtualCampaign_Manager.Transfers
                 {
                     if (instance == null)
                     {
-                        instance = new TransferQueueManager();
+                        instance = new _TransferQueueManager();
                     }
                 }
 

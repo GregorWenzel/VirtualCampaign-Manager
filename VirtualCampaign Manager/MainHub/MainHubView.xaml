@@ -12,7 +12,7 @@
     <UserControl.DataContext>
         <local:MainHubViewModel />
     </UserControl.DataContext>
-    <Grid>
+    <Grid IsEnabled="{Binding IsGridEnabled}">
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
             <RowDefinition Height="*"/>
@@ -24,8 +24,7 @@
             <TextBlock Text ="{Binding LastUpdateTime, StringFormat={}{0:dd.MM.yyyy HH:mm:ss}}" Margin="5,0,10,0"/>
             <TextBlock Text="Machine Name:" FontWeight="Bold"/>
             <TextBlock Text ="{Binding LocalMachineName}" Foreground="{Binding MachineNameColor}" Margin="5,0,10,0"/>
-            <TextBlock Text="Active Machine Name:" FontWeight="Bold"/>
-            <TextBlock Text ="{Binding ActiveMachineName}" Margin="5,0,10,0"/>
+            <TextBlock Text ="{Binding ErrorMessage}" Margin="5,0,10,0"/>
             <Button Content="History" Command="{Binding ShowHistoryCommand}"/>
         </StackPanel>
         <jobs:JobView Grid.Row="1" Margin="10"/>

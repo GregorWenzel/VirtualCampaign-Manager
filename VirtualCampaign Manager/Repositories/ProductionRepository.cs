@@ -17,37 +17,59 @@ namespace VirtualCampaign_Manager.Repositories
                 { "MachineName", GlobalValues.LocalRenderMachine.Name },
                 { "CurrentTime", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
                 { "Message", "none" },
-                { "IsActive", GlobalValues.IsActive.ToString() }
-
+                { "IsActive", GlobalValues.IsActive.ToString() },
+                { "LicenseKey", Settings.LicenseKey }
             };
 
             string heartBeatString = RemoteDataManager.ExecuteRequest("sendHeartbeat", param);
+
             if (heartBeatString.Length == 0)
             {
                 GlobalValues.ActiveRenderMachine.Name = GlobalValues.LocalRenderMachine.Name;
                 GlobalValues.ActiveRenderMachine.Id = GlobalValues.LocalRenderMachine.Id;
-            }
-
-            List<Dictionary<string, string>> heartbeatDict = JsonDeserializer.Deserialize(heartBeatString);
-
-            //set local machine data
-            if (heartbeatDict.Any(item => item["machinename"] == GlobalValues.LocalRenderMachine.Name))
-            {
-                GlobalValues.LocalRenderMachine.Id = Convert.ToInt32(heartbeatDict.First(item => item["machinename"] == GlobalValues.LocalRenderMachine.Name)["id"]);
-            }
-
-            Dictionary<string, string> activeMachineDict;
-            if (heartbeatDict.Any(item => item["force_active"] == "1"))
-            {
-                activeMachineDict = heartbeatDict.Where(item => item["force_active"] == "1").OrderBy(item => item["priority"]).First();
+                GlobalValues.HasLicense = false;
             }
             else
             {
-                activeMachineDict = heartbeatDict.OrderBy(item => item["priority"]).First();
-            }
+                try
+                {
+                    GlobalValues.HasLicense = heartBeatString.Split(new char[] { ':' })[1].Substring(0, 1) == "1";
+                }
+                catch
+                {
+                    GlobalValues.HasLicense = false;
+                }
 
-            GlobalValues.ActiveRenderMachine.Name = activeMachineDict["machinename"];
-            GlobalValues.ActiveRenderMachine.Id = Convert.ToInt32(activeMachineDict["id"]);
+                List<Dictionary<string, string>> heartbeatDict = JsonDeserializer.Deserialize(heartBeatString);
+
+                //set local machine data
+                if (heartbeatDict.Any(item => item["machinename"] == GlobalValues.LocalRenderMachine.Name))
+                {
+                    if (heartbeatDict.First(item => item["machinename"] == GlobalValues.LocalRenderMachine.Name)["status"] == "offline")
+                    {
+                        GlobalValues.ActiveRenderMachine.Name = GlobalValues.LocalRenderMachine.Name;
+                        GlobalValues.ActiveRenderMachine.Id = GlobalValues.LocalRenderMachine.Id;
+                        return;
+                    }
+                    else
+                    {
+                        GlobalValues.LocalRenderMachine.Id = Convert.ToInt32(heartbeatDict.First(item => item["machinename"] == GlobalValues.LocalRenderMachine.Name)["id"]);
+                    }
+                }
+
+                Dictionary<string, string> activeMachineDict;
+                if (heartbeatDict.Any(item => item["force_active"] == "1"))
+                {
+                    activeMachineDict = heartbeatDict.Where(item => item["force_active"] == "1").OrderBy(item => item["priority"]).First();
+                }
+                else
+                {
+                    activeMachineDict = heartbeatDict.OrderBy(item => item["priority"]).First();
+                }
+
+                GlobalValues.ActiveRenderMachine.Name = activeMachineDict["machinename"];
+                GlobalValues.ActiveRenderMachine.Id = Convert.ToInt32(activeMachineDict["id"]);
+            }
         }
 
         public static List<AnimatedMotif> ReadAnimatedMotifs()

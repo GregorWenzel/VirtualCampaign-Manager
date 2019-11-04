@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Encoding;
 using VirtualCampaign_Manager.Helpers;
+using VirtualCampaign_Manager.Managers;
 using VirtualCampaign_Manager.Repositories;
 using VirtualCampaign_Manager.Transfers;
 
@@ -77,6 +78,8 @@ namespace VirtualCampaign_Manager.Workers
                     break;
                 case ProductionStatus.PS_UPDATE_HISTORY:
                     UpdateHistoryTable();
+                    if (production.Email.Length > 0)
+                        EmailManager.SendMail(production);
                     break;
                 case ProductionStatus.PS_CLEANUP:
                     CleanUp();
@@ -288,6 +291,13 @@ namespace VirtualCampaign_Manager.Workers
         {
             string directoryName = ProductionPathHelper.GetLocalProductionDirectory(production);
             IOHelper.DeleteDirectory(directoryName);
+
+            if (production.IsPreview)
+            {
+                string filename = string.Format("{0:0000}", production.JobList[0].ProductID);
+                string path = Path.Combine(ProductionPathHelper.GetProductDirectory(production.JobList[0].ProductID), filename + ".mp4");
+                File.Delete(path);
+            }
 
             production.Status = ProductionStatus.PS_DONE;
             FireSuccessEvent();

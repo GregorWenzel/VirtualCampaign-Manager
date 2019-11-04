@@ -83,7 +83,14 @@ namespace VirtualCampaign_Manager.Parsers
 
             result.HasSpecialIntroMusic = Convert.ToString(productionDict["SpecialIntroMusic"]) == "1";
             result.ID = Convert.ToInt32(productionDict["ProductionID"]);
-            result.RenderMachineId = Convert.ToInt32(productionDict["ProductionRendererId"]);
+            if (productionDict.ContainsKey("ProductionRendererId"))
+            {
+                result.RenderMachineId = Convert.ToInt32(productionDict["ProductionRendererId"]);
+            }
+            else
+            {
+                result.RenderMachineId = 0;
+            }
             result.Priority = Convert.ToInt32(productionDict["Priority"]);
             result.Email = Convert.ToString(productionDict["Email"]);
             result.Film.ID = Convert.ToInt32(productionDict["FilmID"]);

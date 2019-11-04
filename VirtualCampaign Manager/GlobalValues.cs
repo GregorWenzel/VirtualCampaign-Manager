@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Telerik.Windows.Controls;
@@ -15,14 +16,20 @@ namespace VirtualCampaign_Manager
 {
     public static class GlobalValues
     {
-        public static string Version = "3.103";
+        public static string Version
+        {
+            get
+            {
+                return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
+        }
 
         //Event called after a production has finished
         public static EventHandler<EventArgs> ProductionFinishedEvent;
 
         public static RenderMachineData LocalRenderMachine;
         public static RenderMachineData ActiveRenderMachine;
-
+        public static bool? HasLicense = null;
         public static int IsActive = 0;
 
         public static LogWindow LogWindow = new LogWindow();
@@ -126,7 +133,8 @@ namespace VirtualCampaign_Manager
             {JobErrorStatus.JES_OUTPUTFILE_COUNT_MISMATCH, "Output count mismatch"},
             {JobErrorStatus.JES_PREVIEWFRAME_MISSING, "Preview frame missing" },
             {JobErrorStatus.JES_COMP_MISSING, "Comp file missing" },
-            {JobErrorStatus.JES_MODIFY_MOTIF, "Modify motif" }
+            {JobErrorStatus.JES_MODIFY_MOTIF, "Modify motif" },
+            {JobErrorStatus.JES_EXTRACT_MOTIF, "Extract motif movie" }
         };
 
         public static Dictionary<int, FilmOutputFormat> CodecDict = new Dictionary<int, FilmOutputFormat>();

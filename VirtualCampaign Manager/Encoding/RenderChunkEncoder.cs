@@ -32,14 +32,25 @@ namespace VirtualCampaign_Manager.Encoding
                     LargestChunk.Job.RenderChunkStatusList.First(item => item.StartIndex == i).Status = 6;
                 }
 
-                string cmd = " -hwaccel cuvid";
-                //string cmd = "";
+                string cmd = "";
+                cmd += "-hwaccel cuvid";
                 cmd += " -y -loglevel panic";
                 cmd += " -start_number " + LargestChunk.StartFrame;
                 cmd += " -f image2";
                 cmd += " -i " + JobPathHelper.GetLocalJobRenderOutputFileMask(LargestChunk.Job);
                 cmd += " -vframes " + (LargestChunk.EndFrame - LargestChunk.StartFrame + 1);
-                cmd += " -pix_fmt yuv420p -c:v h264_nvenc -profile:v high -qp 19 -preset fast ";
+                cmd += " -pix_fmt yuv420p";
+
+                if (Settings.UseCuda)
+                {
+                    cmd += " -c:v h264_nvenc";
+                }
+                else
+                {
+                    cmd += " -c:v libx264";
+                }
+
+                cmd += " -profile:v high -qp 19 -preset fast ";
                 cmd += JobPathHelper.GetRenderChunkPath(LargestChunk);
 
                 Encode(LargestChunk.Job, cmd);

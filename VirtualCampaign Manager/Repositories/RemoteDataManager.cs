@@ -73,8 +73,8 @@ namespace VirtualCampaign_Manager.Repositories
 
         public static string ExecuteRequest(string serivceName, Dictionary<string, string> postDict, int retryCounter = 0)
         {
-            Console.WriteLine(serivceName);
-
+            //Console.WriteLine(serivceName);
+    
             /* DEBUG OUTPUT of parameters
             foreach (KeyValuePair<string, string> kvp in postDict)
             {

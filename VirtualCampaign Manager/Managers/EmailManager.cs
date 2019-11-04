@@ -59,6 +59,7 @@ namespace VirtualCampaign_Manager.Managers
             }
             catch (FormatException e)
             {
+                Console.WriteLine("Cannot send email, exception: " + e.Message);
                 return;
             }
 

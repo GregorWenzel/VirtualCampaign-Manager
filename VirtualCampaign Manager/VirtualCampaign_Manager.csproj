@@ -70,7 +70,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ComponentPro.Common, Version=6.3.40.60129, Culture=neutral, PublicKeyToken=0efede2d78b28dff, processorArchitecture=MSIL">
@@ -117,9 +117,11 @@
       <HintPath>Libraries\MongoDB.Driver.Legacy.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -227,6 +229,7 @@
     <Compile Include="SplashScreen\SplashScreenWindowViewModel.cs" />
     <Compile Include="Transfers\FilmUploader.cs" />
     <Compile Include="Transfers\TransferManager.cs" />
+    <Compile Include="Transfers\_TransferManager.cs" />
     <Compile Include="Transfers\TransferPacket.cs" />
     <Compile Include="MainHub\MainHubViewModel.cs" />
     <Compile Include="MainHub\MainHubView.xaml.cs">
@@ -242,7 +245,7 @@
     <Compile Include="Repositories\ProductionRepository.cs" />
     <Compile Include="Repositories\RemoteDataManager.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="Transfers\TransferQueueManager.cs" />
+    <Compile Include="Transfers\_TransferQueueManager.cs" />
     <Compile Include="Views\History\HistoryWindow.xaml.cs">
       <DependentUpon>HistoryWindow.xaml</DependentUpon>
     </Compile>

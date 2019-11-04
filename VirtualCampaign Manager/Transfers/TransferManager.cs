@@ -1,188 +1,207 @@
 ﻿using ComponentPro.Net;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using VirtualCampaign_Manager.Helpers;
+using System.Windows;
+using VirtualCampaign_Manager.Data;
 
 namespace VirtualCampaign_Manager.Transfers
 {
-    public sealed class _TransferManager : EventFireBase
+    public class TransferManager : EventFireBase
     {
-        private Sftp client;
         public TransferPacket Packet;
-        private int connectionAttempts = 0;
 
-        public _TransferManager(TransferPacket packet)
+        private Sftp client;
+        private Timer sleepTimer;
+        private int connectErrorCount;
+        private int sleepTimerMultiplier;
+
+        public TransferManager()
         {
-            this.Packet = packet;
+            InitializeClient();
         }
 
-        public void Transfer(bool addEventHandlers = true)
-        {
-            while (connectionAttempts <= Settings.MaxTransferErrorCount)
-            {
-                Exception clientException = Connectclient();
+        private void InitializeClient()
+        { 
+            client = new Sftp();
+            client.Timeout = -1;
+            client.ReconnectionMaxRetries = Settings.MaxTransferErrorCount;
+            client.ReconnectionFailureDelay = 5 * 1000;
+            client.ConnectCompleted += Client_ConnectCompleted;
+            client.AuthenticateCompleted += Client_AuthenticateCompleted;
+        }
 
-                if (clientException == null)
+        private void Client_AuthenticateCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            if (e.Error == null)
+            {
+                Log("Adding file transfer: " + Packet.SourcePath + " -> " + Packet.TargetPath);
+
+                switch (Packet.Type)
                 {
-                    if (addEventHandlers)
-                    {
-                        AddEventHandlers();
-                    }
-                    InitiateTransfer();
-                    break;
+                    case TransferType.DownloadAnimatedMotif:
+                    case TransferType.DownloadAudio:
+                    case TransferType.DownloadMotif:
+                        DownloadSingle();
+                        break;
+                    case TransferType.UploadFilmDirectory:
+                    case TransferType.UploadFilmPreviewDirectory:
+                    case TransferType.UploadProductDirectory:
+                    case TransferType.UploadProductPreviewDirectory:
+                        UploadDirectory();
+                        break;
+                    case TransferType.UploadMotifPreview:
+                        UploadSingle();
+                        break;
                 }
-                
-                Console.WriteLine("Connection to " + Packet.LoginData.Url + " failed: " + clientException.Message);
-
-                connectionAttempts += 1;
-
-                Console.WriteLine("Retry attempt no. " + connectionAttempts);
-                
             }
-        }
-
-        private void AddEventHandlers()
-        {
-            switch (Packet.Type)
+            else
             {
-                case TransferType.DownloadAnimatedMotif:
-                case TransferType.DownloadAudio:
-                case TransferType.DownloadMotif:
-                    client.DownloadFileCompleted += Client_DownloadFileCompleted;
-                    break;
-                case TransferType.UploadFilmDirectory:
-                case TransferType.UploadFilmPreviewDirectory:
-                case TransferType.UploadProductDirectory:
-                case TransferType.UploadProductPreviewDirectory:
-                    client.UploadFileCompleted += Client_UploadFileCompleted;
-                    client.UploadDirectoryCompleted += Client_UploadDirectoryCompleted;
-                    break;
-                case TransferType.UploadMotifPreview:
-                    client.UploadFileCompleted += Client_UploadFileCompleted;
-                    break;
+                Packet.FireFailureEvent(e.Error);
             }
         }
 
-        private void RemoveEventHandlers()
+        private void DownloadSingle()
         {
-            switch (Packet.Type)
-            {
-                case TransferType.DownloadAnimatedMotif:
-                case TransferType.DownloadAudio:
-                case TransferType.DownloadMotif:
-                    client.DownloadFileCompleted -= Client_DownloadFileCompleted;
-                    break;
-                case TransferType.UploadFilmDirectory:
-                case TransferType.UploadFilmPreviewDirectory:
-                case TransferType.UploadProductDirectory:
-                case TransferType.UploadProductPreviewDirectory:
-                    client.UploadFileCompleted -= Client_UploadFileCompleted;
-                    client.UploadDirectoryCompleted -= Client_UploadDirectoryCompleted;
-                    break;
-                case TransferType.UploadMotifPreview:
-                    client.UploadFileCompleted -= Client_UploadFileCompleted;
-                    break;
-            }
-        }
-
-        private void InitiateTransfer()
-        {
-            Packet.IsInTransit = true;
-
-            switch (Packet.Type)
-            {
-                case TransferType.DownloadAnimatedMotif:
-                case TransferType.DownloadAudio:
-                case TransferType.DownloadMotif:
-                    client.DownloadFileAsync(Packet.SourcePath, Packet.TargetPath, Packet);
-                    break;
-                case TransferType.UploadFilmDirectory:
-                case TransferType.UploadFilmPreviewDirectory:
-                case TransferType.UploadProductDirectory:
-                case TransferType.UploadProductPreviewDirectory:
-                    client.UploadDirectoryAsync(Packet.SourcePath, Packet.TargetPath, Packet);
-                    break;
-                case TransferType.UploadMotifPreview:
-                    client.UploadFileAsync(Packet.SourcePath, Packet.TargetPath, Packet);
-                    break;
-            }
-        }
-
-        private void Client_UploadDirectoryCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<ComponentPro.IO.FileSystemTransferStatistics> e)
-        {
-            client.Disconnect();
-            HandleFinishedTransfer(e.Error);
-        }
-
-        private void Client_UploadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
-        {
-            client.Disconnect();
-            HandleFinishedTransfer(e.Error);
+            client.DownloadFileCompleted += Client_DownloadFileCompleted;
+            client.DownloadFileAsync(Packet.SourcePath, Packet.TargetPath);
         }
 
         private void Client_DownloadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
         {
-            client.Disconnect();
-            HandleFinishedTransfer(e.Error);
+            client.DownloadFileCompleted -= Client_DownloadFileCompleted;
+            HandleFileTransferCompleted(e.Error);
         }
 
-        private void HandleFinishedTransfer(Exception error)
+        private void UploadDirectory()
         {
-            Packet.IsInTransit = false;
+            client.UploadDirectoryCompleted += Client_UploadDirectoryCompleted;
+            client.UploadDirectoryAsync(Packet.SourcePath, Packet.TargetPath);
+        }
 
-            if (error == null)
+        private void Client_UploadDirectoryCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<ComponentPro.IO.FileSystemTransferStatistics> e)
+        {
+            client.UploadDirectoryCompleted -= Client_UploadDirectoryCompleted;
+            HandleFileTransferCompleted(e.Error);
+        }
+
+        private void UploadSingle()
+        {
+            client.UploadFileCompleted += Client_UploadFileCompleted;
+            client.UploadFileAsync(Packet.SourcePath, Packet.TargetPath);
+        }
+
+        private void Client_UploadFileCompleted(object sender, ComponentPro.ExtendedAsyncCompletedEventArgs<long> e)
+        {
+            client.UploadFileCompleted -= Client_UploadFileCompleted;
+            HandleFileTransferCompleted(e.Error);
+        }
+
+        private void HandleFileTransferCompleted(Exception e)
+        {
+            client.ConnectCompleted -= Client_ConnectCompleted;
+            client.AuthenticateCompleted -= Client_AuthenticateCompleted;
+            if (client.IsConnected)
             {
-                RemoveEventHandlers();
-                FireSuccessEvent();
+                client.Disconnect();
+            }
+            client = null;
+
+            if (e == null)
+            {
+                Log("Transfer SUCCESS: " + Packet.Parent + " " + Packet.SourcePath + " -> " + Packet.TargetPath);
+                Packet.FireSuccessEvent();                        
             }
             else
             {
-                Console.WriteLine("Transfer Error: " + error.Message + " for packet " + Packet.SourcePath + " -> " + Packet.TargetPath);
-                Packet.TransferErrorCounter += 1;
-                if (Packet.TransferErrorCounter > Settings.MaxTransferErrorCount)
-                {
-                    RemoveEventHandlers();
-                    FireFailureEvent();
-                    return;
-                }
-                Transfer(false);
+                Log("Transfer ERROR: " + Packet.Parent + " " + Packet.SourcePath + " -> " + Packet.TargetPath);
+                Log(e.Message);
+                Packet.FireFailureEvent(e);
             }
         }
 
-        private Exception Connectclient()
+        private void Client_ConnectCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            //initialize new Sftp connection
-            client = new Sftp();
-            client.Timeout = -1;
-            client.ReconnectionMaxRetries = 10;
-
-            //connect to client
-            try
+            if (e.Error == null)
             {
-                client.Connect(Packet.LoginData.Url);
+                client.AuthenticateAsync(Settings.MasterLogin.Username, Settings.MasterLogin.Password);
             }
-            catch (Exception ex)
+            else
             {
-                client.Disconnect();
-                return ex;
+                connectErrorCount += 1;
+                if (connectErrorCount < Settings.MaxTransferErrorCount)
+                {
+                    client.ConnectAsync(Settings.MasterLogin.Url, 22);
+                }
+                else
+                {
+                    Sleep();
+                }
             }
-
-            //authenticate user
-            try
-            {
-                client.Authenticate(Packet.LoginData.Username, Packet.LoginData.Password);
-            }
-            catch (Exception ex)
-            {
-                client.Disconnect();
-                return ex;
-            }
-
-            return null;
         }
+
+        private void Sleep()
+        {
+            sleepTimerMultiplier += 1;
+
+            if (sleepTimer == null)
+            {
+                sleepTimer = new Timer();
+                sleepTimer.Elapsed += SleepTimer_Elapsed;
+                sleepTimer.Interval = 60 * 1000;
+            }
+
+            sleepTimer.Interval *= sleepTimerMultiplier;
+
+            Log("Cannot establish connection to " + Settings.MasterLogin.Url + ". Waiting for " + Math.Ceiling(sleepTimer.Interval / (60 * 1000)) + " minutes to try again...");
+
+            sleepTimer.Start();
+        }
+
+        private void SleepTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            connectErrorCount = 0;
+            if (client == null)
+            {
+                InitializeClient();
+            }
+
+            client.ConnectAsync(Settings.MasterLogin.Url, 22);
+        }
+
+        public void Transfer(TransferPacket packet)
+        {
+            connectErrorCount = 0;
+            sleepTimerMultiplier = 0;
+            this.Packet = packet;
+
+            client.ConnectAsync(Settings.MasterLogin.Url, 22);
+        }
+
+        private void Log(string text)
+        {
+            if (Packet.Parent is VCObject)
+            {
+                (Packet.Parent as VCObject).LogText(text);
+            }
+            DateTime date = DateTime.Now;
+
+            string logFilename = string.Format("{0:0000}_{1:00}_{2:00}_transfers.log", date.Year, date.Month, date.Day);
+            string logFilePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "VC Render Manager", "transfer logs", logFilename);
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                if (!Directory.Exists(Path.GetDirectoryName(logFilePath)))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+                }
+                File.AppendAllText(logFilePath, string.Format("[{0}-{1}]: {2}\r\n", date.ToLongDateString(), date.ToLongTimeString(), text));
+                }
+            ));
+        }
+
     }
 }

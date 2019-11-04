@@ -230,8 +230,11 @@ namespace VirtualCampaign_Manager.Data
 
                 JobList[0].ProductionErrorStatus = errorStatus;
 
-                ProductionRepository.UpdateRemoteValue(this, UpdateType.ErrorCode);
-                EmailManager.SendErrorMail(this);
+                if (worker != null)
+                {
+                    ProductionRepository.UpdateRemoteValue(this, UpdateType.ErrorCode);
+                    EmailManager.SendErrorMail(this);
+                }
             }
         }
         
@@ -357,29 +360,12 @@ namespace VirtualCampaign_Manager.Data
             }
         }
 
-        private Logging.Logger logger;
-
-        public string Log
-        {
-            get
-            {
-                return logger.Log;
-            }           
-        }
-
         private ProductionWorker worker;
 
         //empty constructor
         public Production()
         {
             Film = new Film();
-            logger = new Logging.Logger(this);
-        }
-
-        public void LogText(string text)
-        {
-            logger.LogText(text);
-            RaisePropertyChangedEvent("Log");
         }
 
         public void SetPriority()
@@ -465,7 +451,7 @@ namespace VirtualCampaign_Manager.Data
                     workerThread.Abort();
                 }
             }
-            logger.ClearLog();
+            ClearLog();
         }
 
         public void Delete()

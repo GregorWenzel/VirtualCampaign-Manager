@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using VirtualCampaign_Manager.Data;
 using VirtualCampaign_Manager.Helpers;
 
@@ -11,8 +12,7 @@ namespace VirtualCampaign_Manager.Logging
 {
     public class Logger : INotifyPropertyChanged
     {
-        Production production;
-        Job job;
+        VCObject parent;
         List<string> logLines = new List<string>();
 
         private string log;
@@ -22,14 +22,9 @@ namespace VirtualCampaign_Manager.Logging
             get { return string.Join("\r\n", logLines); }
         }
 
-        public Logger(Production production)
+        public Logger(VCObject Parent)
         {
-            this.production = production;
-        }
-
-        public Logger(Job job)
-        {
-            this.job = job;
+            this.parent = Parent;
         }
 
         public void ClearLog()
@@ -41,37 +36,36 @@ namespace VirtualCampaign_Manager.Logging
         public void LogText(string text)
         {
             DateTime time = DateTime.Now;
-            string logText;
-            if (job != null)
-            {
-                logText = string.Format("[{0}]: {1}", time, text);
-            }
-            else
-            {
-                logText = string.Format("[{0}]: {1}", time, text);
-            }
+            string logText = logText = string.Format("[{0}]: {1}", time, text);
 
             logLines.Add(logText);
 
             Console.WriteLine(logText);
 
-            string logfilePath;
+            string logfilePath = null;
 
-            if (job != null)
+            if (parent is Job)
             {
-                logfilePath = JobPathHelper.GetLogFilePath(job);
+                logfilePath = JobPathHelper.GetLogFilePath(parent as Job);
             }
-            else
+            else if (parent is Production)
             {
-                logfilePath = ProductionPathHelper.GetLogFilePath(production);
+                logfilePath = ProductionPathHelper.GetLogFilePath(parent as Production);
+            }
+            else if (parent is Motif)
+            {
+                logfilePath = JobPathHelper.GetLogFilePath((parent as Motif).Job);
+            }
 
-            }
+            if (logfilePath == null) return;
 
             IOHelper.CreateDirectory(System.IO.Path.GetDirectoryName(logfilePath));
 
             if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(logfilePath)))
             {
-                System.IO.File.AppendAllText(logfilePath, string.Format("{0}{1}", logText, Environment.NewLine));
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                    System.IO.File.AppendAllText(logfilePath, string.Format("{0}{1}", logText, Environment.NewLine))
+                ));
             }
 
             RaisePropertyChangedEvent("Log");

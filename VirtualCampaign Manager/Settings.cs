@@ -21,6 +21,8 @@ namespace VirtualCampaign_Manager
         public static int MaxDownloadThreads = 3;
         //max number of failed transfers before giving up
         public static int MaxTransferErrorCount = 10;
+        //number of minutes to sleep between failed transfer attempts
+        public static float MinutesToSleepBeforeRetry = 2;
 
         //Paths to local file system     
         //Base path to local files (data, tools, ressources)
@@ -77,6 +79,12 @@ namespace VirtualCampaign_Manager
         public static string MongoServerURL;
         public static string MongoPort;
 
+        //Enablde/disable CUDA
+        public static bool UseCuda;
+
+        //License key
+        public static string LicenseKey;
+
         static Settings()
         {
             string defaultIniFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.ini");
@@ -125,6 +133,10 @@ namespace VirtualCampaign_Manager
 
             MongoServerURL = IniFileHelper.ReadValue("MongoDB", "MongoServer", iniFilePath);
             MongoPort = IniFileHelper.ReadValue("MongoDB", "MongoPort", iniFilePath);
+
+            UseCuda = Convert.ToBoolean(IniFileHelper.ReadValue("CUDA", "UseCuda", iniFilePath));
+
+            LicenseKey = IniFileHelper.ReadValue("Licensing", "LicenseKey", iniFilePath);
         }
     }
 }

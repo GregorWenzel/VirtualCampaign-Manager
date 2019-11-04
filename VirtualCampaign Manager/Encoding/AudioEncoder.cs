@@ -14,6 +14,7 @@ namespace VirtualCampaign_Manager.Encoding
     {
         Production production;
         AudioData audioData;
+        TransferManager transferManager;
 
         public AudioEncoder(Production Production)
         {
@@ -50,7 +51,9 @@ namespace VirtualCampaign_Manager.Encoding
             TransferPacket audioTransferPacket = new TransferPacket(production, audioData);
             audioTransferPacket.FailureEvent += OnAudioTransferFailure;
             audioTransferPacket.SuccessEvent += OnAudioTransferSuccess;
-            TransferQueueManager.Instance.AddTransferPacket(audioTransferPacket);
+
+            transferManager = new TransferManager();
+            transferManager.Transfer(audioTransferPacket);
         }
 
         private void OnAudioTransferFailure(Object obj, EventArgs ea)
