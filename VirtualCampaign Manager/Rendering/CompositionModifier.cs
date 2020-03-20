@@ -93,6 +93,38 @@ namespace VirtualCampaign_Manager.Rendering
             return true;
         }
 
+        private List<string> GetLoaders()
+        {
+            List<string> result = new List<string>();
+            bool inLoader = false;
+
+            foreach (string line in CompLines)
+            {
+                if (inLoader)
+                {
+                    if (line.Contains("Filename = "))
+                    {
+                        string[] lineArr = line.Split(new string[] { " = " }, StringSplitOptions.RemoveEmptyEntries);
+                        string filePath = lineArr[1].Replace("\t","").Replace("\\\\","\\").Replace("\"", "").Replace(",","");
+                        string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        string fileExtension = Path.GetExtension(filePath);
+                        result.Add($"{fileName}_DEMO{fileExtension}");
+                        inLoader = false;
+                    }
+                }
+                else
+                {
+                    Regex regex = new Regex(@"ft_loader[0-9]+ = Loader");
+                    if (regex.IsMatch(line))
+                    {
+                        inLoader = true;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         private int ModifyOutputs()
         {
             int result = 0;
@@ -101,8 +133,13 @@ namespace VirtualCampaign_Manager.Rendering
 
             string outputPath;
 
+            List<string> loaderFileNameArr = null;
+
             if (job.IsZip)
+            {
+                loaderFileNameArr = GetLoaders();
                 outputPath = JobPathHelper.GetLocalJobRenderOutputPathForZip(job);
+            }
             else
                 outputPath = JobPathHelper.GetLocalJobRenderOutputMask(job);
 
@@ -115,7 +152,9 @@ namespace VirtualCampaign_Manager.Rendering
                 bool subResult = false;
 
                 if (job.IsZip)
-                    subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath, true);
+                {
+                    subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", Path.Combine(outputPath, loaderFileNameArr[i]), false);
+                }
                 else
                     subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath, false);
 
