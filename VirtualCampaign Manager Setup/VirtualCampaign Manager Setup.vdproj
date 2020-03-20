@@ -111,12 +111,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_5A73B6FF44A3839018629DD4CB61DA9B"
-        "OwnerKey" = "8:_396EB8DFA5C14892B9D414F531E4FD25"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_6A4D760AA37CF934207D6647DAE8981C"
         "OwnerKey" = "8:_396EB8DFA5C14892B9D414F531E4FD25"
         "MsmSig" = "8:_UNDEFINED"
@@ -315,6 +309,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_E348C19DE4159E9044551E1713A91503"
+        "OwnerKey" = "8:_396EB8DFA5C14892B9D414F531E4FD25"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_FBA3C8019F0D0082289FF085CB604D44"
         "OwnerKey" = "8:_396EB8DFA5C14892B9D414F531E4FD25"
         "MsmSig" = "8:_UNDEFINED"
@@ -358,7 +358,7 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_5A73B6FF44A3839018629DD4CB61DA9B"
+        "OwnerKey" = "8:_E348C19DE4159E9044551E1713A91503"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -741,32 +741,6 @@
                 {
                 }
             "SourcePath" = "8:ComponentPro.Sftp.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D4FF901D0C954897B4E266FC61AF31DE"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5A73B6FF44A3839018629DD4CB61DA9B"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:HelperFunctions, Version=3.2.4.0, Culture=neutral, processorArchitecture=AMD64"
-                "ScatterAssemblies"
-                {
-                }
-            "SourcePath" = "8:HelperFunctions.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D4FF901D0C954897B4E266FC61AF31DE"
@@ -1178,6 +1152,32 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E348C19DE4159E9044551E1713A91503"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:HelperFunctions, Version=3.3.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                }
+            "SourcePath" = "8:HelperFunctions.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D4FF901D0C954897B4E266FC61AF31DE"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_FBA3C8019F0D0082289FF085CB604D44"
             {
             "AssemblyRegister" = "3:1"
@@ -1271,15 +1271,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:VirtualCampaign Manager"
-        "ProductCode" = "8:{C025B9E9-CAC6-4C02-B619-1654531D75A4}"
-        "PackageCode" = "8:{9EDE24E3-959E-453F-BB2F-09ADDA1FA6D3}"
+        "ProductCode" = "8:{AC8FAAAC-FC28-4D53-AE11-45AE568E7871}"
+        "PackageCode" = "8:{79758C1A-5068-4B9B-AE14-D86C6FF6448A}"
         "UpgradeCode" = "8:{91486630-3F3D-4D1B-AD59-6FE338E8853B}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:3.3.3"
+        "ProductVersion" = "8:3.3.5"
         "Manufacturer" = "8:ibt-studios GmbH"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

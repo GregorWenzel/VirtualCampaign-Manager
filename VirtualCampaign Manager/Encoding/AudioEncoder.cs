@@ -175,7 +175,9 @@ namespace VirtualCampaign_Manager.Encoding
             int durationInSeconds = 0;
 
             if (production.HasSpecialIntroMusic)
+            {
                 durationInSeconds = production.ClipDurationInSeconds;
+            }
             else
                 durationInSeconds = production.TotalDurationInSeconds;
 
@@ -213,6 +215,31 @@ namespace VirtualCampaign_Manager.Encoding
             }
         }
 
+        private string TrimDicativeFile(Job job)
+        {
+            //\\IBT-DATA\virtualcampaign\tools\ffmpeg64_cuda\bin\ffmpeg.exe -y -loglevel panic -i \\IBT-DATA\virtualcampaign\data\products\0087\0087.wav -t 19.11 \\SERVER-A\render_temp\productions\virtualcampaign\8270\test.wav
+            string sourceFilePath = ProductionPathHelper.GetProductAudioPath(job.ProductID);
+            string targetFilePath = Path.Combine(ProductionPathHelper.GetLocalProductionDirectory(production), Path.GetFileName(sourceFilePath));
+
+            string secondsString = $"{Math.Floor(job.FrameCount / 25f)}";
+            string framesString = $"{job.FrameCount % 25}";
+            string lengthString = $"{secondsString}.{framesString}";
+
+            string cmd = $"-y -loglevel panic -i {sourceFilePath} -t {lengthString} {targetFilePath}";
+
+            VCProcess MusicProcess = new VCProcess(production);
+            MusicProcess.StartInfo.FileName = Settings.LocalFfmpegExePath;
+            MusicProcess.StartInfo.CreateNoWindow = true;
+            MusicProcess.StartInfo.UseShellExecute = false;
+            MusicProcess.StartInfo.RedirectStandardError = false;
+            MusicProcess.StartInfo.RedirectStandardOutput = false;
+            MusicProcess.EnableRaisingEvents = true;
+            MusicProcess.StartInfo.Arguments = cmd;
+            bool success = MusicProcess.Execute();
+
+            return targetFilePath;
+        }
+
         private void CreateAudiolistFile()
         {
             //create cliplist file
@@ -222,16 +249,18 @@ namespace VirtualCampaign_Manager.Encoding
 
             if (production.HasSpecialIntroMusic && production.JobList[0].IsDicative)
             {
-                string specialProductAudioFilePath = ProductionPathHelper.GetSpecialProductAudioPath(production.JobList[0].ProductID);
-                writer.WriteLine(specialProductAudioFilePath);
+                //string specialProductAudioFilePath = ProductionPathHelper.GetSpecialProductAudioPath(production.JobList[0].ProductID);
+                string trimmedFilePath = TrimDicativeFile(production.JobList[0]);
+                writer.WriteLine($"file '{trimmedFilePath}'");
             }
 
             writer.WriteLine("file '" + ProductionPathHelper.GetFadedMusicPath(production) + "'");
 
-            if (production.HasSpecialIntroMusic && production.JobList[production.JobList.Count - 1].IsDicative)
+            if (production.HasSpecialIntroMusic && production.JobList.Last().IsDicative)
             {
-                string specialProductAudioFilePath = ProductionPathHelper.GetSpecialProductAudioPath(production.JobList[production.JobList.Count - 1].ProductID);
-                writer.WriteLine(specialProductAudioFilePath);
+                //string specialProductAudioFilePath = ProductionPathHelper.GetSpecialProductAudioPath(production.JobList[production.JobList.Count - 1].ProductID);
+                string trimmedFilePath = TrimDicativeFile(production.JobList.Last());
+                writer.WriteLine($"file '{trimmedFilePath}'");
             }
             writer.Close();
         }

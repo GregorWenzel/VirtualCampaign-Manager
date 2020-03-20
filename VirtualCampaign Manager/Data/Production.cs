@@ -114,7 +114,8 @@ namespace VirtualCampaign_Manager.Data
                 int result = 0;
                 foreach (Job thisJob in this.JobList)
                 {
-                    result += thisJob.FrameCount;
+                    if (thisJob.IsDicative == false)
+                        result += thisJob.FrameCount;
                 }
                 return result;
             }

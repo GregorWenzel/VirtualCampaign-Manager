@@ -115,7 +115,7 @@ namespace VirtualCampaign_Manager.Encoding
 
         private bool JoinClips()
         { 
-            string cmd = "-y -loglevel panic -safe 0 -f concat -i " + ProductionPathHelper.GetClipListPath(production) + " -c copy ";
+            string cmd = "-y -loglevel panic -safe 0 -f concat -i " + ProductionPathHelper.GetClipListPath(production) + " -c copy -an ";
             cmd += ProductionPathHelper.GetFullMp4Path(production);
 
             VCProcess ConcatenateProcess = new VCProcess(production);

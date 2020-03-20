@@ -88,6 +88,7 @@ namespace VirtualCampaign_Manager.Encoding
 
         private static bool CheckOutputs(Job job)
         {
+            return true;
             if (job.Production.IsZipProduction) return true;
 
             int outputCount = Directory.GetFiles(JobPathHelper.GetLocalJobRenderOutputDirectory(job), "*" + job.OutputExtension).Length;

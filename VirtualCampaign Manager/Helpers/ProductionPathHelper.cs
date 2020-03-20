@@ -110,10 +110,15 @@ namespace VirtualCampaign_Manager.Helpers
             return Path.Combine(GetLocalProductionDirectory(production), production.FilmID.ToString());
         }
 
-        public static string GetSpecialProductAudioPath(int ProductID)
+        public static string GetProductAudioPath(int ProductID)
         {
             string formattedIndex = String.Format("{0:D4}", ProductID);
-            return "file '" + Path.Combine(new string[] { Settings.LocalProductPath, formattedIndex, formattedIndex + ".wav" }) + "'";
+            return Path.Combine(new string[] { Settings.LocalProductPath, formattedIndex, formattedIndex + ".wav" });
+        }
+
+        public static string GetSpecialProductAudioPath(int ProductID)
+        {
+            return $"file '{GetProductAudioPath(ProductID)}.wav'";
         }
 
         public static string GetAudioListFile(Production Production)
