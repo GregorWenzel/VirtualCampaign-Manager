@@ -93,11 +93,11 @@ namespace VirtualCampaign_Manager.Rendering
             return true;
         }
 
-        private List<string> GetLoaders()
+        private Dictionary<int, string> GetLoaders()
         {
-            List<string> result = new List<string>();
+            Dictionary<int, string> result = new Dictionary<int, string>();
             bool inLoader = false;
-
+            int index = -1;
             foreach (string line in CompLines)
             {
                 if (inLoader)
@@ -108,7 +108,7 @@ namespace VirtualCampaign_Manager.Rendering
                         string filePath = lineArr[1].Replace("\t","").Replace("\\\\","\\").Replace("\"", "").Replace(",","");
                         string fileName = Path.GetFileNameWithoutExtension(filePath);
                         string fileExtension = Path.GetExtension(filePath);
-                        result.Add($"{fileName}_DEMO{fileExtension}");
+                        result[index] = $"{fileName}_DEMO{fileExtension}";
                         inLoader = false;
                     }
                 }
@@ -118,6 +118,9 @@ namespace VirtualCampaign_Manager.Rendering
                     if (regex.IsMatch(line))
                     {
                         inLoader = true;
+                        string[] lineArr = line.Split(new string[] { " = " }, StringSplitOptions.RemoveEmptyEntries);
+                        string loaderIndex = lineArr[0].Trim().Replace("ft_loader", "");
+                        index = Convert.ToInt32(loaderIndex);
                     }
                 }
             }
@@ -133,7 +136,7 @@ namespace VirtualCampaign_Manager.Rendering
 
             string outputPath;
 
-            List<string> loaderFileNameArr = null;
+            Dictionary<int, string> loaderFileNameArr = null;
 
             if (job.IsZip)
             {
@@ -153,7 +156,7 @@ namespace VirtualCampaign_Manager.Rendering
 
                 if (job.IsZip)
                 {
-                    subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", Path.Combine(outputPath, loaderFileNameArr[i]), false);
+                    subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", Path.Combine(outputPath, loaderFileNameArr[i+1]), false);
                 }
                 else
                     subResult = SetValueInTool(string.Format("Saver{0}", i + 1), "Filename", outputPath, false);
